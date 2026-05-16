@@ -26,14 +26,19 @@ export { SUPPORTED_CURRENCIES }
 export const useCurrencyStore = create(
   persist(
     (set, get) => ({
-      baseCurrency: 'USD',
-      rates: {},           // { EUR: 0.92, COP: 4000, ... } relative to USD
+      baseCurrency: 'USD', // This is now the "Display" currency
+      sourceCurrency: 'USD', // This is the currency of the values in the DB
+      rates: {},           
       lastFetched: null,
       loading: false,
       error: null,
 
       setCurrency: (code) => {
         set({ baseCurrency: code })
+      },
+
+      setSourceCurrency: (code) => {
+        set({ sourceCurrency: code, baseCurrency: code })
       },
 
       fetchRates: async (force = false) => {
@@ -44,7 +49,6 @@ export const useCurrencyStore = create(
 
         set({ loading: true, error: null })
         try {
-          // frankfurter.dev: returns rates from USD to all currencies
           const res = await fetch('https://api.frankfurter.dev/v1/latest?base=USD')
           if (!res.ok) throw new Error('Exchange rate fetch failed')
           const data = await res.json()
@@ -58,25 +62,29 @@ export const useCurrencyStore = create(
         }
       },
 
-      // Convert a USD amount → baseCurrency display value
-      convert: (amountUSD) => {
-        const { baseCurrency, rates } = get()
-        if (baseCurrency === 'USD' || !rates[baseCurrency]) return amountUSD
+      // Convert a Source Amount → Current baseCurrency
+      convert: (amount) => {
+        const { baseCurrency, sourceCurrency, rates } = get()
+        if (baseCurrency === sourceCurrency || !rates[baseCurrency] || !rates[sourceCurrency]) return amount
+        
+        // Convert source -> USD -> base
+        const amountUSD = amount / rates[sourceCurrency]
         return amountUSD * rates[baseCurrency]
       },
 
-      // Format a USD amount as the base currency string
-      format: (amountUSD) => {
-        const { baseCurrency, rates } = get()
-        const currency = SUPPORTED_CURRENCIES.find(c => c.code === baseCurrency)
-        const converted = baseCurrency === 'USD' || !rates[baseCurrency]
-          ? amountUSD
-          : amountUSD * rates[baseCurrency]
+      // Format a Source Amount
+      format: (amount) => {
+        const { baseCurrency, sourceCurrency, rates } = get()
+        if (!rates[baseCurrency]) return `$${amount}`
+        
+        const converted = (baseCurrency === sourceCurrency)
+          ? amount
+          : (amount / rates[sourceCurrency]) * rates[baseCurrency]
 
         return new Intl.NumberFormat('es', {
           style: 'currency',
           currency: baseCurrency,
-          minimumFractionDigits: baseCurrency === 'JPY' || baseCurrency === 'CLP' ? 0 : 2,
+          minimumFractionDigits: baseCurrency === 'JPY' || baseCurrency === 'CLP' ? 0 : 0,
           maximumFractionDigits: baseCurrency === 'JPY' || baseCurrency === 'CLP' ? 0 : 2,
         }).format(converted)
       },

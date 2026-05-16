@@ -13,6 +13,7 @@ import { useCurrencyStore } from '@/store/useCurrencyStore'
 import { useInvoiceStore } from '@/store/useInvoiceStore'
 import { useAuthStore, ROLES } from '@/store/useAuthStore'
 import CookieBanner from '@/components/ui/CookieBanner'
+import CountrySelectorModal from '@/components/modals/CountrySelectorModal'
 
 // ── Guards ────────────────────────────────────────────────────
 function RequireAuth({ children }) {
@@ -111,6 +112,7 @@ export default function App() {
       </Routes>
 
       <CookieBanner />
+      <CountrySelectorModal />
     </>
   )
 }
