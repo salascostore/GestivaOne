@@ -101,7 +101,17 @@ function LoginForm() {
     const result = await login(email.trim().toLowerCase(), pass)
     if (!result.success) return toast.error(result.error)
     toast.success('¡Bienvenido!')
-    navigate('/')
+    
+    // Force a small delay to ensure state is saved, then jump to dashboard
+    setTimeout(() => {
+      navigate('/', { replace: true })
+      // Emergency fallback if navigate doesn't trigger
+      setTimeout(() => {
+        if (window.location.pathname === '/auth') {
+          window.location.href = '/'
+        }
+      }, 1000)
+    }, 100)
   }
 
   return (
