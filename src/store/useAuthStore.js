@@ -164,7 +164,11 @@ export const useAuthStore = create(
         // 2. Create Company
         const { data: company, error: compError } = await supabase
           .from('companies')
-          .insert([{ name: data.companyName, logo_url: data.companyLogo }])
+          .insert([{ 
+            name: data.companyName, 
+            logo_url: data.companyLogo,
+            owner_id: userId // Linking the creator as the owner
+          }])
           .select()
           .single()
 
