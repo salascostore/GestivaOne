@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import AppLayout from '@/components/layout/AppLayout'
 import Dashboard from '@/pages/Dashboard'
@@ -35,6 +35,17 @@ export default function App() {
   const initAuth = useAuthStore((s) => s.init)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
+  const location = useLocation()
+  const pageTitles = {
+    '/': 'Dashboard',
+    '/menu': 'Menú',
+    '/products': 'Productos',
+    '/employees': 'Empleados',
+    '/settings': 'Configuración',
+    '/account': 'Cuenta',
+    '/auth': 'Acceso'
+  }
+
   useEffect(() => {
     applyTheme(theme)
     if (theme === 'system') {
@@ -44,6 +55,20 @@ export default function App() {
       return () => mq.removeEventListener('change', handler)
     }
   }, [theme])
+
+  useEffect(() => {
+    const originalTitle = `GO | ${pageTitles[location.pathname] || 'GestivaOne'}`
+    const attentionTitle = '¡Tienes una factura pendiente! 📄'
+    
+    document.title = originalTitle
+
+    const handleVisibility = () => {
+      document.title = document.hidden ? attentionTitle : originalTitle
+    }
+
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [location.pathname])
 
   useEffect(() => { initAuth() }, [])
   useEffect(() => { if (isStale()) fetchRates() }, [])
