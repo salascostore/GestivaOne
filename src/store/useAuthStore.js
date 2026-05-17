@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { supabase } from '@/lib/supabase'
+import { useCurrencyStore } from './useCurrencyStore'
 
 export const PLANS = {
   standard: {
@@ -137,12 +138,26 @@ export const useAuthStore = create(
       user: null,
       loading: false,
 
-      // Initial session check
+      // Initial session check and active listener
       init: async () => {
         const { data: { session } } = await supabase.auth.getSession()
         if (session) {
           await get().syncProfile(session.user.id)
+        } else {
+          set({ isAuthenticated: false, user: null })
         }
+
+        // Keep session alive and synced across tabs
+        supabase.auth.onAuthStateChange(async (event, currentSession) => {
+          if (event === 'SIGNED_OUT' || !currentSession) {
+            set({ isAuthenticated: false, user: null })
+          } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            // Only sync if we don't already have the user to prevent infinite loops
+            if (!get().user || get().user?.id !== currentSession.user.id) {
+              await get().syncProfile(currentSession.user.id)
+            }
+          }
+        })
       },
 
       register: async (data) => {
@@ -264,6 +279,11 @@ export const useAuthStore = create(
             .limit(1)
 
           const company = companyList?.[0]
+          
+          // Auto-configure the app currency based on the company's registered currency
+          if (company?.currency) {
+            useCurrencyStore.getState().setSourceCurrency(company.currency)
+          }
 
           const user = {
             id: profile.id,
