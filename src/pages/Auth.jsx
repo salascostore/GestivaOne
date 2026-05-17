@@ -252,18 +252,13 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-surface-900 flex">
-      {/* Left decorative panel (hidden on mobile) */}
       <div className="hidden lg:flex flex-col justify-between w-96 shrink-0 bg-gradient-to-b from-brand-900/60 to-surface-800 border-r border-subtle p-10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
-            <Zap size={20} className="text-white" />
-          </div>
+        <div className="flex items-center gap-4 pb-6 border-b border-brand-500/30">
+          <Zap size={32} className="text-brand-400" />
           <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <p className="font-bold text-white text-lg leading-none">Gestiva</p>
-              <div className="bg-brand-500/20 p-0.5 rounded-full border border-brand-500/30">
-                <Check size={8} className="text-brand-400" />
-              </div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <p className="font-bold text-white text-2xl leading-none">Gestiva</p>
+              <Check size={16} className="text-brand-400" />
             </div>
             <p className="text-brand-400 text-xs font-semibold tracking-widest uppercase">One</p>
           </div>
@@ -305,9 +300,7 @@ export default function Auth() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-2 justify-center mb-6">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
-              <Zap size={15} className="text-white" />
-            </div>
+            <Zap size={20} className="text-brand-400" />
             <span className="font-bold text-white uppercase tracking-wider">Gestiva <span className="text-brand-400 font-extrabold">One</span></span>
           </div>
 
