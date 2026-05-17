@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { DollarSign, FileText, Clock, CheckCircle, Users, TrendingUp, AlertTriangle, Lock } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer
+  Tooltip, ResponsiveContainer, PieChart, Pie
 } from 'recharts'
 import { format, subMonths } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -106,6 +106,19 @@ export default function Dashboard() {
       .sort((a, b) => b.days - a.days),
   [overdue])
 
+  const categoryData = useMemo(() => {
+    const counts = {}
+    products.forEach((p) => {
+      const cat = p.category || 'Otros'
+      counts[cat] = (counts[cat] || 0) + (p.salesCount || 0)
+    })
+    const colors = ['#7c3aed', '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6']
+    return Object.entries(counts)
+      .map(([name, value], idx) => ({ name, value, fill: colors[idx % colors.length] }))
+      .filter((c) => c.value > 0)
+      .sort((a, b) => b.value - a.value)
+  }, [products])
+
   const plan = PLANS[user?.plan] || PLANS.standard
 
   if (!canView) {
@@ -188,6 +201,68 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Charts: stacked mobile → side by side lg+ (Available for ALL plans, making 6 widgets total for Standard) */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+        {/* Revenue chart */}
+        <div className="bg-surface-800 border border-subtle rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp size={16} className="text-brand-400" />
+            <span className="text-sm font-semibold text-white">Revenue — Últimos 6 meses</span>
+          </div>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={monthlyData}>
+              <defs>
+                <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#7c3aed" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#7c3aed" stopOpacity={0}   />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
+              <Tooltip content={<CustomTooltip formatFn={format$} />} />
+              <Area type="monotone" dataKey="revenue" stroke="#7c3aed" strokeWidth={2} fill="url(#revenueGrad)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Invoices breakdown */}
+        <div className="bg-surface-800 border border-subtle rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <FileText size={16} className="text-brand-400" />
+            <span className="text-sm font-semibold text-white">Facturas por estado</span>
+          </div>
+          <ResponsiveContainer width="100%" height={180}>
+            <BarChart data={[
+              { name: 'Pagadas',   count: paid.length,    fill: '#10b981' },
+              { name: 'Pendientes',count: pending.length,  fill: '#f59e0b' },
+              { name: 'Atrasadas', count: overdue.length,  fill: '#ef4444' },
+            ]}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <Tooltip content={({ active, payload, label }) =>
+                active && payload?.length ? (
+                  <div className="glass border border-subtle rounded-xl px-3 py-2 text-xs">
+                    <p className="text-muted-400 mb-1">{label}</p>
+                    <p className="text-white font-semibold">{payload[0].value} facturas</p>
+                  </div>
+                ) : null
+              } />
+              <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                {[
+                  { fill: '#10b981' },
+                  { fill: '#f59e0b' },
+                  { fill: '#ef4444' },
+                ].map((entry, i) => (
+                  <Cell key={i} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </motion.div>
+
       {!plan.hasAdvancedDashboard ? (
         <motion.div variants={itemVariants} className="bg-surface-800 border-2 border-dashed border-subtle rounded-3xl p-10 flex flex-col items-center justify-center text-center space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-brand-600/10 text-brand-400 border border-brand-500/20 flex items-center justify-center shadow-glow-sm">
@@ -196,7 +271,7 @@ export default function Dashboard() {
           <div className="max-w-md space-y-2">
             <h2 className="text-xl font-bold text-white">Análisis Avanzado Bloqueado</h2>
             <p className="text-sm text-muted-400">
-              Mejora a un plan <span className="text-brand-400 font-bold">Pro</span> o <span className="text-brand-400 font-bold">Empresarial</span> para visualizar gráficos de revenue mensual, top de productos y análisis detallado de clientes.
+              Mejora a un plan <span className="text-brand-400 font-bold">Pro</span> o <span className="text-brand-400 font-bold">Empresarial</span> para visualizar métricas avanzadas, top de ventas, segmentación de clientes y análisis de deuda.
             </p>
           </div>
           <button className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-glow transition-all">
@@ -205,70 +280,8 @@ export default function Dashboard() {
         </motion.div>
       ) : (
         <>
-          {/* Charts: stacked mobile → side by side lg+ */}
-          <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
-            {/* Revenue chart */}
-            <div className="bg-surface-800 border border-subtle rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp size={16} className="text-brand-400" />
-                <span className="text-sm font-semibold text-white">Revenue — Últimos 6 meses</span>
-              </div>
-              <ResponsiveContainer width="100%" height={180}>
-                <AreaChart data={monthlyData}>
-                  <defs>
-                    <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#7c3aed" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#7c3aed" stopOpacity={0}   />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
-                  <Tooltip content={<CustomTooltip formatFn={format$} />} />
-                  <Area type="monotone" dataKey="revenue" stroke="#7c3aed" strokeWidth={2} fill="url(#revenueGrad)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Invoices breakdown */}
-            <div className="bg-surface-800 border border-subtle rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <FileText size={16} className="text-brand-400" />
-                <span className="text-sm font-semibold text-white">Facturas por estado</span>
-              </div>
-              <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={[
-                  { name: 'Pagadas',   count: paid.length,    fill: '#10b981' },
-                  { name: 'Pendientes',count: pending.length,  fill: '#f59e0b' },
-                  { name: 'Atrasadas', count: overdue.length,  fill: '#ef4444' },
-                ]}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                  <Tooltip content={({ active, payload, label }) =>
-                    active && payload?.length ? (
-                      <div className="glass border border-subtle rounded-xl px-3 py-2 text-xs">
-                        <p className="text-muted-400 mb-1">{label}</p>
-                        <p className="text-white font-semibold">{payload[0].value} facturas</p>
-                      </div>
-                    ) : null
-                  } />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                    {[
-                      { fill: '#10b981' },
-                      { fill: '#f59e0b' },
-                      { fill: '#ef4444' },
-                    ].map((entry, i) => (
-                      <Cell key={i} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-          {/* Tables row: stacked → 3 cols on xl */}
-          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
+          {/* Advanced row: stacked → 2 cols on md → 4 cols on xl */}
+          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
             {/* Top clients */}
             <div className="xl:col-span-1 bg-surface-800 border border-subtle rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-4">
@@ -344,6 +357,45 @@ export default function Dashboard() {
                   ))}
                 </div>
               )}
+            </div>
+            {/* Categorías (PieChart) */}
+            <div className="xl:col-span-1 bg-surface-800 border border-subtle rounded-2xl p-5 flex flex-col">
+              <div className="flex items-center gap-2 mb-2">
+                <Package size={16} className="text-brand-400" />
+                <span className="text-sm font-semibold text-white">Ventas por Categoría</span>
+              </div>
+              <div className="flex-1 min-h-[200px]">
+                {categoryData.length === 0 ? (
+                  <p className="text-xs text-muted-400 text-center py-10">Sin ventas registradas</p>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Tooltip content={({ active, payload }) => 
+                        active && payload?.length ? (
+                          <div className="glass border border-subtle rounded-xl px-3 py-2 text-xs">
+                            <p className="text-muted-400 mb-1">{payload[0].name}</p>
+                            <p className="text-white font-semibold">{payload[0].value} uds vendidas</p>
+                          </div>
+                        ) : null
+                      } />
+                      <Pie
+                        data={categoryData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={75}
+                        paddingAngle={4}
+                      >
+                        {categoryData.map((entry, i) => (
+                          <Cell key={`cell-${i}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             </div>
           </motion.div>
         </>

@@ -67,6 +67,7 @@ export default function Sidebar({ isMobile }) {
         <NavLink
           to={allowed ? to : '#'}
           onClick={allowed ? handleNavClick : (e) => e.preventDefault()}
+          target="_self"
           className={clsx(
             'relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300',
             !allowed && 'opacity-50 cursor-not-allowed',
@@ -141,6 +142,7 @@ export default function Sidebar({ isMobile }) {
                     >
                       <NavLink to={allowed ? to : '#'}
                         onClick={allowed ? handleNavClick : (e) => e.preventDefault()}
+                        target="_self"
                         className={clsx(
                           'relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-300',
                           !allowed && 'opacity-50 cursor-not-allowed',
