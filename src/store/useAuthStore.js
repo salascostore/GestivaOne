@@ -228,21 +228,31 @@ export const useAuthStore = create(
           const { data: { user: authUser } } = await supabase.auth.getUser()
 
           if (profError || !profile) {
-            console.warn('Profile not found, attempting to recover company...')
-            // Without an owner_id column, we cannot easily recover a lost company.
-            // We just let the onboarding modal handle creating a new one if needed.
-            const fallbackUser = {
-              id: userId,
-              name: authUser?.email?.split('@')[0] || 'Usuario',
-              email: authUser?.email,
-              role: 'administrador',
-              plan: 'standard',
-              companyId: null,
-              companyName: 'GestivaOne',
-              companyLogo: null,
-              country: null,
+            console.warn('Profile not found, attempting to auto-recover...')
+            
+            // 1. Create a default company
+            const { data: newComp } = await supabase
+              .from('companies')
+              .insert([{ name: 'Mi Empresa (Auto-Recuperada)' }])
+              .select()
+              .single()
+
+            if (newComp) {
+              // 2. Insert the missing profile
+              await supabase
+                .from('profiles')
+                .insert([{
+                  id: userId,
+                  company_id: newComp.id,
+                  full_name: authUser?.email?.split('@')[0] || 'Usuario',
+                  email: authUser?.email,
+                  role: 'administrador',
+                  plan: 'standard'
+                }])
             }
-            set({ isAuthenticated: true, user: fallbackUser })
+
+            // Reload to fetch the freshly created profile properly
+            window.location.reload()
             return
           }
 
