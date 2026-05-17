@@ -9,8 +9,9 @@ export const useEmployeeStore = create((set, get) => ({
   employeesFetched: false,
 
   fetchEmployees: async (force = false) => {
-    const { user, employeesFetched } = get()
-    if (!user || (employeesFetched && !force)) return
+    const { employeesFetched } = get()
+    const { user } = useAuthStore.getState()
+    if (!user?.companyId || (employeesFetched && !force)) return
     
     set({ loading: true })
     const { data, error } = await supabase
