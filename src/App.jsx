@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import AppLayout from '@/components/layout/AppLayout'
 import Dashboard from '@/pages/Dashboard'
 import Menu from '@/pages/Menu'
@@ -111,6 +112,7 @@ export default function App() {
         </Route>
       </Routes>
 
+      <Analytics />
       <CookieBanner />
       <CountrySelectorModal />
     </>
