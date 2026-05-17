@@ -249,6 +249,7 @@ export const useAuthStore = create(
               companyId: ownedCompany?.id || null,
               companyName: ownedCompany?.name || 'GestivaOne',
               companyLogo: null,
+              country: ownedCompany?.country || null,
             }
             set({ isAuthenticated: true, user: fallbackUser })
             return
@@ -273,6 +274,7 @@ export const useAuthStore = create(
             companyId: profile.company_id,
             companyName: company?.name || 'Mi Empresa',
             companyLogo: company?.logo_url,
+            country: company?.country || null,
             settings: company?.settings
           }
 
@@ -304,27 +306,31 @@ export const useAuthStore = create(
           return
         }
 
-        // 1. Update Profile (Name & Phone)
-        const { error: profError } = await supabase
-          .from('profiles')
-          .update({
-            full_name: data.name,
-            phone: data.phone
-          })
-          .eq('id', user.id)
+        // 1. Update Profile
+        const profileUpdates = {}
+        if (data.name !== undefined) profileUpdates.full_name = data.name
+        if (data.phone !== undefined) profileUpdates.phone = data.phone
+        if (data.company_id !== undefined) profileUpdates.company_id = data.company_id
 
-        // 2. Update Company (Name & Logo)
-        const { error: compError } = await supabase
-          .from('companies')
-          .update({
-            name: data.companyName,
-            logo_url: data.companyLogo
-          })
-          .eq('id', user.companyId)
-
-        if (!profError && !compError) {
-          await get().syncProfile(user.id)
+        if (Object.keys(profileUpdates).length > 0) {
+          await supabase.from('profiles').update(profileUpdates).eq('id', user.id)
         }
+
+        // 2. Update Company
+        const targetCompanyId = user.companyId || data.company_id
+        if (targetCompanyId) {
+          const companyUpdates = {}
+          if (data.companyName !== undefined) companyUpdates.name = data.companyName
+          if (data.companyLogo !== undefined) companyUpdates.logo_url = data.companyLogo
+          if (data.country !== undefined) companyUpdates.country = data.country
+          if (data.base_currency !== undefined) companyUpdates.currency = data.base_currency
+
+          if (Object.keys(companyUpdates).length > 0) {
+            await supabase.from('companies').update(companyUpdates).eq('id', targetCompanyId)
+          }
+        }
+
+        await get().syncProfile(user.id)
       },
     }),
     {
