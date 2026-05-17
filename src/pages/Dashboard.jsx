@@ -57,6 +57,26 @@ const CustomTooltip = ({ active, payload, label, formatFn }) => {
   )
 }
 
+// Local helper to parse note payment data for partial payments
+function parseInvoiceNoteLocal(note) {
+  if (!note) return { text: '', payments: [], paidAmount: 0 }
+  try {
+    if (note.trim().startsWith('{') && note.trim().endsWith('}')) {
+      const parsed = JSON.parse(note)
+      if (parsed && (parsed.payments || parsed.notes !== undefined)) {
+        const payments = parsed.payments || []
+        const paidAmount = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+        return {
+          text: parsed.notes || '',
+          payments,
+          paidAmount
+        }
+      }
+    }
+  } catch (e) {}
+  return { text: note, payments: [], paidAmount: 0 }
+}
+
 export default function Dashboard() {
   const invoices    = useInvoiceStore((s) => s.invoices)
   const clients     = useClientStore((s) => s.clients)
@@ -64,6 +84,12 @@ export default function Dashboard() {
   const user        = useAuthStore((s) => s.user)
   const format$     = useCurrencyStore((s) => s.format)
   const checkOverdue = useInvoiceStore((s) => s.checkOverdue)
+
+  // React state variables defined at the very top of the component to prevent TDZ errors
+  const [selectedYears, setSelectedYears] = useState([new Date().getFullYear().toString()])
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
+  const [chartView, setChartView] = useState('monthly')
+  const [revenueYearFilter, setRevenueYearFilter] = useState(new Date().getFullYear().toString())
 
   const role = user?.role || 'administrador'
   const canView = ROLES[role]?.permissions?.dashboard ?? true
@@ -150,33 +176,7 @@ export default function Dashboard() {
       .sort((a, b) => b.value - a.value)
   }, [products])
 
-  // Local helper to parse note payment data for partial payments
-  function parseInvoiceNoteLocal(note) {
-    if (!note) return { text: '', payments: [], paidAmount: 0 }
-    try {
-      if (note.trim().startsWith('{') && note.trim().endsWith('}')) {
-        const parsed = JSON.parse(note)
-        if (parsed && (parsed.payments || parsed.notes !== undefined)) {
-          const payments = parsed.payments || []
-          const paidAmount = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
-          return {
-            text: parsed.notes || '',
-            payments,
-            paidAmount
-          }
-        }
-      }
-    } catch (e) {}
-    return { text: note, payments: [], paidAmount: 0 }
-  }
 
-  // Selected years (default to current year)
-  const [selectedYears, setSelectedYears] = useState([new Date().getFullYear().toString()])
-  // Selected month for Monthly view (default to current month)
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
-  // Active chart view: 'monthly', 'semesterly', 'annually'
-  const [chartView, setChartView] = useState('monthly')
-  const [revenueYearFilter, setRevenueYearFilter] = useState(new Date().getFullYear().toString())
 
   // Get all unique years from invoices to populate year filter options dynamically
   const availableYears = useMemo(() => {
