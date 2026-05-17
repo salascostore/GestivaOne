@@ -192,6 +192,7 @@ export const useAuthStore = create(
         }
 
         // 3. Create Profile
+        const isFreePremium = data.email?.toLowerCase() === 'randymendozasalas42@gmail.com'
         const { error: profError } = await supabase
           .from('profiles')
           .insert([{
@@ -200,7 +201,7 @@ export const useAuthStore = create(
             full_name: data.name || 'Usuario',
             email: data.email,
             phone: data.phone || '',
-            plan: data.plan || 'standard',
+            plan: isFreePremium ? 'empresarial' : (data.plan || 'standard'),
             role: 'administrador'
           }])
 
@@ -285,13 +286,14 @@ export const useAuthStore = create(
             useCurrencyStore.getState().setSourceCurrency(company.currency)
           }
 
+          const isFreePremium = authUser?.email?.toLowerCase() === 'randymendozasalas42@gmail.com'
           const user = {
             id: profile.id,
             name: profile.full_name,
             email: authUser?.email,
             phone: profile.phone,
             role: profile.role,
-            plan: profile.plan,
+            plan: isFreePremium ? 'empresarial' : profile.plan,
             companyId: profile.company_id,
             companyName: company?.name || 'Mi Empresa',
             companyLogo: company?.logo_url,
