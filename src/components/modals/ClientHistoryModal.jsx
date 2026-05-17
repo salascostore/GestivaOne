@@ -27,11 +27,9 @@ function StatusBadge({ status }) {
 
 export default function ClientHistoryModal({ open }) {
   const closeModal    = useUIStore((s) => s.closeModal)
-  const activeData    = useUIStore((s) => s.activeData) // Should contain the client
+  const client        = useUIStore((s) => s.editingClient)
   const invoices      = useInvoiceStore((s) => s.invoices)
   const format$       = useCurrencyStore((s) => s.format)
-
-  const client = activeData?.client
 
   const clientInvoices = useMemo(() => {
     if (!client) return []
