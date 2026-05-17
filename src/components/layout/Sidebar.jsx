@@ -36,9 +36,7 @@ export default function Sidebar({ isMobile }) {
       {user?.companyLogo
         ? <img src={user.companyLogo} alt="Logo" className="w-8 h-8 rounded-xl object-cover shrink-0" />
         : (
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shrink-0">
-            <Zap size={16} className="text-white" />
-          </div>
+          <Zap size={20} className="text-brand-400 shrink-0" />
         )
       }
       {showText && (
@@ -119,7 +117,7 @@ export default function Sidebar({ isMobile }) {
                 <div className="flex items-center gap-3">
                   {user?.companyLogo
                     ? <img src={user.companyLogo} alt="" className="w-8 h-8 rounded-xl object-cover" />
-                    : <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center"><Zap size={16} className="text-white" /></div>
+                    : <Zap size={20} className="text-brand-400" />
                   }
                   <div className="flex flex-col leading-tight">
                     <span className="text-sm font-bold text-white uppercase tracking-wider">Gestiva</span>
