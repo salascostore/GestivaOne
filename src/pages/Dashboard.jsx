@@ -1002,36 +1002,63 @@ export default function Dashboard() {
                 <Package size={16} className="text-brand-400" />
                 <span className="text-sm font-semibold text-white">Ventas por Categoría</span>
               </div>
-              <div className="flex-1 min-h-[200px]">
+              <div className="flex-1 flex flex-col justify-center">
                 {categoryData.length === 0 ? (
                   <p className="text-xs text-muted-400 text-center py-10">Sin ventas registradas</p>
                 ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Tooltip content={({ active, payload }) => 
-                        active && payload?.length ? (
-                          <div className="glass border border-subtle rounded-xl px-3 py-2 text-xs">
-                            <p className="text-muted-400 mb-1">{payload[0].name}</p>
-                            <p className="text-white font-semibold">{payload[0].value} uds vendidas</p>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4 flex-1 py-2">
+                    <div className="w-[160px] h-[160px] shrink-0">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Tooltip content={({ active, payload }) => 
+                            active && payload?.length ? (
+                              <div className="glass border border-subtle rounded-xl px-3 py-2 text-xs">
+                                <p className="text-muted-400 mb-1">{payload[0].name}</p>
+                                <p className="text-white font-semibold">{payload[0].value} uds vendidas</p>
+                              </div>
+                            ) : null
+                          } />
+                          <Pie
+                            data={categoryData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={45}
+                            outerRadius={65}
+                            paddingAngle={4}
+                          >
+                            {categoryData.map((entry, i) => (
+                              <Cell key={`cell-${i}`} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex-1 w-full space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                      {categoryData.map((cat) => {
+                        const totalUnits = categoryData.reduce((acc, c) => acc + c.value, 0)
+                        const percentage = Math.round((cat.value / totalUnits) * 100)
+                        return (
+                          <div key={cat.name} className="flex items-center justify-between text-xs gap-3">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span 
+                                className="w-2.5 h-2.5 rounded-full shrink-0" 
+                                style={{ backgroundColor: cat.fill }}
+                              />
+                              <span className="text-white font-medium truncate">{cat.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-muted-400">{cat.value} uds</span>
+                              <span className="text-[10px] font-bold bg-surface-700/60 px-1.5 py-0.5 rounded text-brand-300">
+                                {percentage}%
+                              </span>
+                            </div>
                           </div>
-                        ) : null
-                      } />
-                      <Pie
-                        data={categoryData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={75}
-                        paddingAngle={4}
-                      >
-                        {categoryData.map((entry, i) => (
-                          <Cell key={`cell-${i}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
+                        )
+                      })}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -1117,8 +1144,8 @@ export default function Dashboard() {
                     <div className="w-8 h-8 rounded-lg bg-danger-500/10 border border-danger-500/20 flex items-center justify-center text-danger-400 font-bold text-xs shrink-0">
                       $
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-white">{e.description || 'Gasto Operacional'}</p>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-white truncate">{e.description || 'Gasto Operacional'}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span className="text-[9px] bg-surface-600 text-muted-300 px-1.5 py-0.2 rounded font-medium">{e.category}</span>
                         <span className="text-[9px] text-muted-500">{new Date(e.created_at).toLocaleDateString('es-CO')}</span>
