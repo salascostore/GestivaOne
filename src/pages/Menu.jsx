@@ -17,27 +17,25 @@ function ExpandableButton({ icon: Icon, label, value, onClick, isPurple = true }
   const [hovered, setHovered] = useState(false)
 
   return (
-    <motion.button
+    <button
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={(e) => { e.stopPropagation(); onClick() }}
       className={clsx(
-        "h-10 rounded-full flex items-center justify-center gap-2 border transition-all duration-300 cursor-pointer select-none shrink-0 shadow-sm",
+        "h-10 rounded-full flex items-center justify-start gap-2 border transition-all duration-300 ease-out-expo cursor-pointer select-none shrink-0 shadow-sm overflow-hidden",
         isPurple
           ? "bg-brand-600 hover:bg-brand-500 text-white border-brand-500/40 hover:shadow-glow-sm"
-          : "bg-surface-700 hover:bg-surface-600 text-muted-400 hover:text-white border-white/5"
+          : "bg-surface-700 hover:bg-surface-600 text-muted-400 hover:text-white border-white/5",
+        hovered ? "w-[170px] px-3.5" : "w-10 px-2.5 justify-center"
       )}
-      animate={{ width: hovered ? 'auto' : 40, paddingLeft: hovered ? 14 : 10, paddingRight: hovered ? 14 : 10 }}
-      transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-      style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}
     >
       <Icon size={15} className="shrink-0" />
       <AnimatePresence>
         {hovered && (
           <motion.div
-            initial={{ opacity: 0, width: 0, x: -10 }}
-            animate={{ opacity: 1, width: 'auto', x: 0 }}
-            exit={{ opacity: 0, width: 0, x: -10 }}
+            initial={{ opacity: 0, x: -5 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -5 }}
             transition={{ duration: 0.15 }}
             className="flex flex-col items-start leading-none text-left shrink-0"
           >
@@ -46,14 +44,13 @@ function ExpandableButton({ icon: Icon, label, value, onClick, isPurple = true }
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.button>
+    </button>
   )
 }
 
 function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistory, format$, lastInvoice, pendingAmount, totalBilled, status }) {
   return (
     <motion.div
-      layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
