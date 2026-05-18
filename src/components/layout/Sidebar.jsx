@@ -7,6 +7,7 @@ import {
 import { useUIStore } from '@/store/useUIStore'
 import { useAuthStore, ROLES } from '@/store/useAuthStore'
 import clsx from 'clsx'
+import GestivaLogo from '@/components/ui/GestivaLogo'
 
 export default function Sidebar({ isMobile }) {
   const collapsed      = useUIStore((s) => s.sidebarCollapsed)
@@ -36,7 +37,7 @@ export default function Sidebar({ isMobile }) {
       {user?.companyLogo
         ? <img src={user.companyLogo} alt="Logo" className="w-10 h-10 rounded-xl object-cover shrink-0" />
         : (
-          <Zap size={24} className="text-brand-400 shrink-0" />
+          <GestivaLogo className="w-10 h-10 shrink-0" />
         )
       }
       {showText && (
@@ -118,7 +119,7 @@ export default function Sidebar({ isMobile }) {
                 <div className="flex items-center gap-3">
                   {user?.companyLogo
                     ? <img src={user.companyLogo} alt="" className="w-10 h-10 rounded-xl object-cover shrink-0" />
-                    : <Zap size={24} className="text-brand-400 shrink-0" />
+                    : <GestivaLogo className="w-10 h-10 shrink-0" />
                   }
                   <div className="flex flex-col leading-tight overflow-hidden whitespace-nowrap">
                     <span className="text-[14px] font-bold text-white uppercase tracking-wider truncate max-w-[130px]" title={user?.companyName || 'Mi Empresa'}>

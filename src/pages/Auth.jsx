@@ -10,6 +10,7 @@ import PaymentForm  from '@/components/auth/PaymentForm'
 import Input        from '@/components/ui/Input'
 import toast        from 'react-hot-toast'
 import clsx         from 'clsx'
+import GestivaLogo from '@/components/ui/GestivaLogo'
 
 // ── Register steps ────────────────────────────────────────────
 const STEPS = ['plan', 'datos', 'pago', 'listo']
@@ -294,7 +295,7 @@ export default function Auth() {
     <div className="min-h-screen bg-surface-900 flex">
       <div className="hidden lg:flex flex-col justify-between w-96 shrink-0 bg-gradient-to-b from-brand-900/60 to-surface-800 border-r border-subtle p-10">
         <div className="flex items-center gap-4 pb-6 border-b border-brand-500/30">
-          <Zap size={32} className="text-brand-400" />
+          <GestivaLogo className="w-12 h-12 shrink-0" />
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <p className="font-bold text-white text-2xl leading-none">Gestiva</p>
@@ -338,7 +339,7 @@ export default function Auth() {
       {/* Right: form panel */}
       <div className="flex-1 flex items-center justify-center p-5 overflow-y-auto relative overflow-hidden">
         {/* Ambient Background Elements */}
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(124,58,237,0.03)_1.5px,transparent_1.5px)] [background-size:32px_32px] pointer-events-none z-0" />
+        <div className="absolute inset-0 bg-[radial-gradient(rgba(16,185,129,0.03)_1.5px,transparent_1.5px)] [background-size:32px_32px] pointer-events-none z-0" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-600/5 rounded-full blur-[140px] pointer-events-none z-0 animate-pulse-slow" />
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-brand-500/8 rounded-full blur-[100px] pointer-events-none z-0" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-brand-700/4 rounded-full blur-[120px] pointer-events-none z-0" />
@@ -346,7 +347,7 @@ export default function Auth() {
         <div className="w-full max-w-md relative z-10">
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-2 justify-center mb-6">
-            <Zap size={20} className="text-brand-400" />
+            <GestivaLogo className="w-8 h-8 shrink-0" />
             <span className="font-bold text-white uppercase tracking-wider">Gestiva <span className="text-brand-400 font-extrabold">One</span></span>
           </div>
 
