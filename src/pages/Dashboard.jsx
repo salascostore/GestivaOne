@@ -87,7 +87,10 @@ export default function Dashboard() {
   const format$     = useCurrencyStore((s) => s.format)
   const checkOverdue = useInvoiceStore((s) => s.checkOverdue)
 
-  const expenses      = useExpenseStore((s) => s.expenses)
+  const expenses = useExpenseStore((s) => {
+    const companyId = user?.companyId || 'demo-company'
+    return s.expenses.filter((e) => e.company_id === companyId)
+  })
   const addExpense    = useExpenseStore((s) => s.addExpense)
   const deleteExpense = useExpenseStore((s) => s.deleteExpense)
 
