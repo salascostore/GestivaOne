@@ -98,6 +98,7 @@ export default function Dashboard() {
 
   // React state variables defined at the very top of the component to prevent TDZ errors
   const [selectedYears, setSelectedYears] = useState([new Date().getFullYear().toString()])
+  const [hoveredKpi, setHoveredKpi] = useState(null)
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [chartView, setChartView] = useState('monthly')
   const [revenueYearFilter, setRevenueYearFilter] = useState(new Date().getFullYear().toString())
@@ -593,8 +594,59 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      {/* KPIs: 2 col mobile → 3 col tablet → 5 col desktop */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+      {/* KPIs: 2 col mobile → 3 col tablet → 5 col desktop (Accordion-expanding hover effect!) */}
+      {/* Mobile & Tablet view */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:hidden gap-3 md:gap-4">
+        {[
+          {
+            title: "Ingresos (Recaudado)",
+            value: format$(totalRevenue),
+            icon: <DollarSign size={18} />,
+            color: "brand",
+            subtitle: `${paid.length} facturas pagadas`
+          },
+          {
+            title: "Pendiente por Cobrar",
+            value: format$(pendingRevenue),
+            icon: <Clock size={18} />,
+            color: "warning",
+            subtitle: `${pending.length + overdue.length} facturas`
+          },
+          {
+            title: "Gastos (Egresos)",
+            value: format$(totalExpenses),
+            icon: <Coins size={18} />,
+            color: "danger",
+            subtitle: `${expenses.length} egresos registrados`
+          },
+          {
+            title: "Utilidad Neta Real",
+            value: format$(totalRevenue - totalExpenses),
+            icon: <DollarSign size={18} />,
+            color: "success",
+            subtitle: "Total Ingresos - Gastos"
+          },
+          {
+            title: "Clientes Frecuentes",
+            value: clients.filter((c) => c.type === 'frequent').length,
+            icon: <Users size={18} />,
+            color: "brand",
+            subtitle: `${clients.length} clientes totales`
+          }
+        ].map((kpi) => (
+          <motion.div 
+            key={kpi.title} 
+            variants={itemVariants}
+            whileHover={{ y: -2, scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+          >
+            <KPICard {...kpi} />
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Desktop View with smooth physical horizontal flex accordion */}
+      <div className="hidden lg:flex items-stretch gap-4 w-full h-[126px]">
         {[
           {
             title: "Ingresos (Recaudado)",
@@ -632,14 +684,27 @@ export default function Dashboard() {
             subtitle: `${clients.length} clientes totales`
           }
         ].map((kpi, i) => (
-          <motion.div 
-            key={kpi.title} 
-            variants={itemVariants}
-            whileHover={{ y: -4, scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <div
+            key={kpi.title}
+            onMouseEnter={() => setHoveredKpi(i)}
+            onMouseLeave={() => setHoveredKpi(null)}
+            className={clsx(
+              "h-full shrink-0",
+              hoveredKpi === i
+                ? "flex-[2.35] min-w-[280px]"
+                : hoveredKpi !== null
+                  ? "flex-[0.62] max-w-[85px]"
+                  : "flex-1"
+            )}
+            style={{
+              transition: 'all 500ms cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
           >
-            <KPICard {...kpi} />
-          </motion.div>
+            <KPICard
+              {...kpi}
+              collapsed={hoveredKpi !== null && hoveredKpi !== i}
+            />
+          </div>
         ))}
       </div>
 

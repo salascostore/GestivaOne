@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import clsx from 'clsx'
 
-export default function KPICard({ title, value, subtitle, icon, trend, color = 'brand', loading = false }) {
+export default function KPICard({ title, value, subtitle, icon, trend, color = 'brand', loading = false, collapsed = false }) {
   const colors = {
     brand:   'from-brand-600/20 to-brand-800/10 border-brand-500/20',
     success: 'from-success-500/20 to-success-900/10 border-success-500/20',
@@ -17,14 +17,18 @@ export default function KPICard({ title, value, subtitle, icon, trend, color = '
 
   return (
     <motion.div
-      whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
+      whileHover={collapsed ? undefined : { y: -2, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}
       className={clsx(
-        'relative overflow-hidden bg-gradient-to-br border rounded-2xl p-4 sm:p-5',
-        colors[color]
+        'relative overflow-hidden bg-gradient-to-br border rounded-2xl p-4 sm:p-5 transition-all duration-300 ease-in-out h-full flex flex-col justify-center select-none',
+        colors[color],
+        collapsed ? 'items-center justify-center p-3 border-subtle bg-surface-800/40' : ''
       )}
     >
-      <div className="flex items-start justify-between gap-2.5">
-        <div className="flex-1 min-w-0">
+      <div className={clsx("flex items-center justify-between gap-2.5 w-full", collapsed && "justify-center")}>
+        <div className={clsx(
+          "flex-1 min-w-0 transition-all duration-300 ease-in-out origin-left",
+          collapsed ? "w-0 opacity-0 pointer-events-none scale-75 overflow-hidden" : "w-full opacity-100 scale-100"
+        )}>
           <p className="text-[10px] sm:text-xs text-muted-400 uppercase tracking-wider font-semibold mb-1 truncate">{title}</p>
           {loading
             ? <div className="h-7 w-24 bg-surface-400 rounded animate-pulse" />
@@ -33,12 +37,16 @@ export default function KPICard({ title, value, subtitle, icon, trend, color = '
           {subtitle && <p className="text-[10px] sm:text-xs text-muted-400 mt-1 truncate">{subtitle}</p>}
         </div>
         {icon && (
-          <div className={clsx('p-2 sm:p-2.5 rounded-xl shrink-0', iconColors[color])}>
+          <div className={clsx(
+            'rounded-xl shrink-0 transition-all duration-500 ease-out-expo',
+            iconColors[color],
+            collapsed ? 'p-3 scale-110' : 'p-2 sm:p-2.5'
+          )}>
             {icon}
           </div>
         )}
       </div>
-      {trend !== undefined && (
+      {!collapsed && trend !== undefined && (
         <div className={clsx('flex items-center gap-1 mt-3 text-[10px] sm:text-xs font-medium', trend >= 0 ? 'text-success-400' : 'text-danger-400')}>
           <span>{trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%</span>
           <span className="text-muted-400 font-normal">vs mes anterior</span>
