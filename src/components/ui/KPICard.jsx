@@ -29,7 +29,7 @@ export default function KPICard({ title, value, subtitle, icon, trend, color = '
       )}
       style={premiumTransition}
     >
-      <div className={clsx("flex items-center gap-2.5 w-full", collapsed ? "justify-center" : "justify-start")}>
+      <div className={clsx("flex items-center justify-between gap-2.5 w-full", collapsed && "justify-center")}>
         {icon && (
           <div 
             className={clsx(
@@ -44,14 +44,14 @@ export default function KPICard({ title, value, subtitle, icon, trend, color = '
         )}
         <div 
           className={clsx(
-            "flex-1 min-w-0 origin-left",
-            collapsed ? "w-0 opacity-0 pointer-events-none scale-75 overflow-hidden" : "w-full opacity-100 scale-100"
+            "min-w-0 text-right origin-right",
+            collapsed ? "w-0 opacity-0 pointer-events-none scale-75 overflow-hidden" : "flex-1 opacity-100 scale-100"
           )}
           style={premiumTransition}
         >
           <p className="text-[10px] sm:text-xs text-muted-400 uppercase tracking-wider font-semibold mb-1 truncate">{title}</p>
           {loading
-            ? <div className="h-7 w-24 bg-surface-400 rounded animate-pulse" />
+            ? <div className="h-7 w-24 bg-surface-400 rounded animate-pulse ml-auto" />
             : <p className="text-base sm:text-xl xl:text-2xl font-black text-white truncate">{value}</p>
           }
           {subtitle && <p className="text-[10px] sm:text-xs text-muted-400 mt-1 truncate">{subtitle}</p>}

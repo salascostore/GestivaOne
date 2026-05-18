@@ -75,9 +75,8 @@ export const useCurrencyStore = create(
       // Format a Source Amount
       format: (amount) => {
         const { baseCurrency, sourceCurrency, rates } = get()
-        if (!rates[baseCurrency]) return `$${amount}`
         
-        const converted = (baseCurrency === sourceCurrency)
+        const converted = (baseCurrency === sourceCurrency || !rates[baseCurrency] || !rates[sourceCurrency])
           ? amount
           : (amount / rates[sourceCurrency]) * rates[baseCurrency]
 
