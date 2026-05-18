@@ -18,7 +18,7 @@ export const useUIStore = create(
     (set) => ({
       sidebarCollapsed:  false,
       mobileSidebarOpen: false,
-      theme: 'light', // 'dark' | 'light' | 'system'
+      theme: 'dark', // 'dark' | 'light' | 'system'
       activeModal:   null,
       editingProduct: null,
       editingClient:  null,

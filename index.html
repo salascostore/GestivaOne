@@ -13,14 +13,12 @@
       (function() {
         try {
           var ui = JSON.parse(localStorage.getItem('gestiva-ui') || '{}');
-          var theme = ui.state?.theme || 'light';
+          var theme = ui.state?.theme || 'dark';
           if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
-          } else {
-            document.documentElement.classList.remove('dark');
           }
         } catch(e) {
-          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('dark');
         }
       })();
     </script>
