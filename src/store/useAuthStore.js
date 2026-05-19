@@ -137,14 +137,22 @@ export const useAuthStore = create(
       isAuthenticated: false,
       user: null,
       loading: false,
+      initialized: false,
 
       // Initial session check and active listener
       init: async () => {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          await get().syncProfile(session.user.id)
-        } else {
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session) {
+            await get().syncProfile(session.user.id)
+          } else {
+            set({ isAuthenticated: false, user: null })
+          }
+        } catch (e) {
+          console.error('Session init error:', e)
           set({ isAuthenticated: false, user: null })
+        } finally {
+          set({ initialized: true })
         }
 
         // Keep session alive and synced across tabs

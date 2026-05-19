@@ -36,6 +36,7 @@ export default function App() {
   const initAuth = useAuthStore((s) => s.init)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const user = useAuthStore((s) => s.user)
+  const initialized = useAuthStore((s) => s.initialized)
 
   const location = useLocation()
   useEffect(() => {
@@ -87,6 +88,45 @@ export default function App() {
   useEffect(() => { initAuth() }, [])
   useEffect(() => { if (isStale()) fetchRates() }, [])
   useEffect(() => { checkOverdue() }, [])
+
+  if (!initialized) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-[#120a2b] via-[#1b0d3d] to-[#0b051b] text-white">
+        <div className="relative flex flex-col items-center">
+          {/* Glowing Aura Effect */}
+          <div className="absolute w-[200px] h-[200px] bg-brand-500/10 rounded-full blur-[60px] animate-pulse" />
+          
+          {/* Animated Logo Container */}
+          <div className="relative z-10 flex items-center justify-center w-24 h-24 rounded-2xl bg-white/5 border border-white/10 shadow-[0_0_50px_rgba(139,92,246,0.15)] animate-bounce [animation-duration:3s]">
+            <svg 
+              className="w-12 h-12 text-brand-400 drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]" 
+              viewBox="0 0 24 24" 
+              fill="currentColor"
+            >
+              <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+
+          {/* Glowing text logo */}
+          <h1 className="mt-8 text-2xl font-black tracking-widest text-white uppercase select-none">
+            GESTIVA <span className="text-brand-400">ONE</span>
+          </h1>
+
+          {/* Subtitle / Phrase with pulse animation */}
+          <p className="mt-4 px-6 text-center text-sm font-semibold tracking-wider text-brand-300/80 animate-pulse [animation-duration:2.5s] max-w-[320px]">
+            Estamos trabajando para darte una mejor experiencia
+          </p>
+
+          {/* Minimalist Spinner */}
+          <div className="mt-12 flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 bg-brand-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-2.5 h-2.5 bg-brand-400 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
+            <span className="w-2.5 h-2.5 bg-brand-400 rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
