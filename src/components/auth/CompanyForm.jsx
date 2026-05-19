@@ -55,7 +55,12 @@ export default function CompanyForm({ onSubmit: onNext, defaultValues, plan }) {
       <div className="flex items-center gap-3 p-3 bg-surface-700/30 rounded-2xl border border-subtle/50">
         <div
           onClick={() => fileRef.current?.click()}
-          className="w-12 h-12 rounded-xl border-2 border-dashed border-subtle bg-surface-700 flex items-center justify-center cursor-pointer hover:border-brand-500 transition-colors overflow-hidden shrink-0"
+          className={clsx(
+            "w-12 h-12 flex items-center justify-center cursor-pointer transition-colors overflow-hidden shrink-0",
+            logo 
+              ? "rounded-full border-0 shadow-none" 
+              : "rounded-xl border-2 border-dashed border-subtle bg-surface-700 hover:border-brand-500"
+          )}
         >
           {logo
             ? <img src={logo} alt="Logo" className="w-full h-full object-cover" />

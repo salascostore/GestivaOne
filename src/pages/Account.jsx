@@ -114,7 +114,7 @@ function ProfileSection({ user, updateProfile, variants }) {
       {/* Avatar / Logo */}
       <div className="flex items-center gap-4">
         <div className="relative">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
             {logo ? <img src={logo} alt="" className="w-full h-full object-cover" /> : <span className="text-xl font-bold text-white">{name?.charAt(0)?.toUpperCase() || 'K'}</span>}
           </div>
           <button onClick={() => fileRef.current?.click()}
@@ -306,7 +306,7 @@ export default function Account() {
       {/* Profile card */}
       <motion.div variants={itemVariants}
         className="bg-surface-800 border border-subtle rounded-3xl p-6 flex items-center gap-5">
-        <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-glow shrink-0">
+        <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shrink-0">
           {user?.companyLogo
             ? <img src={user.companyLogo} alt="" className="w-full h-full object-cover" />
             : <span className="text-2xl font-bold text-white">{initial}</span>}

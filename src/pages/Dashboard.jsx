@@ -716,12 +716,12 @@ export default function Dashboard() {
             layout
             transition={{ type: 'spring', stiffness: 400, damping: 35 }}
             className={clsx(
-              "h-full shrink-0",
+              "h-full",
               hoveredKpi === i
-                ? "flex-[2.35] min-w-[280px]"
+                ? "flex-[2.35] min-w-[280px] shrink-0"
                 : hoveredKpi !== null
-                  ? "flex-[0.62] max-w-[85px]"
-                  : "flex-1"
+                  ? "flex-[0.62] max-w-[85px] shrink"
+                  : "flex-1 min-w-0 shrink"
             )}
           >
             <KPICard

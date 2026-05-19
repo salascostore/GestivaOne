@@ -24,7 +24,6 @@ export default function Sidebar({ isMobile }) {
     { to: '/menu',      icon: UtensilsCrossed, label: 'Menú',         perm: 'menu'       },
     { to: '/products',  icon: Package,         label: 'Productos',    perm: 'products'   },
     { to: '/employees', icon: Users,           label: 'Empleados',    perm: 'employees'  },
-    { to: '/account',   icon: User,            label: 'Cuenta',       perm: 'account'    },
   ]
 
   const handleNavClick = () => { if (isMobile) closeMobile() }
@@ -33,7 +32,7 @@ export default function Sidebar({ isMobile }) {
   const BrandHeader = ({ showText }) => (
     <div className={clsx('flex items-center gap-3.5 px-4 h-20 border-b border-subtle shrink-0', !showText && 'justify-center px-0')}>
       {user?.companyLogo
-        ? <img src={user.companyLogo} alt="Logo" className="w-[46px] h-[46px] rounded-xl object-cover shrink-0 shadow-glow-sm border border-white/5" />
+        ? <img src={user.companyLogo} alt="Logo" className="w-[46px] h-[46px] rounded-full object-cover shrink-0" />
         : (
           <Zap size={26} className="text-brand-400 shrink-0" />
         )
@@ -116,7 +115,7 @@ export default function Sidebar({ isMobile }) {
               <div className="flex items-center justify-between px-4 h-20 border-b border-subtle shrink-0">
                 <div className="flex items-center gap-3.5">
                   {user?.companyLogo
-                    ? <img src={user.companyLogo} alt="" className="w-[46px] h-[46px] rounded-xl object-cover shrink-0 shadow-glow-sm border border-white/5" />
+                    ? <img src={user.companyLogo} alt="" className="w-[46px] h-[46px] rounded-full object-cover shrink-0" />
                     : <Zap size={26} className="text-brand-400 shrink-0" />
                   }
                   <div className="flex flex-col leading-tight overflow-hidden whitespace-nowrap">
@@ -160,8 +159,24 @@ export default function Sidebar({ isMobile }) {
                   )
                 })}
 
-                {/* Separated Configuración at the bottom for Mobile Drawer */}
-                <div className="mt-auto pt-2 border-t border-subtle shrink-0">
+                {/* Separated Cuenta and Configuración at the bottom for Mobile Drawer */}
+                <div className="mt-auto pt-2 border-t border-subtle shrink-0 flex flex-col gap-1">
+                  <NavLink to={permissions['account'] ? '/account' : '#'}
+                    onClick={permissions['account'] ? handleNavClick : (e) => e.preventDefault()}
+                    target="_self"
+                    className={clsx(
+                      'relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-300',
+                      !permissions['account'] && 'opacity-50 cursor-not-allowed',
+                      location.pathname.startsWith('/account') && permissions['account'] ? 'text-brand-300' : permissions['account'] ? 'text-muted-400 hover:text-white hover:bg-surface-600' : 'text-muted-400'
+                    )}>
+                    {location.pathname.startsWith('/account') && permissions['account'] && <motion.div layoutId="activeIndicatorMobile"
+                      className="absolute inset-0 rounded-xl bg-brand-600/20 border border-brand-500/30"
+                      transition={{ type: 'spring', stiffness: 400, damping: 35 }} />}
+                    <User size={18} className="shrink-0 relative z-10" />
+                    <span className="relative z-10 flex-1">Cuenta</span>
+                    {!permissions['account'] && <Lock size={12} className="text-muted-400 relative z-10" />}
+                  </NavLink>
+
                   <NavLink to={permissions['settings'] ? '/settings' : '#'}
                     onClick={permissions['settings'] ? handleNavClick : (e) => e.preventDefault()}
                     target="_self"
@@ -206,15 +221,16 @@ export default function Sidebar({ isMobile }) {
         ))}
       </nav>
 
-      {/* Separated Configuración above User Profile */}
-      <div className="px-2 py-1.5 border-t border-subtle shrink-0">
+      {/* Separated Cuenta and Configuración above User Profile */}
+      <div className="px-2 py-1.5 border-t border-subtle shrink-0 flex flex-col gap-1">
+        <NavItem to="/account" icon={User} label="Cuenta" perm="account" layoutId="activeIndicator" />
         <NavItem to="/settings" icon={Settings} label="Configuración" perm="settings" layoutId="activeIndicator" />
       </div>
 
       {/* User Profile */}
       <div className="p-3 border-t border-subtle">
         <div className="flex items-center gap-3 px-1 py-1">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-xs font-bold text-white shadow-glow-sm shrink-0">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-xs font-bold text-white shrink-0">
             {user?.name?.charAt(0).toUpperCase() || 'G'}
           </div>
           <AnimatePresence>
