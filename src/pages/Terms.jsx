@@ -133,7 +133,7 @@ export default function Terms() {
             onClick={() => navigate('/')}
             className="px-8 shadow-glow-sm"
           >
-            Entendido, ir al Dashboard
+            Entendido, volver al inicio
           </Button>
         </motion.div>
       </motion.div>
