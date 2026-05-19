@@ -45,7 +45,7 @@ const CustomTooltip = ({ active, payload, label, formatFn }) => {
   if (!active || !payload?.length) return null
   return (
     <div className="glass border border-subtle rounded-xl px-3.5 py-2.5 text-xs space-y-1 min-w-[140px]">
-      <p className="text-muted-400 font-bold mb-1 border-b border-subtle/50 pb-1">{label}</p>
+      <p className="text-muted-400 font-bold mb-1 border-b border-subtle pb-1">{label}</p>
       {payload.map((p) => (
         <div key={p.name} className="flex items-center justify-between gap-3">
           <span className="flex items-center gap-1.5 text-[11px] text-muted-300 font-medium">
@@ -872,7 +872,7 @@ export default function Dashboard() {
 
             {/* Dashboard Tabs & Option Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex rounded-xl bg-surface-900 p-1 border border-subtle/50 self-start">
+              <div className="flex rounded-xl bg-surface-900 p-1 border border-subtle self-start">
                 {[
                   { id: 'monthly',   label: 'Mes Actual' },
                   { id: 'semesterly',label: 'Semestral' },
@@ -882,7 +882,7 @@ export default function Dashboard() {
                     key={t.id}
                     onClick={() => setChartView(t.id)}
                     className={clsx(
-                      "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
+                      "px-4 py-1.5 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-0",
                       chartView === t.id
                         ? "bg-surface-700 text-foreground shadow"
                         : "text-muted-400 hover:text-foreground"
@@ -911,7 +911,7 @@ export default function Dashboard() {
             </div>
 
             {/* Dynamic Combined Line Chart */}
-            <div className="h-[280px] w-full bg-surface-900/40 border border-subtle/40 rounded-2xl p-4">
+            <div className="h-[280px] w-full bg-surface-900/40 border border-subtle rounded-2xl p-4">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={advancedChartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
@@ -932,7 +932,7 @@ export default function Dashboard() {
                       if (!active || !payload?.length) return null
                       return (
                         <div className="glass border border-subtle rounded-2xl p-3.5 space-y-2 shadow-xl min-w-[160px] animate-scale-up">
-                          <p className="text-xs font-bold text-foreground border-b border-subtle/50 pb-1.5">
+                          <p className="text-xs font-bold text-foreground border-b border-subtle pb-1.5">
                             {chartView === 'monthly' ? `Día ${label}` : label}
                           </p>
                           <div className="space-y-1">

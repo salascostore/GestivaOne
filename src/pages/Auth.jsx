@@ -388,7 +388,7 @@ export default function Auth() {
                 {tab === 'worker'   && <WorkerLogin />}
               </motion.div>
             </AnimatePresence>
-            <div className="mt-6 pt-5 border-t border-subtle/50 flex items-center justify-center gap-2">
+            <div className="mt-6 pt-5 border-t border-subtle flex items-center justify-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
               <p className="text-[10px] text-muted-500 font-medium uppercase tracking-widest flex items-center gap-1.5">
                 <Lock size={10} className="text-success-500" /> Conexión segura SSL

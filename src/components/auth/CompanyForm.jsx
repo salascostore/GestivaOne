@@ -52,7 +52,7 @@ export default function CompanyForm({ onSubmit: onNext, defaultValues, plan }) {
       </div>
 
       {/* Logo upload */}
-      <div className="flex items-center gap-3 p-3 bg-surface-700/30 rounded-2xl border border-subtle/50">
+      <div className="flex items-center gap-3 p-3 bg-surface-700/30 rounded-2xl border border-subtle">
         <div
           onClick={() => fileRef.current?.click()}
           className={clsx(
