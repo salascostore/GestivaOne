@@ -67,8 +67,8 @@ export const useCurrencyStore = create(
 
         set({ loading: true, error: null })
         try {
-          // Direct endpoint without /v1/ avoids 301 CORS-unsafe redirects
-          const res = await fetch('https://api.frankfurter.dev/latest?base=USD')
+          // Direct v2 endpoint avoids redirects and provides stable rates
+          const res = await fetch('https://api.frankfurter.dev/v2/rates?base=USD')
           if (!res.ok) throw new Error('Exchange rate fetch failed')
           const data = await res.json()
           set({
