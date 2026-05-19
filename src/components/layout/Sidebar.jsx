@@ -113,7 +113,7 @@ export default function Sidebar({ isMobile }) {
               onClick={closeMobile} className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" />
             <motion.aside key="drawer" initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
               transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-              className="fixed left-0 top-0 bottom-0 z-50 w-64 bg-surface-800 border-r border-subtle flex flex-col shadow-modal">
+              className="sidebar-premium-dark fixed left-0 top-0 bottom-0 z-50 w-64 bg-surface-800 border-r border-subtle flex flex-col shadow-modal">
               <div className="flex items-center justify-between px-4 h-20 border-b border-subtle shrink-0">
                 <div className="flex items-center gap-3.5">
                   {user?.companyLogo
@@ -173,7 +173,7 @@ export default function Sidebar({ isMobile }) {
     <motion.aside
       animate={{ width: collapsed ? 64 : 220 }}
       transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-      className="relative h-screen bg-surface-800 border-r border-subtle flex flex-col overflow-hidden shrink-0 z-10"
+      className="sidebar-premium-dark relative h-screen bg-surface-800 border-r border-subtle flex flex-col overflow-hidden shrink-0 z-10"
     >
       <AnimatePresence>
         {!collapsed

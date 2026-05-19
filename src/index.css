@@ -281,3 +281,27 @@ input[type="number"] {
     opacity: 1;
   }
 }
+
+/* Force dark mode values inside the sidebar premium container regardless of system theme */
+.sidebar-premium-dark {
+  color-scheme: dark !important;
+  --surface-900: #0a0a0f !important;
+  --surface-800: #0f0f18 !important;
+  --surface-750: #13131e !important;
+  --surface-700: #191926 !important;
+  --surface-600: #1e1e2e !important;
+  --surface-500: #252538 !important;
+  --surface-400: #2e2e45 !important;
+  --surface-300: #383856 !important;
+
+  --muted-400: #6b7280 !important;
+  --muted-500: #9ca3af !important;
+  --muted-600: #d1d5db !important;
+
+  --text-foreground: #ffffff !important;
+  --text-muted: #9ca3af !important;
+
+  --border-subtle: rgba(255, 255, 255, 0.06) !important;
+  --glass-bg: rgba(19, 19, 30, 0.85) !important;
+  --glass-border: rgba(255, 255, 255, 0.06) !important;
+}
