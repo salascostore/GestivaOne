@@ -12,16 +12,16 @@ export default {
       },
       colors: {
         brand: {
-          50:  '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
-          800: '#5b21b6',
-          900: '#4c1d95',
+          50:  '#e0e7ff',
+          100: '#c7d2fe',
+          200: '#a5b4fc',
+          300: '#818cf8',
+          400: '#6366f1',
+          500: '#4f46e5',
+          600: '#4338ca',
+          700: '#3730a3',
+          800: '#1e1b4b',
+          900: '#312e81',
         },
         // ─── Surface: CSS-variable-driven so dark/light mode works ───
         surface: {
@@ -62,10 +62,10 @@ export default {
         '3xl': '24px',
       },
       boxShadow: {
-        'glow':      '0 0 20px rgba(124, 58, 237, 0.25)',
-        'glow-sm':   '0 0 10px rgba(124, 58, 237, 0.15)',
+        'glow':      '0 0 20px rgba(79, 70, 229, 0.25)',
+        'glow-sm':   '0 0 10px rgba(79, 70, 229, 0.15)',
         'card':      '0 1px 3px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.1)',
-        'card-hover':'0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(124,58,237,0.2)',
+        'card-hover':'0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(79, 70, 229, 0.2)',
         'modal':     '0 25px 50px rgba(0,0,0,0.35)',
       },
       textColor: {

@@ -87,12 +87,14 @@ export const useSettingsStore = create(
       printer: {
         autoPrint: false,
         template: 'classic',
+        pdfTemplate: 'corporate',
         showLogo: true,
         showCompanyName: true,
         showProducts: true,
         showContact: true,
         showTax: false,
         footerText: '¡Gracias por su compra!',
+        themeColor: 'indigo',
       },
       setPrinter: (data) => {
         set((s) => ({ printer: { ...s.printer, ...data } }))
