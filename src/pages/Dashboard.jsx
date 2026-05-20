@@ -498,8 +498,8 @@ export default function Dashboard() {
 
   const exportToPDF = async () => {
     try {
-      const { jsPDF } = await import('jspdf')
-      await import('jspdf-autotable')
+      const { default: jsPDF } = await import('jspdf')
+      const { default: autoTable } = await import('jspdf-autotable')
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
       const companyName = user?.companyName || 'Mi Empresa'
       
@@ -551,7 +551,7 @@ export default function Dashboard() {
       
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(22)
-      doc.setTextColor(167, 139, 250) // Purple violet
+      doc.setTextColor(99, 102, 241) // Indigo-400
       doc.text('GESTIVAONE', 14, 15)
       doc.setFontSize(10)
       doc.setTextColor(255, 255, 255)
@@ -564,7 +564,7 @@ export default function Dashboard() {
       // Page 1: Resumen ejecutivo
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(13)
-      doc.setTextColor(124, 58, 237)
+      doc.setTextColor(79, 70, 229) // Indigo-600
       doc.text('RESUMEN DE FLUJO DE CAJA (CASH FLOW)', 14, 46)
       
       // Summary Card Boxes
@@ -621,7 +621,7 @@ export default function Dashboard() {
       doc.text(format$(netCashBalance), 196, 94, { align: 'right' })
 
       // Visual line
-      doc.setDrawColor(124, 58, 237)
+      doc.setDrawColor(79, 70, 229) // Indigo-600
       doc.setLineWidth(0.5)
       doc.line(14, 99, 196, 99)
       doc.setLineWidth(0.1)
@@ -632,7 +632,7 @@ export default function Dashboard() {
       doc.setTextColor(17, 24, 39)
       doc.text('HISTORIAL DETALLADO DE PAGOS Y ABONOS RECIBIDOS', 14, 107)
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: 112,
         head: [['Factura ID', 'Cliente', 'Monto Recibido', 'Fecha de Pago', 'Concepto/Referencia']],
         body: abonosList.slice(0, 12),
@@ -665,12 +665,12 @@ export default function Dashboard() {
         new Date(i.created_at).toLocaleDateString('es-CO')
       ])
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: 28,
         head: [['ID Factura', 'Cliente', 'Total', 'Método', 'Estado', 'Fecha']],
         body: allInvoicesBody,
         theme: 'striped',
-        headStyles: { fillColor: [124, 58, 237] },
+        headStyles: { fillColor: [79, 70, 229] }, // Indigo-600
         styles: { fontSize: 8 }
       })
 
@@ -689,7 +689,7 @@ export default function Dashboard() {
         new Date(e.created_at).toLocaleDateString('es-CO')
       ])
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: nextY + 4,
         head: [['ID Egreso', 'Categoría', 'Descripción', 'Monto', 'Fecha']],
         body: expBody,

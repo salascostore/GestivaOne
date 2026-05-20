@@ -421,11 +421,13 @@ export const useAuthStore = create(
 
           set({ isAuthenticated: true, user })
 
-          // Dynamically import useSettingsStore to sync DB settings to frontend store
+          // Dynamically import useSettingsStore and useNotificationStore to sync DB settings to frontend stores
           try {
             const { useSettingsStore } = await import('./useSettingsStore')
+            const { useNotificationStore } = await import('./useNotificationStore')
             if (company?.settings) {
               useSettingsStore.getState().loadFromSettings(company.settings)
+              useNotificationStore.getState().loadFromSettings(company.settings)
             }
           } catch (e) {
             console.error('Error loading settings from DB to store:', e)

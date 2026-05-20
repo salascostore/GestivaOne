@@ -553,9 +553,9 @@ export default function Facturero() {
   }
 
   return (
-    <div className="page-container space-y-6 pb-12">
-      {/* ── Fixed Sticky Page Header ─────────────────── */}
-      <div className="sticky top-0 z-20 bg-surface-900/90 backdrop-blur-md pb-4 pt-1 -mx-4 px-4 md:-mx-8 md:px-8 lg:-mx-10 lg:px-10 border-b border-subtle/20 flex flex-row items-center justify-between gap-4">
+    <div className="page-container flex flex-col gap-6 h-full lg:h-full lg:overflow-hidden pb-12 lg:pb-0">
+      {/* ── Fixed Page Header ─────────────────── */}
+      <div className="bg-surface-900/90 backdrop-blur-md pb-4 pt-1 -mx-4 px-4 md:-mx-8 md:px-8 lg:-mx-10 lg:px-10 border-b border-subtle/20 flex flex-row items-center justify-between gap-4 shrink-0">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-foreground uppercase tracking-wider flex items-center gap-2">
             <Printer className="text-brand-400" />
@@ -583,9 +583,9 @@ export default function Facturero() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start flex-1 min-h-0 lg:overflow-hidden">
         {/* Left config form panel (8 cols on lg) */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className="lg:col-span-7 space-y-6 lg:h-full lg:overflow-y-auto no-scrollbar lg:pr-2 pb-6">
           {/* Template Choices Card */}
           <div className="bg-surface-800 border border-subtle rounded-2xl p-5 sm:p-6 space-y-5">
             <div className="flex items-center gap-2 pb-3 border-b border-subtle">
@@ -879,9 +879,9 @@ export default function Facturero() {
         </div>
 
         {/* Right side live preview pane (5 cols on lg) */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="bg-surface-800 border border-subtle rounded-2xl p-5 space-y-4 sticky top-28">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3 border-b border-subtle">
+        <div className="lg:col-span-5 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
+          <div className="bg-surface-800 border border-subtle rounded-2xl p-5 space-y-4 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3 border-b border-subtle shrink-0">
               <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                 <FileCheck size={16} className="text-brand-400" />
                 Vista Previa Interactiva
@@ -901,12 +901,12 @@ export default function Facturero() {
             </div>
 
             {/* Simulated Sheet Canvas */}
-            <div className="p-3 bg-surface-900 border border-subtle rounded-xl min-h-[360px] flex items-center justify-center overflow-auto no-scrollbar">
+            <div className="p-3 bg-surface-900 border border-subtle rounded-xl flex-1 overflow-y-auto no-scrollbar min-h-[300px]">
               {renderLivePreview()}
             </div>
 
             {/* Test Action Buttons */}
-            <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="grid grid-cols-2 gap-3 pt-2 shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
@@ -928,7 +928,7 @@ export default function Facturero() {
               </Button>
             </div>
 
-            <div className="p-3 rounded-xl bg-surface-750 border border-subtle flex items-start gap-2.5">
+            <div className="p-3 rounded-xl bg-surface-750 border border-subtle flex items-start gap-2.5 shrink-0">
               <AlertCircle size={16} className="text-brand-400 shrink-0 mt-0.5" />
               <p className="text-[10px] text-muted-400 leading-normal">
                 Esta es una simulación visual en tiempo real. Los cambios en el logotipo, datos de la empresa e IVA se reflejarán inmediatamente en las facturas y tickets reales al presionar el botón <strong>Guardar Configuración</strong>.

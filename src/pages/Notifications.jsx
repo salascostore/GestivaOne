@@ -9,6 +9,7 @@ import { useNotificationStore } from '@/store/useNotificationStore'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import clsx from 'clsx'
+import toast from 'react-hot-toast'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -87,6 +88,7 @@ export default function Notifications() {
     const unreadIds = notifications.filter(n => !n.read).map(n => n.id)
     if (unreadIds.length > 0) {
       markAllAsRead(unreadIds)
+      toast.success('Todas las notificaciones marcadas como leídas')
     }
   }
 
@@ -195,12 +197,17 @@ export default function Notifications() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  onClick={() => !notif.read && markAsRead(notif.id)}
+                  onClick={() => {
+                    if (!notif.read) {
+                      markAsRead(notif.id)
+                      toast.success('Notificación marcada como leída', { id: notif.id, duration: 1500 })
+                    }
+                  }}
                   className={clsx(
-                    "group relative overflow-hidden flex gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer",
+                    "group relative overflow-hidden flex gap-4 p-4 rounded-2xl border transition-all duration-300 cursor-pointer select-none active:scale-[0.99]",
                     notif.read 
-                      ? "bg-surface-800/20 dark:bg-surface-800/10 border-subtle/30 opacity-40 hover:opacity-85 hover:bg-surface-800/40" 
-                      : clsx("bg-surface-800 border-subtle hover:border-brand-500/30 shadow-sm", style.border)
+                      ? "bg-surface-800/20 dark:bg-surface-800/10 border-subtle/30 opacity-40 hover:opacity-80" 
+                      : clsx("bg-surface-800 border-subtle hover:border-brand-500/30 hover:scale-[1.01] shadow-sm", style.border)
                   )}
                 >
                   {/* Left indicator strip for unread notifications */}
@@ -223,7 +230,7 @@ export default function Notifications() {
                   {/* Message body */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className={clsx("text-sm font-bold truncate", notif.read ? "text-muted-500 line-through decoration-muted-500/30" : "text-foreground")}>
+                      <h4 className={clsx("text-sm font-bold truncate", notif.read ? "text-muted-500/80 font-medium" : "text-foreground")}>
                         {notif.title}
                       </h4>
                       <div className={clsx(
@@ -239,14 +246,18 @@ export default function Notifications() {
                     </p>
                   </div>
 
-                  {/* Unread circle badge indicator on right */}
-                  {!notif.read && (
+                  {/* Unread circle badge / read checkmark on right */}
+                  {!notif.read ? (
                     <div className="flex items-center justify-center shrink-0">
-                      <span className={clsx("w-2 h-2 rounded-full", 
+                      <span className={clsx("w-2 h-2 rounded-full animate-pulse", 
                         notif.type === 'danger' ? 'bg-danger-500' :
                         notif.type === 'warning' ? 'bg-warning-500' :
                         notif.type === 'success' ? 'bg-success-500' : 'bg-brand-500'
                       )} />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center shrink-0 text-success-500 dark:text-success-400">
+                      <Check size={14} className="stroke-[3]" />
                     </div>
                   )}
                 </motion.div>

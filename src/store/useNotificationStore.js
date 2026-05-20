@@ -24,6 +24,7 @@ export const useNotificationStore = create(
             }
           }
         })
+        get().saveToDB()
       },
 
       // Mark all notifications as read
@@ -39,6 +40,7 @@ export const useNotificationStore = create(
             }
           }
         })
+        get().saveToDB()
       },
 
       // Reset read status for the current user
@@ -50,6 +52,29 @@ export const useNotificationStore = create(
             [userId]: []
           }
         }))
+        get().saveToDB()
+      },
+
+      loadFromSettings: (dbSettings) => {
+        if (!dbSettings) return
+        set({
+          readIdsByUser: dbSettings.readNotifications || get().readIdsByUser
+        })
+      },
+
+      saveToDB: async () => {
+        try {
+          const auth = useAuthStore.getState()
+          if (auth.isAuthenticated && auth.user?.companyId) {
+            const newSettings = {
+              ...(auth.user.settings || {}),
+              readNotifications: get().readIdsByUser
+            }
+            await auth.updateProfile({ settings: newSettings })
+          }
+        } catch (err) {
+          console.warn('Error saving notifications status to DB:', err)
+        }
       },
 
       // Dynamic selectors to generate notifications based on live app state
