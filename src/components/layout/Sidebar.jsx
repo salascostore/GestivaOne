@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Receipt, Package,
-  Settings, User, ChevronLeft, Zap, X, Users, Lock, Bell, Shield, Printer
+  Settings, User, ChevronLeft, Zap, X, Users, Lock, Bell, Shield, Printer, Calculator
 } from 'lucide-react'
 import { useUIStore } from '@/store/useUIStore'
 import { useAuthStore, ROLES } from '@/store/useAuthStore'
@@ -40,6 +40,7 @@ export default function Sidebar({ isMobile }) {
       title: 'Herramientas',
       items: [
         { to: '/facturero', icon: Printer,         label: 'Facturero',    perm: 'dashboard'  },
+        { to: '/dian',      icon: Calculator,      label: 'Asistente DIAN', perm: 'dashboard' },
         { to: '/notifications', icon: Bell,        label: 'Notificaciones', perm: 'dashboard' },
       ]
     }

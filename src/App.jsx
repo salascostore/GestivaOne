@@ -12,6 +12,7 @@ import Landing from '@/pages/Landing'
 import Notifications from '@/pages/Notifications'
 import Terms from '@/pages/Terms'
 import Facturero from '@/pages/Facturero'
+import DianAssistant from '@/pages/DianAssistant'
 import { useUIStore, applyTheme } from '@/store/useUIStore'
 import { useCurrencyStore } from '@/store/useCurrencyStore'
 import { useInvoiceStore } from '@/store/useInvoiceStore'
@@ -130,7 +131,8 @@ export default function App() {
     '/account': 'Cuenta',
     '/notifications': 'Notificaciones',
     '/terms': 'Términos',
-    '/facturero': 'Facturero'
+    '/facturero': 'Facturero',
+    '/dian': 'Asistente DIAN'
   }
 
   useEffect(() => {
@@ -244,6 +246,7 @@ export default function App() {
           <Route path="/account" element={<Account />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/facturero" element={<RequirePermission perm="dashboard"><Facturero /></RequirePermission>} />
+          <Route path="/dian" element={<RequirePermission perm="dashboard"><DianAssistant /></RequirePermission>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
