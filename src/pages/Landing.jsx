@@ -365,61 +365,102 @@ export default function Landing() {
             <p className="text-sm text-muted-400">Encuentra el plan perfecto para las necesidades de tu empresa.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Plan 1 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Plan 1: Standard */}
             <div className="bg-surface-750 border border-subtle p-8 rounded-3xl space-y-6 flex flex-col justify-between relative overflow-hidden">
               <div className="space-y-4">
-                <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-surface-650 text-muted-400 border border-subtle inline-block">Plan Standard</span>
+                <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-surface-650 text-muted-400 border border-subtle inline-block">One Standard</span>
                 <div className="flex items-baseline">
                   <span className="text-4xl font-black text-foreground">$0</span>
-                  <span className="text-xs text-muted-400 ml-1">Gratis para siempre</span>
+                  <span className="text-xs text-muted-400 ml-1">/ siempre</span>
                 </div>
                 <p className="text-xs text-muted-400">Perfecto para pequeños comercios y profesionales independientes.</p>
                 
                 <ul className="space-y-3 pt-4 border-t border-subtle text-xs text-muted-300">
-                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Registro de hasta 50 productos</li>
-                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Facturación Express Básica</li>
-                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Gestión de hasta 10 clientes</li>
-                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Reportes de Ventas Básicos</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> 1 trabajador</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Facturación básica</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Gestión de clientes</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Inventario limitado</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Soporte comunitario</li>
                 </ul>
               </div>
 
               <Link 
-                to="/auth" 
+                to="/auth?plan=standard" 
                 className="w-full text-center py-3 rounded-xl bg-surface-600 hover:bg-surface-500 border border-subtle text-foreground text-xs font-bold transition-all block"
               >
                 Comenzar Gratis
               </Link>
             </div>
 
-            {/* Plan 2 */}
+            {/* Plan 2: Pro */}
             <div className="bg-surface-750 border-2 border-brand-500 p-8 rounded-3xl space-y-6 flex flex-col justify-between relative shadow-[0_0_30px_rgba(139,92,246,0.15)]">
               <div className="absolute top-4 right-4 bg-brand-600 text-white font-extrabold text-[9px] uppercase px-2 py-0.5 rounded-full tracking-widest">
-                Recomendado
+                MÁS POPULAR
               </div>
               <div className="space-y-4">
-                <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 inline-block">Plan Empresarial</span>
-                <div className="flex items-baseline">
-                  <span className="text-4xl font-black text-foreground">$129,900</span>
-                  <span className="text-xs text-muted-400 ml-1">/ mes COP</span>
+                <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 inline-block">One Pro</span>
+                <div className="space-y-1">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-4xl font-black text-brand-400">$7.000</span>
+                    <span className="text-xs text-muted-500 line-through">$32.000</span>
+                  </div>
+                  <span className="text-[10px] text-muted-400 block font-bold">/ mes COP</span>
+                  <span className="text-[9px] font-black tracking-wider uppercase bg-success-500/15 text-success-700 dark:bg-success-950 dark:text-success-400 px-2 py-0.5 rounded block w-max">
+                    78% DESCUENTO PRIMER MES
+                  </span>
+                </div>
+                <p className="text-xs text-muted-400">Para negocios en crecimiento que requieren gestión de personal y reportes avanzados.</p>
+                
+                <ul className="space-y-3 pt-4 border-t border-subtle text-xs text-muted-300">
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Hasta 10 trabajadores</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Todo lo de Standard</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Dashboard avanzado</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Gestión de empleados</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Reportes PDF/Excel</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Soporte prioritario</li>
+                </ul>
+              </div>
+
+              <Link 
+                to="/auth?plan=pro" 
+                className="w-full text-center py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-glow transition-all block"
+              >
+                Obtener Plan Pro
+              </Link>
+            </div>
+
+            {/* Plan 3: 360 */}
+            <div className="bg-surface-750 border border-subtle p-8 rounded-3xl space-y-6 flex flex-col justify-between relative overflow-hidden">
+              <div className="space-y-4">
+                <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-surface-650 text-muted-400 border border-subtle inline-block">One 360</span>
+                <div className="space-y-1">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-4xl font-black text-foreground">$80.000</span>
+                    <span className="text-xs text-muted-500 line-through">$120.000</span>
+                  </div>
+                  <span className="text-[10px] text-muted-400 block font-bold">/ mes COP</span>
+                  <span className="text-[9px] font-black tracking-wider uppercase bg-success-500/15 text-success-700 dark:bg-success-950 dark:text-success-400 px-2 py-0.5 rounded block w-max">
+                    33% DESCUENTO PRIMEROS 3 MESES
+                  </span>
                 </div>
                 <p className="text-xs text-muted-400">Para empresas consolidadas que buscan automatización avanzada y multi-dispositivo.</p>
                 
                 <ul className="space-y-3 pt-4 border-t border-subtle text-xs text-muted-300">
-                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Productos e Inventario ilimitados</li>
-                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Facturación, deudas y abonos ilimitados</li>
-                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Integración SMTP + WhatsApp + API</li>
-                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Impresión de Recibos con Plantillas</li>
-                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Reportes Ejecutivos Financieros Completos</li>
-                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Gestión de Colaboradores ilimitados</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Hasta 30 trabajadores</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Todo lo de Pro</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Multi-sucursal</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> API personalizada</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> Gerente de cuenta dedicado</li>
+                  <li className="flex items-center gap-2"><Check size={14} className="text-brand-400" /> SLA 99.9%</li>
                 </ul>
               </div>
 
               <Link 
                 to="/auth?plan=empresarial" 
-                className="w-full text-center py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-glow transition-all block"
+                className="w-full text-center py-3 rounded-xl bg-surface-600 hover:bg-surface-500 border border-subtle text-foreground text-xs font-bold transition-all block"
               >
-                Obtener Plan Empresarial
+                Obtener Plan 360
               </Link>
             </div>
           </div>

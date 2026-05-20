@@ -11,6 +11,7 @@ import Auth from '@/pages/Auth'
 import Landing from '@/pages/Landing'
 import Notifications from '@/pages/Notifications'
 import Terms from '@/pages/Terms'
+import Facturero from '@/pages/Facturero'
 import { useUIStore, applyTheme } from '@/store/useUIStore'
 import { useCurrencyStore } from '@/store/useCurrencyStore'
 import { useInvoiceStore } from '@/store/useInvoiceStore'
@@ -77,9 +78,9 @@ export default function App() {
     '/employees': 'Empleados',
     '/settings': 'Configuración',
     '/account': 'Cuenta',
-    '/auth': 'Acceso',
     '/notifications': 'Notificaciones',
-    '/terms': 'Términos'
+    '/terms': 'Términos',
+    '/facturero': 'Facturero'
   }
 
   useEffect(() => {
@@ -192,6 +193,7 @@ export default function App() {
           <Route path="/settings" element={<RequirePermission perm="settings"><Settings /></RequirePermission>} />
           <Route path="/account" element={<Account />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/facturero" element={<RequirePermission perm="dashboard"><Facturero /></RequirePermission>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

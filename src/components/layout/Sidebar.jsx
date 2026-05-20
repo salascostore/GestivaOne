@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Receipt, Package,
-  Settings, User, ChevronLeft, Zap, X, Users, Lock, Bell, Shield
+  Settings, User, ChevronLeft, Zap, X, Users, Lock, Bell, Shield, Printer
 } from 'lucide-react'
 import { useUIStore } from '@/store/useUIStore'
 import { useAuthStore, ROLES } from '@/store/useAuthStore'
@@ -27,6 +27,7 @@ export default function Sidebar({ isMobile }) {
     { to: '/products',  icon: Package,         label: 'Productos',    perm: 'products'   },
     { to: '/employees', icon: Users,           label: 'Empleados',    perm: 'employees'  },
     { to: '/notifications', icon: Bell,        label: 'Notificaciones', perm: 'dashboard' },
+    { to: '/facturero', icon: Printer,         label: 'Facturero',    perm: 'dashboard'  },
   ]
 
   const handleNavClick = () => { if (isMobile) closeMobile() }
