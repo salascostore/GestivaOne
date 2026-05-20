@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UserPlus, Users, Edit2, Trash2, Check, ShoppingBag, History, CalendarDays } from 'lucide-react'
 import Button from '@/components/ui/Button'
@@ -122,6 +123,7 @@ function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistor
 }
 
 export default function Menu() {
+  const navigate      = useNavigate()
   const [search, setSearch]     = useState('')
   const clients       = useClientStore((s) => s.clients)
   const selectedId    = useClientStore((s) => s.selectedClientId)
@@ -194,7 +196,7 @@ export default function Menu() {
         <div className="flex flex-row items-center justify-between gap-4">
           <div>
             <h1 className="text-lg md:text-xl font-bold text-brand-600 dark:text-white">Menú Operativo</h1>
-            <p className="text-xs md:text-sm text-muted-400 mt-0.5">Selecciona o añade un cliente para iniciar</p>
+            <p className="hidden sm:block text-xs md:text-sm text-muted-400 mt-0.5">Selecciona o añade un cliente para iniciar</p>
           </div>
           <div className="flex gap-2 shrink-0">
             <Button
@@ -213,7 +215,8 @@ export default function Menu() {
               icon={<ShoppingBag size={15} />}
               onClick={() => {
                 selectClient(null)
-                toast('Modo express activado — sin cliente asignado', { icon: '⚡' })
+                toast.success('Cliente Express activado', { id: 'client-sel' })
+                navigate('/products')
               }}
               className="px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm rounded-xl shrink-0"
             >
@@ -262,7 +265,11 @@ export default function Menu() {
                     key={client.id}
                     client={client}
                     selected={selectedId === client.id}
-                    onSelect={() => selectClient(client.id)}
+                    onSelect={() => {
+                      selectClient(client.id)
+                      toast.success(`Cliente ${client.name} seleccionado`, { id: 'client-sel' })
+                      navigate('/products')
+                    }}
                     onEdit={() => openModal('addClient', { client })}
                     onDelete={() => handleDelete(client)}
                     onOpenHistory={() => openModal('clientHistory', { client })}

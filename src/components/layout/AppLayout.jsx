@@ -24,6 +24,9 @@ export default function AppLayout() {
   const fetchInvoices  = useInvoiceStore((s) => s.fetchInvoices)
   const fetchEmployees = useEmployeeStore((s) => s.fetchEmployees)
 
+  const mobileSidebarOpen = useUIStore((s) => s.mobileSidebarOpen)
+  const invoicePanelOpen  = useUIStore((s) => s.invoicePanelOpen)
+
   // Track if viewport is mobile (< lg breakpoint = 1024px)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024)
 
@@ -33,6 +36,22 @@ export default function AppLayout() {
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [])
+
+  // Lock body scroll when overlays (modals, mobile drawers) are open to prevent background scrolling
+  useEffect(() => {
+    const isLocked = !!activeModal || !!mobileSidebarOpen || (isMobile && !!invoicePanelOpen)
+    if (isLocked) {
+      document.body.classList.add('overflow-hidden', 'h-screen', 'w-screen')
+      document.documentElement.classList.add('overflow-hidden')
+    } else {
+      document.body.classList.remove('overflow-hidden', 'h-screen', 'w-screen')
+      document.documentElement.classList.remove('overflow-hidden')
+    }
+    return () => {
+      document.body.classList.remove('overflow-hidden', 'h-screen', 'w-screen')
+      document.documentElement.classList.remove('overflow-hidden')
+    }
+  }, [activeModal, mobileSidebarOpen, invoicePanelOpen, isMobile])
 
   // ─── Fetch data on login ───
   useEffect(() => {

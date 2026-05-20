@@ -738,7 +738,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg md:text-xl font-bold text-brand-600 dark:text-white">Dashboard</h1>
-            <p className="text-sm text-muted-400 mt-0.5">Vista general del negocio</p>
+            <p className="hidden sm:block text-sm text-muted-400 mt-0.5">Vista general del negocio</p>
           </div>
           {plan.id === 'standard' && (
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-brand-600/10 border border-brand-500/20">

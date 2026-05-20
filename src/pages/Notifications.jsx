@@ -113,7 +113,7 @@ export default function Notifications() {
                 </Badge>
               )}
             </div>
-            <p className="text-xs md:text-sm text-muted-400 mt-0.5">Alertas importantes y anuncios</p>
+            <p className="hidden sm:block text-xs md:text-sm text-muted-400 mt-0.5">Alertas importantes y anuncios</p>
           </div>
 
           {unreadCount > 0 && (

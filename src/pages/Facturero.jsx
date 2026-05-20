@@ -509,15 +509,15 @@ export default function Facturero() {
   }
 
   return (
-    <div className="pb-12 max-w-7xl mx-auto space-y-6">
+    <div className="page-container space-y-6 pb-12">
       {/* ── Fixed Sticky Page Header ─────────────────── */}
-      <div className="sticky top-0 z-30 backdrop-blur-md bg-surface-900/80 border-b border-subtle py-4 px-4 sm:px-6 -mx-4 sm:-mx-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="sticky top-0 z-20 bg-surface-900/90 backdrop-blur-md pb-4 pt-1 -mx-4 px-4 md:-mx-8 md:px-8 lg:-mx-10 lg:px-10 border-b border-subtle/20 flex flex-row items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-foreground uppercase tracking-wider flex items-center gap-2">
             <Printer className="text-brand-400" />
             Facturero
           </h1>
-          <p className="text-xs text-muted-400">
+          <p className="hidden sm:block text-xs text-muted-400">
             Diseña, personaliza y prueba tus plantillas de facturación PDF y recibos térmicos.
           </p>
         </div>

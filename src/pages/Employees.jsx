@@ -165,7 +165,7 @@ export default function Employees() {
       >
         <div>
           <h1 className="text-lg md:text-2xl font-bold text-brand-600 dark:text-white">Equipo de Trabajo</h1>
-          <p className="text-xs md:text-sm text-muted-400 mt-0.5">{employees.length + 1} colaboradores activos</p>
+          <p className="hidden sm:block text-xs md:text-sm text-muted-400 mt-0.5">{employees.length + 1} colaboradores activos</p>
         </div>
         <button 
           onClick={() => setInviteModalOpen(true)}
