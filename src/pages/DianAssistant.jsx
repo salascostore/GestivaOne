@@ -251,26 +251,26 @@ export default function DianAssistant() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-surface-800/50 p-4 rounded-2xl border border-subtle/50">
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase tracking-wider text-muted-400">Tipo de Contribuyente (Renta)</label>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setTaxType('juridica')}
-              className={`flex-1 py-2 px-3 rounded-xl border text-xs font-bold transition-all duration-300 ${
+              className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all duration-300 ${
                 taxType === 'juridica'
                   ? 'bg-brand-600 border-brand-500 text-white shadow-glow-sm'
                   : 'bg-surface-800 border-subtle text-muted-400 hover:text-white'
               }`}
             >
-              Persona Jurídica (Tarifa 35%)
+              Jurídica (35%)
             </button>
             <button
               onClick={() => setTaxType('natural')}
-              className={`flex-1 py-2 px-3 rounded-xl border text-xs font-bold transition-all duration-300 ${
+              className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all duration-300 ${
                 taxType === 'natural'
                   ? 'bg-brand-600 border-brand-500 text-white shadow-glow-sm'
                   : 'bg-surface-800 border-subtle text-muted-400 hover:text-white'
               }`}
             >
-              Persona Natural (Tabla UVT)
+              Natural (UVT)
             </button>
           </div>
         </div>
@@ -293,7 +293,7 @@ export default function DianAssistant() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-subtle">
+      <div className="flex overflow-x-auto scrollbar-none whitespace-nowrap border-b border-subtle -mx-4 px-4 sm:mx-0 sm:px-0">
         <button
           onClick={() => setActiveTab('renta')}
           className={`pb-3 px-4 font-bold text-sm border-b-2 transition-colors ${
