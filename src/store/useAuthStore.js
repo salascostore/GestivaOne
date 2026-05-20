@@ -416,7 +416,9 @@ export const useAuthStore = create(
             companyName: company?.name || 'Mi Empresa',
             companyLogo: company?.logo_url,
             country: company?.country || null,
-            settings: company?.settings
+            settings: company?.settings,
+            branchId: profile.branch_id || null,
+            permissions: profile.permissions || []
           }
 
           set({ isAuthenticated: true, user })
