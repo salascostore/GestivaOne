@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <!-- Prevent FOUC: apply saved theme before React mounts -->
+    <!-- Prevent FOUC: apply saved theme and set up self-healing error handler -->
     <script>
       (function() {
         try {
@@ -20,6 +20,25 @@
         } catch(e) {
           document.documentElement.classList.add('dark');
         }
+
+        // Self-healing mechanism for bundle hash changes, chunk load failures, or ReferenceErrors
+        window.addEventListener('error', function(e) {
+          var msg = e.message || '';
+          if (
+            msg.indexOf('Zap is not defined') > -1 || 
+            msg.indexOf('ReferenceError') > -1 ||
+            msg.indexOf('loading-failed') > -1 ||
+            msg.indexOf('Failed to fetch dynamically') > -1
+          ) {
+            var lastReload = sessionStorage.getItem('gestiva-auto-reload-time');
+            var now = Date.now();
+            if (!lastReload || (now - parseInt(lastReload, 10) > 10000)) {
+              sessionStorage.setItem('gestiva-auto-reload-time', now.toString());
+              console.warn('Script error detected. Force reloading page to clear cache and load fresh assets...');
+              window.location.reload(true);
+            }
+          }
+        }, true);
       })();
     </script>
   </head>
