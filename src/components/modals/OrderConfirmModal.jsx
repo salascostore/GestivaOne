@@ -18,15 +18,15 @@ import clsx from 'clsx'
 import { format as dateFormat } from 'date-fns'
 
 const TAX_RATES = {
-  CO: 0.19,
-  MX: 0.16,
-  US: 0.0,
-  ES: 0.21,
-  AR: 0.21,
-  CL: 0.19,
-  PE: 0.18,
-  CR: 0.13,
-  DO: 0.18,
+  COP: 0.19,
+  MXN: 0.16,
+  USD: 0.0,
+  EUR: 0.21,
+  ARS: 0.21,
+  CLP: 0.19,
+  PEN: 0.18,
+  CRC: 0.13,
+  DOP: 0.18,
 }
 
 const TYPES = [
@@ -45,9 +45,8 @@ export default function OrderConfirmModal({ open }) {
   const clearCart = useCartStore((s) => s.clearCart)
   const includeTax = useCartStore((s) => s.includeTax)
 
-  const user = useAuthStore((s) => s.user)
-  const country = user?.country || 'CO'
-  const taxRate = TAX_RATES[country] ?? 0
+  const baseCurrency = useCurrencyStore((s) => s.baseCurrency)
+  const taxRate = TAX_RATES[baseCurrency] ?? 0.0
   const taxAmount = includeTax ? subtotal * taxRate : 0
   const total = subtotal + taxAmount
 
