@@ -40,62 +40,64 @@ export default function CompanyForm({ onSubmit: onNext, defaultValues, plan }) {
   const submit = (data) => onNext({ ...data, companyLogo: logo })
 
   return (
-    <form onSubmit={handleSubmit(submit)} className="space-y-4">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 bg-success-500/10 rounded-xl border border-success-500/20 shrink-0">
-          <Check size={18} className="text-success-400" />
+    <form onSubmit={handleSubmit(submit)} className="space-y-3">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="p-1.5 bg-success-500/10 rounded-lg border border-success-500/20 shrink-0">
+          <Check size={14} className="text-success-400" />
         </div>
-        <div className="space-y-0.5">
-          <h2 className="text-base font-extrabold text-neutral-900 dark:text-white">Datos de tu empresa</h2>
-          <p className="text-[11px] text-muted-600 dark:text-muted-400">Esta información aparecerá en tus facturas</p>
+        <div className="space-y-0">
+          <h2 className="text-sm font-extrabold text-neutral-900 dark:text-white">Datos de tu empresa</h2>
+          <p className="text-[10px] text-muted-600 dark:text-muted-400">Esta información aparecerá en tus facturas</p>
         </div>
       </div>
 
       {/* Logo upload */}
-      <div className="flex items-center gap-3 p-3 bg-surface-700/30 rounded-2xl border border-subtle">
+      <div className="flex items-center gap-3 p-2 bg-surface-700/20 rounded-xl border border-subtle">
         <div
           onClick={() => fileRef.current?.click()}
           className={clsx(
-            "w-12 h-12 flex items-center justify-center cursor-pointer transition-colors overflow-hidden shrink-0",
+            "w-10 h-10 flex items-center justify-center cursor-pointer transition-colors overflow-hidden shrink-0",
             logo 
               ? "rounded-full border-0 shadow-none" 
-              : "rounded-xl border-2 border-dashed border-subtle bg-surface-700 hover:border-brand-500"
+              : "rounded-lg border border-dashed border-subtle bg-surface-700 hover:border-brand-500"
           )}
         >
           {logo
             ? <img src={logo} alt="Logo" className="w-full h-full object-cover" />
-            : <Upload size={20} className="text-muted-400" />
+            : <Upload size={16} className="text-muted-400" />
           }
         </div>
-        <div>
-          <button type="button" onClick={() => fileRef.current?.click()} className="text-sm text-brand-400 hover:text-brand-300 font-medium">
-            {logo ? 'Cambiar logo' : 'Subir logo empresa'} <span className="text-muted-500 font-normal">(opcional)</span>
-          </button>
+        <div className="flex-1 min-w-0 flex items-center justify-between">
+          <div>
+            <button type="button" onClick={() => fileRef.current?.click()} className="text-xs text-brand-400 hover:text-brand-300 font-semibold">
+              {logo ? 'Cambiar logo' : 'Logo de la empresa'} <span className="text-muted-500 font-normal text-[10px]">(opcional)</span>
+            </button>
+            <p className="text-[10px] text-muted-400 leading-none mt-0.5">PNG, JPG</p>
+          </div>
           {logo && (
-            <button type="button" onClick={() => setLogo(null)} className="ml-2 text-muted-400 hover:text-danger-400">
+            <button type="button" onClick={() => setLogo(null)} className="p-1 rounded-lg text-muted-400 hover:text-danger-400 hover:bg-surface-700">
               <X size={13} />
             </button>
           )}
-          <p className="text-[11px] text-muted-400 mt-0.5">PNG, JPG. Aparecerá en el sidebar.</p>
         </div>
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogo} />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <Input label="Nombre de la empresa *" icon={<Building2 size={14} />} placeholder="Nombre de tu negocio"
           error={errors.companyName?.message} {...register('companyName')} />
         <Input label="Tu nombre *" icon={<User size={14} />} placeholder="Ej: Juan Pérez"
           error={errors.name?.message} {...register('name')} />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <Input label="Correo electrónico *" icon={<Mail size={14} />} placeholder="correo@empresa.com"
           error={errors.email?.message} {...register('email')} />
         <Input label="Teléfono *" icon={<Phone size={14} />} placeholder="Ej: +57 300..."
           error={errors.phone?.message} {...register('phone')} />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <Input 
           label="Contraseña *" 
           type={showPassword ? "text" : "password"} 
@@ -111,7 +113,7 @@ export default function CompanyForm({ onSubmit: onNext, defaultValues, plan }) {
               onMouseLeave={() => setShowPassword(false)}
               onTouchStart={() => setShowPassword(true)}
               onTouchEnd={() => setShowPassword(false)}
-              className="text-muted-400 hover:text-white transition-colors"
+              className="text-muted-400 hover:text-foreground transition-colors"
             >
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
@@ -149,7 +151,7 @@ export default function CompanyForm({ onSubmit: onNext, defaultValues, plan }) {
       </div>
 
       <button type="submit"
-        className="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors mt-1">
+        className="w-full py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition-colors mt-0.5">
         {plan === 'standard' ? 'Continuar con el plan gratuito →' : 'Continuar al pago →'}
       </button>
     </form>
