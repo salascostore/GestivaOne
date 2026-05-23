@@ -62,10 +62,10 @@ export default {
         '3xl': '24px',
       },
       boxShadow: {
-        'glow':      '0 0 20px rgba(79, 70, 229, 0.25)',
-        'glow-sm':   '0 0 10px rgba(79, 70, 229, 0.15)',
+        'glow':      '0 8px 30px rgba(0,0,0,0.25)',
+        'glow-sm':   '0 4px 12px rgba(0,0,0,0.15)',
         'card':      '0 1px 3px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.1)',
-        'card-hover':'0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(79, 70, 229, 0.2)',
+        'card-hover':'0 10px 24px rgba(0,0,0,0.24), 0 0 0 1px rgba(255, 255, 255, 0.06)',
         'modal':     '0 25px 50px rgba(0,0,0,0.35)',
       },
       textColor: {
