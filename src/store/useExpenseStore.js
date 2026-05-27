@@ -31,11 +31,19 @@ export const useExpenseStore = create((set, get) => ({
     const { user } = useAuthStore.getState()
     if (!user) return { success: false, error: 'No user authenticated' }
 
+    if (expense.pocketId) {
+      const { usePocketStore } = await import('./usePocketStore')
+      const success = await usePocketStore.getState().withdrawFunds(expense.pocketId, expense.amount)
+      if (!success) {
+        return { success: false, error: 'Saldo insuficiente en el bolsillo seleccionado' }
+      }
+    }
+
     const newExpense = {
       company_id: user.companyId,
       amount: Number(expense.amount),
       category: expense.category || 'Otros',
-      description: expense.description || '',
+      description: expense.description || (expense.pocketId ? `Gasto desde bolsillo` : ''),
       provider_name: expense.provider_name || 'Proveedor Varios',
       provider_doc_id: expense.provider_doc_id || null,
       provider_doc_type: expense.provider_doc_type || '31',

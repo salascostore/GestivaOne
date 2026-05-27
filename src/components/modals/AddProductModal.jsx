@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button'
 import { useProductStore, CATEGORIES } from '@/store/useProductStore'
 import { useUIStore } from '@/store/useUIStore'
 import { useCurrencyStore } from '@/store/useCurrencyStore'
+import { useAuthStore } from '@/store/useAuthStore'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
 
@@ -30,25 +31,51 @@ export default function AddProductModal({ open }) {
   const editing       = useUIStore((s) => s.editingProduct)
   const baseCurrency  = useCurrencyStore((s) => s.baseCurrency)
 
+  const userSettings = useAuthStore((s) => s.user?.settings)
+  const customCats = userSettings?.custom_categories || []
+  const dynamicCategories = [...CATEGORIES.filter(c => c !== 'Otros'), ...customCats, 'Otros']
+
+  const [customCategoryName, setCustomCategoryName] = useState('')
+
   const { register, handleSubmit, reset, watch, setValue, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { unit: 'UND', stock: 0, category: 'Otros', cost: 0 },
   })
 
   const unit = watch('unit')
+  const selectedCategory = watch('category')
 
   useEffect(() => {
-    if (open && editing) reset({ ...editing, stock: editing.stock ?? 0, cost: editing.cost ?? 0 })
-    else if (open) reset({ unit: 'UND', stock: 0, category: 'Otros', name: '', price: '', cost: 0 })
+    if (open && editing) {
+      reset({ ...editing, stock: editing.stock ?? 0, cost: editing.cost ?? 0 })
+      setCustomCategoryName('')
+    }
+    else if (open) {
+      reset({ unit: 'UND', stock: 0, category: 'Otros', name: '', price: '', cost: 0 })
+      setCustomCategoryName('')
+    }
   }, [open, editing])
 
   const onSubmit = async (data) => {
+    let finalCategory = data.category
+    if (data.category === 'Otros') {
+      const trimmedCustom = customCategoryName.trim()
+      if (!trimmedCustom) {
+        toast.error('Especifica el nombre de la categoría')
+        return
+      }
+      await useProductStore.getState().addCustomCategory(trimmedCustom)
+      finalCategory = trimmedCustom
+    }
+
+    const finalData = { ...data, category: finalCategory }
+
     if (editing) {
-      await updateProduct(editing.id, data)
+      await updateProduct(editing.id, finalData)
       toast.success('Producto actualizado')
     } else {
-      await addProduct(data)
-      toast.success(`${data.name} añadido`)
+      await addProduct(finalData)
+      toast.success(`${finalData.name} añadido`)
     }
     closeModal()
   }
@@ -124,9 +151,19 @@ export default function AddProductModal({ open }) {
             {...register('category')}
             className="w-full bg-surface-700 border border-subtle rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500/50"
           >
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            {dynamicCategories.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
+
+        {selectedCategory === 'Otros' && (
+          <Input
+            label="Especificar otra categoría *"
+            value={customCategoryName}
+            onChange={(e) => setCustomCategoryName(e.target.value)}
+            placeholder="Ej: Limpieza Premium"
+            required
+          />
+        )}
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="ghost" size="md" className="flex-1" onClick={closeModal}>Cancelar</Button>

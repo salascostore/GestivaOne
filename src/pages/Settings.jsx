@@ -407,7 +407,13 @@ function IntegrationBlock({ icon: Icon, title, desc, enabledKey, children }) {
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }} 
+            animate={{ height: 'auto', opacity: 1 }} 
+            exit={{ height: 0, opacity: 0 }} 
+            className="overflow-hidden"
+            transition={{ duration: 0.2 }}
+          >
             <div className="px-5 pb-5 border-t border-subtle pt-4">
               {children({ cfg, set: setCfg, enabled: cfg.enabled })}
             </div>
@@ -472,7 +478,13 @@ function ApiBlock() {
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }} 
+            animate={{ height: 'auto', opacity: 1 }} 
+            exit={{ height: 0, opacity: 0 }} 
+            className="overflow-hidden"
+            transition={{ duration: 0.2 }}
+          >
             <div className="px-5 pb-5 border-t border-subtle pt-4 space-y-3">
               <CfgInput label="URL base de la API" value={api.url} onChange={v => setApi({ url: v })} placeholder="https://api.tudominio.com" />
               <CfgInput label="API Key" value={api.apiKey} onChange={v => setApi({ apiKey: v })} placeholder="Bearer token..." type="password" />
@@ -604,9 +616,10 @@ function PrinterBlock() {
             initial={{ height: 0, opacity: 0 }} 
             animate={{ height: 'auto', opacity: 1 }} 
             exit={{ height: 0, opacity: 0 }} 
+            className="overflow-hidden"
             transition={{ duration: 0.2 }}
           >
-            <div className="px-5 pb-5 border-t border-subtle pt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="px-5 pb-5 border-t border-subtle pt-4 grid grid-cols-1 md:grid-cols-2 gap-6 font-sans">
               
               {/* Controls Column */}
               <div className="space-y-4">

@@ -7,6 +7,7 @@ import { useProductStore, CATEGORIES } from '@/store/useProductStore'
 import { useCartStore } from '@/store/useCartStore'
 import { useUIStore } from '@/store/useUIStore'
 import { useCurrencyStore } from '@/store/useCurrencyStore'
+import { useAuthStore } from '@/store/useAuthStore'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
 
@@ -154,6 +155,10 @@ export default function Products() {
   const format$     = useCurrencyStore((s) => s.format)
   const baseCurrency = useCurrencyStore((s) => s.baseCurrency)
 
+  const userSettings = useAuthStore((s) => s.user?.settings)
+  const customCats = userSettings?.custom_categories || []
+  const dynamicCategories = [...CATEGORIES.filter(c => c !== 'Otros'), ...customCats, 'Otros']
+
   const filtered = useMemo(() => {
     let list = products
     if (activeCat) list = list.filter((p) => p.category === activeCat)
@@ -273,7 +278,7 @@ export default function Products() {
             >
               Todos
             </button>
-            {CATEGORIES.map((cat) => (
+            {dynamicCategories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCat(activeCat === cat ? null : cat)}

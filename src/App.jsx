@@ -13,6 +13,8 @@ import Notifications from '@/pages/Notifications'
 import Terms from '@/pages/Terms'
 import Facturero from '@/pages/Facturero'
 import DianAssistant from '@/pages/DianAssistant'
+import Pockets from '@/pages/Pockets'
+import PersonalFinance from '@/pages/PersonalFinance'
 import { useUIStore, applyTheme } from '@/store/useUIStore'
 import { useCurrencyStore } from '@/store/useCurrencyStore'
 import { useInvoiceStore } from '@/store/useInvoiceStore'
@@ -244,6 +246,8 @@ export default function App() {
           <Route path="/employees" element={<RequirePermission perm="employees"><Employees /></RequirePermission>} />
           <Route path="/settings" element={<RequirePermission perm="settings"><Settings /></RequirePermission>} />
           <Route path="/account" element={<Account />} />
+          <Route path="/pockets" element={<RequirePermission perm="dashboard"><Pockets /></RequirePermission>} />
+          <Route path="/personal-finance" element={<PersonalFinance />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/facturero" element={<RequirePermission perm="dashboard"><Facturero /></RequirePermission>} />
           <Route path="/dian" element={<RequirePermission perm="dashboard"><DianAssistant /></RequirePermission>} />

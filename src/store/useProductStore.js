@@ -8,8 +8,21 @@ export { CATEGORIES }
 export const useProductStore = create((set, get) => ({
   products: [],
   loading: false,
-
   productsFetched: false,
+
+  addCustomCategory: async (newCat) => {
+    const auth = useAuthStore.getState()
+    if (!auth.isAuthenticated || !auth.user?.companyId) return
+    const currentSettings = auth.user.settings || {}
+    const customCats = currentSettings.custom_categories || []
+    if (customCats.includes(newCat)) return
+
+    const updatedSettings = {
+      ...currentSettings,
+      custom_categories: [...customCats, newCat]
+    }
+    await auth.updateProfile({ settings: updatedSettings })
+  },
 
   fetchProducts: async (force = false) => {
     const { productsFetched } = get()

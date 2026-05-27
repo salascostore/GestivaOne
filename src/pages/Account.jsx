@@ -65,6 +65,7 @@ function Section({ icon: Icon, title, desc, children, defaultOpen = false, varia
             initial={{ height: 0, opacity: 0 }} 
             animate={{ height: 'auto', opacity: 1 }} 
             exit={{ height: 0, opacity: 0 }} 
+            className="overflow-hidden"
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="px-5 pb-5 border-t border-subtle space-y-4 pt-4">{children}</div>

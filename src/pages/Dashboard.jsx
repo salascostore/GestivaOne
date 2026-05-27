@@ -1,4 +1,5 @@
 import { useMemo, useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import clsx from 'clsx'
 import { DollarSign, FileText, Clock, CheckCircle, Users, TrendingUp, AlertTriangle, Lock, Package, Calendar, Coins, Download, Plus, Trash2, Zap } from 'lucide-react'
@@ -15,6 +16,7 @@ import { useProductStore } from '@/store/useProductStore'
 import { useCurrencyStore } from '@/store/useCurrencyStore'
 import { useAuthStore, ROLES, PLANS } from '@/store/useAuthStore'
 import { useExpenseStore } from '@/store/useExpenseStore'
+import { usePocketStore } from '@/store/usePocketStore'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -80,6 +82,7 @@ function parseInvoiceNoteLocal(note) {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate()
   const invoices    = useInvoiceStore((s) => s.invoices)
   const clients     = useClientStore((s) => s.clients)
   const products    = useProductStore((s) => s.products)
@@ -105,6 +108,14 @@ export default function Dashboard() {
   const [expProviderDocId, setExpProviderDocId] = useState('')
   const [expIvaPaid, setExpIvaPaid] = useState('0')
   const [expRetencion, setExpRetencion] = useState('0')
+  const [expPocketId, setExpPocketId] = useState('')
+
+  const pockets = usePocketStore((s) => s.pockets)
+  const fetchPockets = usePocketStore((s) => s.fetchPockets)
+
+  useEffect(() => {
+    fetchPockets()
+  }, [])
 
   // React state variables defined at the very top of the component to prevent TDZ errors
   const [selectedYears, setSelectedYears] = useState([new Date().getFullYear().toString()])
@@ -736,9 +747,10 @@ export default function Dashboard() {
       provider_doc_type: expProviderDocType,
       provider_doc_id: expProviderDocId.trim() || '999999999',
       iva_paid: Number(expIvaPaid || 0),
-      retencion: Number(expRetencion || 0)
+      retencion: Number(expRetencion || 0),
+      pocketId: expPocketId || null
     })
-    if (res) {
+    if (res && res.success !== false) {
       toast.success('Gasto registrado exitosamente')
       setExpAmount('')
       setExpDesc('')
@@ -746,6 +758,12 @@ export default function Dashboard() {
       setExpProviderDocId('')
       setExpIvaPaid('0')
       setExpRetencion('0')
+      setExpPocketId('')
+      if (expPocketId) {
+        usePocketStore.getState().fetchPockets()
+      }
+    } else if (res && res.error) {
+      toast.error(res.error)
     }
   }
 
@@ -1435,6 +1453,19 @@ export default function Dashboard() {
               </select>
             </div>
             <div>
+              <label className="text-xs text-muted-400 mb-1 block">Descontar de Bolsillo (Opcional)</label>
+              <select
+                value={expPocketId}
+                onChange={e => setExpPocketId(e.target.value)}
+                className="w-full bg-surface-700 border border-subtle rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500/50 cursor-pointer"
+              >
+                <option value="">Caja General (Sin bolsillo)</option>
+                {pockets.map(p => (
+                  <option key={p.id} value={p.id}>{p.name} ({format$(p.balance)})</option>
+                ))}
+              </select>
+            </div>
+            <div>
               <label className="text-xs text-muted-400 mb-1 block">Descripción / Detalle</label>
               <textarea 
                 value={expDesc}
@@ -1518,8 +1549,90 @@ export default function Dashboard() {
           </form>
         </div>
 
+        {/* Pockets Capital Widget */}
+        <div className="lg:col-span-1 bg-surface-800 border border-subtle rounded-3xl p-5 flex flex-col h-[520px] justify-between">
+          <div className="flex flex-col flex-1">
+            <div className="flex items-center gap-2 pb-3 border-b border-subtle mb-4 shrink-0">
+              <FolderPlus size={18} className="text-brand-400" />
+              <h3 className="text-sm font-bold text-brand-600 dark:text-brand-400">Capital en Bolsillos</h3>
+            </div>
+            
+            {(() => {
+              const totalPocketsBalance = pockets.reduce((sum, p) => sum + p.balance, 0)
+              const colors = ['bg-brand-500', 'bg-success-500', 'bg-warning-500', 'bg-danger-500', 'bg-cyan-500', 'bg-purple-500']
+              
+              return (
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <p className="text-[10px] text-muted-500 font-bold uppercase tracking-wider">Balance Acumulado</p>
+                    <h4 className="text-2xl font-black text-foreground mt-1">{format$(totalPocketsBalance)}</h4>
+                    
+                    {/* Partition Bar */}
+                    {totalPocketsBalance > 0 ? (
+                      <div className="w-full h-3 bg-surface-700/60 rounded-full mt-4 overflow-hidden flex">
+                        {pockets.map((p, idx) => {
+                          const pct = (p.balance / totalPocketsBalance) * 100
+                          if (pct <= 0) return null
+                          return (
+                            <div 
+                              key={p.id}
+                              className={clsx("h-full transition-all", colors[idx % colors.length])}
+                              style={{ width: `${pct}%` }}
+                              title={`${p.name}: ${Math.round(pct)}%`}
+                            />
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <div className="w-full h-3 bg-surface-700/60 rounded-full mt-4 flex items-center justify-center text-[8px] text-muted-500">
+                        Sin fondos
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Pocket list fractioned */}
+                  <div className="flex-1 overflow-y-auto mt-6 pr-1 space-y-3 no-scrollbar max-h-[220px]">
+                    {pockets.length === 0 ? (
+                      <p className="text-xs text-muted-500 text-center py-6">No hay bolsillos activos</p>
+                    ) : (
+                      pockets.map((p, idx) => {
+                        const pct = totalPocketsBalance > 0 ? Math.round((p.balance / totalPocketsBalance) * 100) : 0
+                        const dotColor = colors[idx % colors.length].replace('bg-', 'text-')
+                        
+                        return (
+                          <div key={p.id} className="flex flex-col gap-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-semibold text-foreground truncate max-w-[120px] flex items-center gap-1.5">
+                                <span className={clsx("font-bold text-[14px] leading-none", dotColor)}>●</span>
+                                {p.name}
+                              </span>
+                              <span className="text-muted-400 font-bold">{format$(p.balance)} ({pct}%)</span>
+                            </div>
+                            <div className="w-full h-1 bg-surface-700/40 rounded-full overflow-hidden">
+                              <div className={clsx("h-full rounded-full", colors[idx % colors.length])} style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
+          
+          <div className="border-t border-subtle/50 pt-3 mt-4 shrink-0">
+            <button
+              onClick={() => navigate('/pockets')}
+              className="w-full py-2 rounded-xl bg-surface-700 hover:bg-surface-650 text-muted-300 text-xs font-bold transition-all flex items-center justify-center gap-2"
+            >
+              Gestionar Bolsillos →
+            </button>
+          </div>
+        </div>
+
         {/* List: Recent Expenses */}
-        <div className="lg:col-span-2 bg-surface-800 border border-subtle rounded-3xl p-5 flex flex-col h-[520px]">
+        <div className="lg:col-span-1 bg-surface-800 border border-subtle rounded-3xl p-5 flex flex-col h-[520px]">
           <div className="flex items-center justify-between pb-3 border-b border-subtle mb-4 shrink-0">
             <div className="flex items-center gap-2">
               <FileText size={18} className="text-brand-400" />

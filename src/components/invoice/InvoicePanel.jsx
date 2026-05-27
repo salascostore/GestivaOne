@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingCart, Trash2, Plus, Minus, ChevronRight, ChevronDown, FileText, User, X, Check } from 'lucide-react'
 import { useCartStore, selectSubtotal } from '@/store/useCartStore'
@@ -6,6 +7,7 @@ import { useUIStore } from '@/store/useUIStore'
 import { useCurrencyStore } from '@/store/useCurrencyStore'
 import { useAuthStore } from '@/store/useAuthStore'
 import Button from '@/components/ui/Button'
+import toast from 'react-hot-toast'
 
 const TAX_RATES = {
   COP: 0.19,
@@ -29,10 +31,47 @@ export default function InvoicePanel({ isMobile }) {
   const includeTax  = useCartStore((s) => s.includeTax)
   const toggleTax   = useCartStore((s) => s.toggleTax)
 
+  const customCharges = useCartStore((s) => s.customCharges)
+  const addCustomCharge = useCartStore((s) => s.addCustomCharge)
+  const removeCustomCharge = useCartStore((s) => s.removeCustomCharge)
+  const toggleCustomChargeApplied = useCartStore((s) => s.toggleCustomChargeApplied)
+  const toggleCustomChargePin = useCartStore((s) => s.toggleCustomChargePin)
+  const loadPinnedCharges = useCartStore((s) => s.loadPinnedCharges)
+  const total = useCartStore((s) => s.total)
+  const taxAmount = useCartStore((s) => s.taxAmount)
+
+  // Local state for custom charge inline form
+  const [showAddCharge, setShowAddCharge] = useState(false)
+  const [newChargeName, setNewChargeName] = useState('')
+  const [newChargeValue, setNewChargeValue] = useState('')
+  const [newChargeType, setNewChargeType] = useState('fixed') // 'fixed' | 'percent'
+  const [newChargePinned, setNewChargePinned] = useState(false)
+
+  useEffect(() => {
+    loadPinnedCharges()
+  }, [])
+
+  const handleAddCharge = async () => {
+    const val = Number(newChargeValue)
+    if (!newChargeName.trim()) return toast.error('Ingresa un nombre')
+    if (isNaN(val) || val === 0) return toast.error('Ingresa un valor válido')
+    
+    await addCustomCharge({
+      name: newChargeName.trim(),
+      value: val,
+      type: newChargeType,
+      pinned: newChargePinned
+    })
+    
+    setNewChargeName('')
+    setNewChargeValue('')
+    setNewChargePinned(false)
+    setShowAddCharge(false)
+    toast.success('Cargo/Impuesto agregado')
+  }
+
   const baseCurrency = useCurrencyStore((s) => s.baseCurrency)
   const taxRate = TAX_RATES[baseCurrency] ?? 0.0
-  const taxAmount = includeTax ? subtotal * taxRate : 0
-  const total = subtotal + taxAmount
 
   const selectedClient = useClientStore((s) => s.getSelected())
   const clearClientSel = useClientStore((s) => s.clearSelection)
@@ -43,6 +82,108 @@ export default function InvoicePanel({ isMobile }) {
 
   const format = useCurrencyStore((s) => s.format)
   const canOrder = items.length > 0
+
+  const renderCustomChargesSection = () => {
+    return (
+      <div className="border-b border-subtle pb-3 mb-3">
+        <div className="flex items-center justify-between text-xs text-muted-400 mb-2">
+          <span className="font-bold text-[10px] uppercase tracking-wider text-brand-400">Impuestos y Cargos</span>
+          <button 
+            type="button"
+            onClick={() => setShowAddCharge(!showAddCharge)} 
+            className="text-brand-400 hover:text-brand-300 font-bold text-[10px] uppercase transition-colors"
+          >
+            {showAddCharge ? 'Cancelar' : '+ Agregar Cargo'}
+          </button>
+        </div>
+        
+        {showAddCharge && (
+          <div className="bg-surface-700/50 p-3 rounded-2xl border border-subtle mb-3 space-y-2.5">
+            <input 
+              value={newChargeName}
+              onChange={(e) => setNewChargeName(e.target.value)}
+              placeholder="Concepto (ej: Transporte)"
+              className="w-full bg-surface-600 border border-subtle rounded-xl px-3 py-1.5 text-xs text-foreground placeholder:text-muted-500 focus:outline-none focus:ring-1 focus:ring-brand-500/50"
+            />
+            <div className="flex gap-2">
+              <input 
+                type="number"
+                value={newChargeValue}
+                onChange={(e) => setNewChargeValue(e.target.value)}
+                placeholder="Valor/Monto"
+                className="w-full bg-surface-600 border border-subtle rounded-xl px-3 py-1.5 text-xs text-foreground placeholder:text-muted-500 focus:outline-none focus:ring-1 focus:ring-brand-500/50"
+              />
+              <select
+                value={newChargeType}
+                onChange={(e) => setNewChargeType(e.target.value)}
+                className="bg-surface-600 border border-subtle rounded-xl px-2 py-1 text-xs text-foreground focus:outline-none"
+              >
+                <option value="fixed">{baseCurrency}</option>
+                <option value="percent">%</option>
+              </select>
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex items-center gap-1.5 text-[10px] text-muted-400 cursor-pointer select-none">
+                <input 
+                  type="checkbox" 
+                  checked={newChargePinned}
+                  onChange={(e) => setNewChargePinned(e.target.checked)}
+                  className="rounded border-subtle bg-surface-600 text-brand-500 w-3.5 h-3.5 focus:ring-0"
+                />
+                Fijar permanentemente
+              </label>
+              <button 
+                type="button"
+                onClick={handleAddCharge}
+                className="bg-brand-600 hover:bg-brand-500 text-white font-bold text-[10px] uppercase px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Aplicar
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          {customCharges.map((c) => (
+            <div key={c.id} className="flex items-center justify-between text-xs text-foreground py-0.5">
+              <div className="flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  checked={c.applied}
+                  onChange={() => toggleCustomChargeApplied(c.id)}
+                  className="rounded border-subtle bg-surface-700 text-brand-500 w-3.5 h-3.5 focus:ring-0"
+                />
+                <span className="truncate max-w-[120px] font-semibold text-muted-300">{c.name}</span>
+                <span className="text-[10px] text-brand-400 font-bold">
+                  {c.type === 'percent' ? `(${c.value}%)` : `(${format(c.value)})`}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button 
+                  type="button"
+                  onClick={() => toggleCustomChargePin(c.id)}
+                  className={clsx(
+                    "text-[12px] transition-colors leading-none", 
+                    c.pinned ? "text-brand-400 hover:text-brand-300" : "text-muted-500 hover:text-muted-400"
+                  )}
+                  title={c.pinned ? "Desanclar de la plantilla" : "Fijar permanentemente"}
+                >
+                  ★
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => removeCustomCharge(c.id)}
+                  className="text-muted-500 hover:text-danger-400 transition-colors leading-none"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   // ─────────────────────────────────────────
   // MOBILE: Bottom sheet drawer
@@ -167,6 +308,7 @@ export default function InvoicePanel({ isMobile }) {
 
                 {/* Footer */}
                 <div className="p-5 border-t border-subtle shrink-0 space-y-3 pb-safe">
+                  {renderCustomChargesSection()}
                   <div className="flex justify-between text-xs text-muted-400">
                     <span>Subtotal</span>
                     <span className="text-foreground font-medium">{format(subtotal)}</span>
@@ -332,6 +474,7 @@ export default function InvoicePanel({ isMobile }) {
 
           {/* Footer */}
           <div className="p-4 border-t border-subtle shrink-0 space-y-3">
+            {renderCustomChargesSection()}
             <div className="flex justify-between text-xs text-muted-400">
               <span>Subtotal</span>
               <span className="text-foreground font-medium">{format(subtotal)}</span>

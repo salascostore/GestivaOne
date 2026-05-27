@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from './useAuthStore'
 import { useProductStore } from './useProductStore'
+import { usePocketStore } from './usePocketStore'
 import { isAfter, parseISO, differenceInDays, format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -146,6 +147,10 @@ export const useInvoiceStore = create((set, get) => ({
       }
     })
 
+    if (paymentType === 'immediate') {
+      await usePocketStore.getState().distributeInvoicePayment(Number(total))
+    }
+
     return mappedSaved;
   },
 
@@ -178,6 +183,8 @@ export const useInvoiceStore = create((set, get) => ({
         } catch (e) {
           console.error('❌ Error triggering payment notification:', e)
         }
+        // Distribute to pockets
+        await usePocketStore.getState().distributeInvoicePayment(Number(inv.total))
       }
     } else {
       console.error('❌ Error marking invoice as paid:', error)
@@ -262,6 +269,9 @@ export const useInvoiceStore = create((set, get) => ({
         console.error('❌ Error triggering payment notification:', e)
       }
     }
+
+    // Distribute payment to pockets
+    await usePocketStore.getState().distributeInvoicePayment(Number(abonoAmount))
 
     // Refresh state from Supabase relationally
     await get().fetchInvoices(true)

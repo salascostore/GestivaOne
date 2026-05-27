@@ -47,8 +47,9 @@ export default function OrderConfirmModal({ open }) {
 
   const baseCurrency = useCurrencyStore((s) => s.baseCurrency)
   const taxRate = TAX_RATES[baseCurrency] ?? 0.0
-  const taxAmount = includeTax ? subtotal * taxRate : 0
-  const total = subtotal + taxAmount
+  const taxAmount = useCartStore((s) => s.taxAmount)
+  const total = useCartStore((s) => s.total)
+  const customCharges = useCartStore((s) => s.customCharges)
 
   const client = useClientStore((s) => s.getSelected())
 
@@ -70,6 +71,11 @@ export default function OrderConfirmModal({ open }) {
       scheduledDate: scheduledDate || null,
       taxAmount,
       taxRate: includeTax ? taxRate : 0,
+      note: JSON.stringify({
+        notes: '',
+        payments: [],
+        custom_charges: customCharges.filter(c => c.applied).map(({ name, type, value }) => ({ name, type, value }))
+      })
     })
 
     if (!invoice) return toast.error('Error al generar factura')
@@ -154,6 +160,14 @@ export default function OrderConfirmModal({ open }) {
                   <span className="text-foreground">{format(taxAmount)}</span>
                 </div>
               )}
+              {customCharges.filter(c => c.applied).map((c) => (
+                <div key={c.id} className="flex justify-between text-sm">
+                  <span className="text-muted-400">{c.name} {c.type === 'percent' ? `(${c.value}%)` : ''}</span>
+                  <span className="text-foreground">
+                    {c.type === 'percent' ? format(subtotal * (c.value / 100)) : format(c.value)}
+                  </span>
+                </div>
+              ))}
               <div className="flex justify-between text-base font-bold pt-1 border-t border-subtle mt-2">
                 <span className="text-foreground">Total</span>
                 <span className="text-gradient">{format(total)}</span>
