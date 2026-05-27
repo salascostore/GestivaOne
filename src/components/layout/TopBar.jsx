@@ -1,7 +1,6 @@
 import { Menu, FileText, Bell } from 'lucide-react'
 import { useUIStore } from '@/store/useUIStore'
 import { useCartStore } from '@/store/useCartStore'
-import { useNotificationStore } from '@/store/useNotificationStore'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
@@ -10,9 +9,7 @@ export default function TopBar() {
   const toggleInvoicePanel = useUIStore((s) => s.toggleInvoicePanel)
   const invoiceOpen        = useUIStore((s) => s.invoicePanelOpen)
   const cartCount          = useCartStore((s) => s.items.length)
-  const getUnreadCount     = useNotificationStore((s) => s.getUnreadCount)
   const navigate           = useNavigate()
-  const unreadCount        = getUnreadCount()
 
   return (
     <header className="h-14 shrink-0 bg-surface-800 border-b border-subtle flex items-center justify-between px-4 z-30">
@@ -40,13 +37,6 @@ export default function TopBar() {
           aria-label="Notificaciones"
         >
           <Bell size={18} />
-          {unreadCount > 0 && (
-            <motion.span
-              initial={{ scale: 0.6 }}
-              animate={{ scale: 1 }}
-              className="absolute top-1 right-1 w-3 h-3 bg-brand-600 border-2 border-surface-800 rounded-full flex items-center justify-center animate-pulse"
-            />
-          )}
         </button>
 
         {/* Invoice toggle button */}

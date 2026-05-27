@@ -18,7 +18,7 @@ function StepIndicator({ step }) {
   const labels = ['Plan', 'Datos', 'Pago', 'Listo']
   const idx = STEPS.indexOf(step)
   return (
-    <div className="flex items-center justify-center gap-1.5 mb-5">
+    <div className="flex items-center justify-center gap-1.5 mb-3.5 sm:mb-5">
       {labels.map((l, i) => (
         <div key={l} className="flex items-center gap-1.5">
           <div className={clsx(
@@ -27,7 +27,7 @@ function StepIndicator({ step }) {
             i === idx ? 'bg-brand-600 text-white ring-4 ring-brand-400/20 shadow-glow-sm' :
                         'bg-surface-700 text-muted-500 border border-subtle'
           )}>{i < idx ? '✓' : i + 1}</div>
-          <span className={clsx('text-[10px] font-bold uppercase tracking-wider hidden sm:block', i === idx ? 'text-white' : 'text-muted-500')}>{l}</span>
+          <span className={clsx('text-[10px] font-bold uppercase tracking-wider hidden sm:block', i === idx ? 'text-neutral-900 dark:text-white' : 'text-muted-500')}>{l}</span>
           {i < 3 && (
             <div className="w-4 sm:w-8 h-px bg-surface-700 overflow-hidden">
               <motion.div 
@@ -107,8 +107,8 @@ function WorkerLogin() {
 
   if (mode === 'login') {
     return (
-      <form onSubmit={handleLogin} className="space-y-4">
-        <p className="text-center text-xs text-muted-500 mb-4">Ingresa con tus credenciales vinculadas a la empresa.</p>
+      <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
+        <p className="text-center text-xs text-muted-500 mb-2 sm:mb-4">Ingresa con tus credenciales vinculadas a la empresa.</p>
         
         <div>
           <label className="text-xs font-bold text-muted-600 mb-1 block">Correo electrónico</label>
@@ -167,11 +167,11 @@ function WorkerLogin() {
   }
 
   return (
-    <form onSubmit={handleRegister} className="space-y-4">
-      <p className="text-center text-xs text-muted-500 mb-2">Coloca tu información y el código de vinculación de tu empresa.</p>
+    <form onSubmit={handleRegister} className="space-y-3 sm:space-y-4">
+      <p className="text-center text-xs text-muted-500 mb-1.5">Coloca tu información y el código de vinculación de tu empresa.</p>
 
       {/* Avatar circular selector */}
-      <div className="space-y-2">
+      <div className="space-y-1.5 sm:space-y-2">
         <label className="text-xs font-bold text-muted-600 block text-center font-medium">Selecciona tu foto</label>
         <div className="flex justify-center gap-2">
           {WORKER_AVATARS.map((url) => (
@@ -180,7 +180,7 @@ function WorkerLogin() {
               type="button"
               onClick={() => setAvatar(url)}
               className={clsx(
-                "w-11 h-11 rounded-full overflow-hidden transition-all duration-300 border-2",
+                "w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden transition-all duration-300 border-2",
                 avatar === url ? "border-brand-600 scale-110 shadow-glow-sm" : "border-transparent opacity-60 hover:opacity-100"
               )}
             >
@@ -328,7 +328,7 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} className="space-y-3 sm:space-y-4">
       <div>
         <label className="text-xs font-bold text-muted-600 mb-1 block">Correo electrónico</label>
         <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@empresa.com" type="email" required
@@ -384,7 +384,10 @@ function LoginForm() {
 function RegisterFlow({ step, setStep }) {
   const navigate  = useNavigate()
   const register  = useAuthStore((s) => s.register)
-  const [plan, setPlan]   = useState('pro')
+  const [plan, setPlan]   = useState(() => {
+    const params = new URLSearchParams(window.location.search)
+    return params.get('plan') || 'pro'
+  })
   const [formData, setFormData] = useState({})
   const [loading, setLoading]   = useState(false)
 
@@ -439,7 +442,7 @@ function RegisterFlow({ step, setStep }) {
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
                 <CheckCircle2 size={64} className="text-success-400 mx-auto" />
               </motion.div>
-              <h2 className="text-2xl font-bold text-white">¡Registro exitoso!</h2>
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">¡Registro exitoso!</h2>
               <p className="text-muted-400 text-sm">Tu cuenta ha sido creada. Bienvenido a GestivaOne.</p>
               <button onClick={() => navigate('/')} className="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm transition-colors mt-2">
                 Entrar al dashboard →
@@ -451,7 +454,7 @@ function RegisterFlow({ step, setStep }) {
 
       {/* Back button */}
       {step !== 'plan' && step !== 'listo' && (
-        <button onClick={() => setStep(STEPS[STEPS.indexOf(step) - 1])} className="mt-4 flex items-center gap-1.5 text-xs text-muted-400 hover:text-white transition-colors">
+        <button onClick={() => setStep(STEPS[STEPS.indexOf(step) - 1])} className="mt-4 flex items-center gap-1.5 text-xs text-muted-400 hover:text-neutral-900 dark:hover:text-white transition-colors">
           <ArrowLeft size={13} /> Volver
         </button>
       )}
@@ -480,10 +483,16 @@ export default function Auth() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const code = params.get('code')
+    const mode = params.get('mode')
     if (code) {
       setTab('worker')
+    } else if (mode === 'register') {
+      setTab('register')
+      setRegStep('plan')
+    } else if (mode === 'login') {
+      setTab('login')
     }
-  }, [])
+  }, [window.location.search])
 
   return (
     <div className="min-h-screen bg-surface-900 flex">
@@ -531,32 +540,34 @@ export default function Auth() {
       </div>
 
       {/* Right: form panel */}
-      <div className="flex-1 flex flex-col items-center justify-start sm:justify-center p-4 md:p-6 overflow-y-auto relative min-h-screen">
-        {/* Ambient Background Elements */}
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(124,58,237,0.03)_1.5px,transparent_1.5px)] [background-size:32px_32px] pointer-events-none z-0" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-600/5 rounded-full blur-[140px] pointer-events-none z-0 animate-pulse-slow" />
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-brand-500/8 rounded-full blur-[100px] pointer-events-none z-0" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-brand-700/4 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="flex-1 flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 overflow-y-auto relative min-h-screen">
+        {/* Ambient Background Elements (wrapped to prevent overflow/scrollbars) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute inset-0 bg-[radial-gradient(rgba(124,58,237,0.03)_1.5px,transparent_1.5px)] [background-size:32px_32px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-600/5 rounded-full blur-[140px] animate-pulse-slow" />
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-brand-500/8 rounded-full blur-[100px]" />
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-brand-700/4 rounded-full blur-[120px]" />
+        </div>
 
         <div className={clsx(
           "w-full relative z-10 transition-all duration-500",
           (tab === 'register' && regStep === 'plan') ? "max-w-5xl" : "max-w-md"
         )}>
           {/* Mobile logo */}
-          <div className="flex lg:hidden items-center gap-2 justify-center mb-6">
+          <div className="flex lg:hidden items-center gap-2 justify-center mb-3.5 sm:mb-6">
             <Zap size={20} className="text-brand-400" />
-            <span className="font-bold text-white uppercase tracking-wider">Gestiva <span className="text-brand-400 font-extrabold">One</span></span>
+            <span className="font-bold text-neutral-900 dark:text-white uppercase tracking-wider">Gestiva <span className="text-brand-400 font-extrabold">One</span></span>
           </div>
 
           {/* Tab switcher */}
-          <div className="flex bg-surface-800 border border-subtle rounded-2xl p-1 mb-4 relative shadow-glow-sm">
+          <div className="flex bg-surface-800 border border-subtle rounded-2xl p-1 mb-3.5 sm:mb-4 relative shadow-glow-sm">
             {TABS.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={clsx(
                   'flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-colors relative z-10',
-                  tab === t.id ? 'text-white' : 'text-muted-400 hover:text-muted-200'
+                  tab === t.id ? 'text-white' : 'text-muted-400 hover:text-neutral-900 dark:hover:text-muted-200'
                 )}
               >
                 {tab === t.id && (
@@ -572,7 +583,7 @@ export default function Auth() {
           </div>
 
           {/* Form card */}
-          <div className="bg-surface-800 border border-subtle rounded-2xl p-5 shadow-modal">
+          <div className="bg-surface-800 border border-subtle rounded-2xl p-4 sm:p-5 shadow-modal">
             <AnimatePresence mode="wait">
               <motion.div
                 key={tab}
@@ -586,7 +597,7 @@ export default function Auth() {
                 {tab === 'worker'   && <WorkerLogin />}
               </motion.div>
             </AnimatePresence>
-            <div className="mt-4 pt-3.5 border-t border-subtle flex items-center justify-center gap-2">
+            <div className="mt-3.5 pt-3 sm:mt-4 sm:pt-3.5 border-t border-subtle flex items-center justify-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
               <p className="text-[10px] text-muted-500 font-medium uppercase tracking-widest flex items-center gap-1.5">
                 <Lock size={10} className="text-success-500" /> Conexión segura SSL

@@ -2,7 +2,8 @@ import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from './useAuthStore'
 import { useProductStore } from './useProductStore'
-import { isAfter, parseISO, differenceInDays } from 'date-fns'
+import { isAfter, parseISO, differenceInDays, format } from 'date-fns'
+import { es } from 'date-fns/locale'
 
 export const useInvoiceStore = create((set, get) => ({
   invoices: [],
@@ -109,6 +110,32 @@ export const useInvoiceStore = create((set, get) => ({
 
     set((s) => ({ invoices: [mappedSaved, ...s.invoices] }))
 
+    // Trigger Notification for created invoice
+    const formattedTotal = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(mappedSaved.total)
+    try {
+      const { useNotificationStore } = await import('./useNotificationStore')
+      if (paymentType === 'immediate') {
+        await useNotificationStore.getState().addNotification({
+          title: 'Factura Hecha',
+          message: `La factura #${mappedSaved.id.slice(-8).toUpperCase()} de "${mappedSaved.client_name}" por ${formattedTotal} ha sido realizada con éxito.`,
+          category: 'Cobros',
+          type: 'success'
+        })
+      } else {
+        const dueDateStr = scheduledDate 
+          ? format(parseISO(scheduledDate), "dd 'de' MMMM", { locale: es })
+          : 'próximamente'
+        await useNotificationStore.getState().addNotification({
+          title: 'Factura Pendiente',
+          message: `La factura #${mappedSaved.id.slice(-8).toUpperCase()} de "${mappedSaved.client_name}" por ${formattedTotal} vence el ${dueDateStr}.`,
+          category: 'Cobros',
+          type: 'warning'
+        })
+      }
+    } catch (e) {
+      console.error('❌ Error triggering creation notification:', e)
+    }
+
     const { products, updateProduct } = useProductStore.getState()
     items.forEach(async (item) => {
       if (!item.productId) return
@@ -135,6 +162,23 @@ export const useInvoiceStore = create((set, get) => ({
           inv.id === id ? { ...inv, payment_status: 'paid', paid_at: now } : inv
         ),
       }))
+
+      // Trigger "Factura Hecha" notification
+      const inv = get().invoices.find(i => i.id === id)
+      if (inv) {
+        const formattedTotal = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(inv.total)
+        try {
+          const { useNotificationStore } = await import('./useNotificationStore')
+          await useNotificationStore.getState().addNotification({
+            title: 'Factura Hecha',
+            message: `La factura #${inv.id.slice(-8).toUpperCase()} de "${inv.client_name}" por ${formattedTotal} ha sido cobrada y marcada como pagada.`,
+            category: 'Cobros',
+            type: 'success'
+          })
+        } catch (e) {
+          console.error('❌ Error triggering payment notification:', e)
+        }
+      }
     } else {
       console.error('❌ Error marking invoice as paid:', error)
     }
@@ -203,12 +247,31 @@ export const useInvoiceStore = create((set, get) => ({
       return { success: false, error: invUpdateErr.message }
     }
 
+    // Trigger "Factura Hecha" notification if transition to paid
+    if (newStatus === 'paid' && !wasPaid) {
+      const formattedTotal = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(inv.total)
+      try {
+        const { useNotificationStore } = await import('./useNotificationStore')
+        await useNotificationStore.getState().addNotification({
+          title: 'Factura Hecha',
+          message: `La factura #${inv.id.slice(-8).toUpperCase()} de "${inv.client_name}" por ${formattedTotal} ha sido completamente pagada mediante abonos.`,
+          category: 'Cobros',
+          type: 'success'
+        })
+      } catch (e) {
+        console.error('❌ Error triggering payment notification:', e)
+      }
+    }
+
     // Refresh state from Supabase relationally
     await get().fetchInvoices(true)
     return { success: true }
   },
 
   deleteInvoice: async (id) => {
+    // Save invoice details before deletion for notification composition
+    const inv = get().invoices.find(i => i.id === id)
+
     const { error } = await supabase
       .from('invoices')
       .delete()
@@ -216,23 +279,68 @@ export const useInvoiceStore = create((set, get) => ({
 
     if (!error) {
       set((s) => ({ invoices: s.invoices.filter((inv) => inv.id !== id) }))
+
+      if (inv) {
+        const formattedTotal = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(inv.total)
+        try {
+          const { useNotificationStore } = await import('./useNotificationStore')
+          await useNotificationStore.getState().addNotification({
+            title: 'Factura Eliminada',
+            message: `La factura #${inv.id.slice(-8).toUpperCase()} de "${inv.client_name}" por ${formattedTotal} ha sido eliminada del sistema.`,
+            category: 'Cobros',
+            type: 'danger'
+          })
+        } catch (e) {
+          console.error('❌ Error triggering delete notification:', e)
+        }
+      }
     } else {
       console.error('❌ Error deleting invoice:', error)
     }
   },
 
-  checkOverdue: () => {
+  checkOverdue: async () => {
+    const { user } = useAuthStore.getState()
+    if (!user?.companyId) return
+
     const now = new Date()
-    set((s) => ({
-      invoices: s.invoices.map((inv) => {
-        if (inv.payment_status !== 'pending') return inv
-        if (inv.payment_type === 'scheduled' && inv.scheduled_date) {
-          const due = parseISO(inv.scheduled_date)
-          if (isAfter(now, due)) return { ...inv, payment_status: 'overdue' }
+    const { invoices } = get()
+    
+    // Find scheduled pending invoices that are past their due dates
+    const overdueInvoices = invoices.filter(inv => 
+      inv.payment_status === 'pending' && 
+      inv.payment_type === 'scheduled' && 
+      inv.scheduled_date && 
+      isAfter(now, parseISO(inv.scheduled_date))
+    )
+
+    if (overdueInvoices.length === 0) return
+
+    for (const inv of overdueInvoices) {
+      // 1. Update in Supabase
+      const { error } = await supabase
+        .from('invoices')
+        .update({ payment_status: 'overdue' })
+        .eq('id', inv.id)
+
+      if (!error) {
+        const formattedTotal = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(inv.total)
+        try {
+          const { useNotificationStore } = await import('./useNotificationStore')
+          await useNotificationStore.getState().addNotification({
+            title: 'Factura en Mora',
+            message: `La factura #${inv.id.slice(-8).toUpperCase()} de "${inv.client_name}" por ${formattedTotal} está en mora/vencida.`,
+            category: 'Cobros',
+            type: 'danger'
+          })
+        } catch (e) {
+          console.error('❌ Error triggering overdue notification:', e)
         }
-        return inv
-      }),
-    }))
+      }
+    }
+
+    // Refresh state
+    await get().fetchInvoices(true)
   },
 
   // Selectors

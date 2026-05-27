@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Calculator, Download, AlertTriangle, ArrowUpRight, 
-  ArrowDownRight, FileText, Info, HelpCircle, Landmark 
+  ArrowDownRight, FileText, Info, HelpCircle, Landmark, CheckCircle2
 } from 'lucide-react'
 import { useInvoiceStore } from '@/store/useInvoiceStore'
 import { useExpenseStore } from '@/store/useExpenseStore'
@@ -17,6 +17,41 @@ export default function DianAssistant() {
   const [taxType, setTaxType] = useState('juridica') // 'juridica' | 'natural'
   const [estimatedIvaRate, setEstimatedIvaRate] = useState(19) // Percentage of expenses with IVA
   const [activeTab, setActiveTab] = useState('renta') // 'renta' | 'iva' | 'exogena'
+
+  // Persistent Renta inputs
+  const [ingresosNoConstitutivos, setIngresosNoConstitutivos] = useState(() => {
+    return Number(localStorage.getItem(`dian_incr_${selectedYear}`) || 0)
+  })
+  const [rentasExentas, setRentasExentas] = useState(() => {
+    return Number(localStorage.getItem(`dian_exentas_${selectedYear}`) || 0)
+  })
+  const [retencionesFuente, setRetencionesFuente] = useState(() => {
+    return Number(localStorage.getItem(`dian_retenciones_${selectedYear}`) || 0)
+  })
+
+  // Collapsible detailed tables
+  const [showSalesIvaDetail, setShowSalesIvaDetail] = useState(false)
+  const [showExpensesIvaDetail, setShowExpensesIvaDetail] = useState(false)
+
+  // Load correct values when year changes
+  useEffect(() => {
+    setIngresosNoConstitutivos(Number(localStorage.getItem(`dian_incr_${selectedYear}`) || 0))
+    setRentasExentas(Number(localStorage.getItem(`dian_exentas_${selectedYear}`) || 0))
+    setRetencionesFuente(Number(localStorage.getItem(`dian_retenciones_${selectedYear}`) || 0))
+  }, [selectedYear])
+
+  // Persist values
+  useEffect(() => {
+    localStorage.setItem(`dian_incr_${selectedYear}`, ingresosNoConstitutivos.toString())
+  }, [ingresosNoConstitutivos, selectedYear])
+
+  useEffect(() => {
+    localStorage.setItem(`dian_exentas_${selectedYear}`, rentasExentas.toString())
+  }, [rentasExentas, selectedYear])
+
+  useEffect(() => {
+    localStorage.setItem(`dian_retenciones_${selectedYear}`, retencionesFuente.toString())
+  }, [retencionesFuente, selectedYear])
 
   const invoices = useInvoiceStore((s) => s.invoices)
   const expenses = useExpenseStore((s) => s.expenses)
@@ -57,20 +92,34 @@ export default function DianAssistant() {
     return yearExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0)
   }, [yearExpenses])
 
-  const netIncome = totalSales - totalCost
-
   // ─── UVT Calculations ───
   // Values: 2025 UVT = $49,741 COP | 2026 UVT = $52,000 COP
   const uvtValue = selectedYear === '2025' ? 49741 : 52000
-  const netIncomeInUvt = Math.max(0, netIncome / uvtValue)
+
+  // ─── Renta Calculations (Estatuto Tributario Colombiano) ───
+  // 1. Ingresos Netos
+  const netSales = Math.max(0, totalSales - ingresosNoConstitutivos)
+  
+  // 2. Renta Líquida Ordinaria (Ingresos Netos - Costos)
+  const rentaLiquidaOrdinaria = Math.max(0, netSales - totalCost)
+
+  // 3. Rentas Exentas y Deducciones (Limitadas al 40% de la Renta Líquida Ordinaria o 1340 UVT para personas naturales)
+  const maxDeduccionPermitida = taxType === 'natural' 
+    ? Math.min(rentasExentas, rentaLiquidaOrdinaria * 0.40, 1340 * uvtValue)
+    : rentasExentas
+
+  // 4. Renta Líquida Gravable
+  const rentaLiquidaGravable = Math.max(0, rentaLiquidaOrdinaria - maxDeduccionPermitida)
+
+  const netIncomeInUvt = Math.max(0, rentaLiquidaGravable / uvtValue)
 
   // ─── Income Tax Calculation (Declaración de Renta) ───
   const calculatedTax = useMemo(() => {
-    if (netIncome <= 0) return 0
+    if (rentaLiquidaGravable <= 0) return 0
 
     if (taxType === 'juridica') {
       // General Corporate Tax Rate in Colombia: 35%
-      return netIncome * 0.35
+      return rentaLiquidaGravable * 0.35
     } else {
       // Progressive personal tax schedule (Formulario 210, Art. 241 Estatuto Tributario)
       const uvt = netIncomeInUvt
@@ -94,28 +143,25 @@ export default function DianAssistant() {
 
       return taxInUvt * uvtValue
     }
-  }, [netIncome, taxType, netIncomeInUvt, uvtValue])
+  }, [rentaLiquidaGravable, taxType, netIncomeInUvt, uvtValue])
+
+  // Total tax to pay after deducting retenciones (Anticipos)
+  const finalRentaToPay = Math.max(0, calculatedTax - retencionesFuente)
 
   // ─── IVA Calculation ───
   const totalIvaCollected = useMemo(() => {
-    // Gestiva One stores invoice tax or we estimate 19% on invoices with tax flag
     return yearInvoices.reduce((sum, inv) => {
       if (inv.tax) return sum + (inv.tax || 0)
-      // Fallback: estimate 19% IVA included
       return sum + (inv.total * 0.19 / 1.19)
     }, 0)
   }, [yearInvoices])
 
   const totalIvaDeductible = useMemo(() => {
-    // Read actual IVA paid on expenses from DB or estimate if blank
     return yearExpenses.reduce((sum, exp) => {
       if (exp.iva_paid !== undefined && exp.iva_paid !== null && Number(exp.iva_paid) > 0) {
         return sum + Number(exp.iva_paid)
       }
-      // Estimate based on expenses categories that typically carry IVA (e.g. inventory, marketing, arriendos)
-      const applicableCategories = ['Inventario/Mercancía', 'Marketing/Publicidad', 'Alquiler/Servicios']
-      if (applicableCategories.includes(exp.category)) {
-        // Calculate estimated IVA included in expense
+      if (exp.category !== 'Salarios/Nómina') {
         const expenseIvaRate = estimatedIvaRate / 100
         return sum + (exp.amount * expenseIvaRate / (1 + expenseIvaRate))
       }
@@ -125,31 +171,59 @@ export default function DianAssistant() {
 
   const netIvaBalance = totalIvaCollected - totalIvaDeductible
 
+  // ─── Exógena Data Audit ───
+  const exogenaAudit = useMemo(() => {
+    let clientsMissingDoc = 0
+    let expensesMissingDoc = 0
+    
+    // Audit invoices / clients
+    const uniqueClientsInInvoices = new Set(yearInvoices.map(inv => inv.client_id || 'CLIENTE_EXPRESS'))
+    uniqueClientsInInvoices.forEach(cId => {
+      if (cId === 'CLIENTE_EXPRESS') return
+      const clientObj = clients.find(c => c.id === cId)
+      if (!clientObj || !clientObj.document_id || clientObj.document_id.trim() === '') {
+        clientsMissingDoc++
+      }
+    })
+
+    // Audit expenses / providers
+    yearExpenses.forEach(exp => {
+      if (!exp.provider_doc_id || exp.provider_doc_id.trim() === '') {
+        expensesMissingDoc++
+      }
+    })
+
+    return {
+      clientsMissingDoc,
+      expensesMissingDoc,
+      hasIssues: clientsMissingDoc > 0 || expensesMissingDoc > 0
+    }
+  }, [yearInvoices, yearExpenses, clients])
+
   // ─── Exógena Exporters ───
   const downloadExogena1007 = () => {
-    // Group invoices by client
     const clientMap = {}
     
     yearInvoices.forEach((inv) => {
       const clientId = inv.client_id || 'CLIENTE_EXPRESS'
       const clientObj = clients.find(c => c.id === clientId)
       
-      const docType = clientObj?.document_type || '13' // Real database column document_type
-      const docNum = clientObj?.document_id || '222222222' // Real database column document_id
+      const docType = clientObj?.document_type || '13'
+      const docNum = clientObj?.document_id || '222222222'
       const name = clientObj?.name || 'Cliente Express / Consumidor Final'
       
       if (!clientMap[clientId]) {
         clientMap[clientId] = {
-          concepto: '4001', // Ingresos operacionales ordinarios
+          concepto: '4001',
           tipoDoc: docType,
           identificacion: docNum,
           primerApellido: name.split(' ')[1] || '',
           primerNombre: name.split(' ')[0] || name,
           razonSocial: clientObj?.companyName || '',
           direccion: clientObj?.address || 'Sin Dirección',
-          departamento: '11', // Default Bogotá
+          departamento: '11',
           municipio: '001',
-          pais: '169', // Colombia
+          pais: '169',
           ingresosBrutos: 0,
           devoluciones: 0
         }
@@ -164,7 +238,6 @@ export default function DianAssistant() {
       return
     }
 
-    // CSV Header
     let csvContent = "Concepto,Tipo Documento,Numero Identificacion,Primer Apellido,Primer Nombre,Razon Social,Direccion,Departamento,Municipio,Pais,Ingresos Brutos,Devoluciones y Descuentos\r\n"
     
     rows.forEach(r => {
@@ -183,14 +256,13 @@ export default function DianAssistant() {
   }
 
   const downloadExogena1001 = () => {
-    // Map categories to DIAN Concepts
     const getConcept = (cat) => {
       switch (cat) {
-        case 'Salarios/Nómina': return '5001' // Pagos laborales
-        case 'Alquiler/Servicios': return '5016' // Arrendamientos
-        case 'Marketing/Publicidad': return '5002' // Honorarios/Publicidad
-        case 'Inventario/Mercancía': return '5007' // Inventario
-        default: return '5008' // Otros costos y deducciones
+        case 'Salarios/Nómina': return '5001'
+        case 'Alquiler/Servicios': return '5016'
+        case 'Marketing/Publicidad': return '5002'
+        case 'Inventario/Mercancía': return '5007'
+        default: return '5008'
       }
     }
 
@@ -199,14 +271,13 @@ export default function DianAssistant() {
       return
     }
 
-    // CSV Header
     let csvContent = "Concepto,Tipo Documento,Numero Identificacion,Primer Apellido,Primer Nombre,Razon Social,Direccion,Departamento,Municipio,Pais,Pago o Abono en Cuenta (Deducible),Pago o Abono en Cuenta (No Deducible),Retencion en la Fuente Practicada\r\n"
 
     yearExpenses.forEach((exp) => {
       const concept = getConcept(exp.category)
       const providerName = exp.provider_name || 'Proveedor Varios'
-      const docType = exp.provider_doc_type || '31' // NIT
-      const docNum = exp.provider_doc_id || '999999999' // Provider doc/NIT
+      const docType = exp.provider_doc_type || '31'
+      const docNum = exp.provider_doc_id || '999999999'
       const ret = exp.retencion || 0
 
       csvContent += `${concept},${docType},${docNum},,"","${providerName}","Calle Ficticia 123",11,001,169,${Math.round(exp.amount)},0,${Math.round(ret)}\r\n`
@@ -233,7 +304,7 @@ export default function DianAssistant() {
             Asistente DIAN
           </h1>
           <p className="hidden sm:block text-xs text-muted-400">
-            Módulo tributario experimental para la estimación de impuestos y exógena en Colombia.
+            Módulo tributario interactivo para estimar impuesto de renta, liquidación de IVA e información exógena.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -311,7 +382,7 @@ export default function DianAssistant() {
           className={`pb-3 px-4 font-bold text-sm border-b-2 transition-colors ${
             activeTab === 'renta'
               ? 'border-brand-500 text-brand-400'
-              : 'border-transparent text-muted-400 hover:text-white'
+              : 'border-transparent text-muted-400 hover:text-foreground dark:hover:text-white'
           }`}
         >
           Simulador Renta
@@ -321,7 +392,7 @@ export default function DianAssistant() {
           className={`pb-3 px-4 font-bold text-sm border-b-2 transition-colors ${
             activeTab === 'iva'
               ? 'border-brand-500 text-brand-400'
-              : 'border-transparent text-muted-400 hover:text-white'
+              : 'border-transparent text-muted-400 hover:text-foreground dark:hover:text-white'
           }`}
         >
           Liquidación IVA
@@ -331,7 +402,7 @@ export default function DianAssistant() {
           className={`pb-3 px-4 font-bold text-sm border-b-2 transition-colors ${
             activeTab === 'exogena'
               ? 'border-brand-500 text-brand-400'
-              : 'border-transparent text-muted-400 hover:text-white'
+              : 'border-transparent text-muted-400 hover:text-foreground dark:hover:text-white'
           }`}
         >
           Información Exógena
@@ -368,7 +439,7 @@ export default function DianAssistant() {
             <div className="bg-brand-600/10 border border-brand-500/30 p-5 rounded-2xl flex items-center justify-between shadow-glow-sm">
               <div>
                 <span className="text-xs text-brand-300 font-bold uppercase tracking-wider">Renta Líquida Gravable</span>
-                <h3 className="text-2xl font-black text-foreground mt-1.5">{format$(netIncome)}</h3>
+                <h3 className="text-2xl font-black text-foreground mt-1.5">{format$(rentaLiquidaGravable)}</h3>
                 <span className="text-[10px] text-brand-300/80 font-semibold block mt-1">
                   ~ {netIncomeInUvt.toFixed(1)} UVT ({format$(uvtValue)} c/u)
                 </span>
@@ -380,56 +451,153 @@ export default function DianAssistant() {
           </div>
 
           {/* Renta Calculation Detail Card */}
-          <div className="bg-surface-800 border border-subtle p-6 rounded-3xl space-y-6">
-            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <FileText size={18} className="text-brand-400" />
-              Proyección de Impuesto de Renta
-            </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fadeIn">
+            {/* Column 1: Adjustments Inputs */}
+            <div className="bg-surface-800 border border-subtle p-6 rounded-3xl space-y-5">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                <Calculator size={18} className="text-brand-400" />
+                Ajustes Tributarios del Año
+              </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
-                <div className="flex justify-between border-b border-subtle/50 pb-2.5">
-                  <span className="text-sm text-muted-400">Renta Líquida Gravable</span>
-                  <span className="text-sm font-bold text-foreground">{format$(netIncome)}</span>
+                {/* INCR input */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold text-muted-400 uppercase tracking-wide">
+                      Ingresos No Constitutivos de Renta (INCR)
+                    </label>
+                    <HelpCircle size={14} className="text-muted-500 cursor-help" title="Aportes obligatorios a salud, pensión, etc." />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-muted-400 text-sm">$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={ingresosNoConstitutivos || ''}
+                      onChange={(e) => setIngresosNoConstitutivos(Math.max(0, Number(e.target.value)))}
+                      placeholder="Ej: 3000000"
+                      className="w-full bg-surface-700 border border-subtle rounded-xl pl-8 pr-3 py-2 text-sm text-foreground focus:outline-none focus:border-brand-500 font-semibold"
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-500">Aportes a seguridad social que reducen los ingresos netos.</p>
                 </div>
-                <div className="flex justify-between border-b border-subtle/50 pb-2.5">
-                  <span className="text-sm text-muted-400">Tarifa Aplicada</span>
-                  <span className="text-sm font-bold text-foreground">
-                    {taxType === 'juridica' ? '35% Fijo' : 'Progresivo UVT'}
-                  </span>
+
+                {/* Rentas Exentas input */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold text-muted-400 uppercase tracking-wide">
+                      Rentas Exentas y Deducciones
+                    </label>
+                    <HelpCircle size={14} className="text-muted-500 cursor-help" title="Medicina prepagada, dependientes, aportes AFC, renta exenta del 25%" />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-muted-400 text-sm">$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={rentasExentas || ''}
+                      onChange={(e) => setRentasExentas(Math.max(0, Number(e.target.value)))}
+                      placeholder="Ej: 5000000"
+                      className="w-full bg-surface-700 border border-subtle rounded-xl pl-8 pr-3 py-2 text-sm text-foreground focus:outline-none focus:border-brand-500 font-semibold"
+                    />
+                  </div>
+                  {taxType === 'natural' && (
+                    <div className="flex flex-col gap-1 mt-1">
+                      <p className="text-[10px] text-muted-500">
+                        Límite de deducción (40% de renta ordinaria o 1,340 UVT):{' '}
+                        <span className="font-bold text-brand-400">
+                          {format$(Math.min(rentaLiquidaOrdinaria * 0.40, 1340 * uvtValue))}
+                        </span>
+                      </p>
+                      {rentasExentas > rentaLiquidaOrdinaria * 0.40 && (
+                        <span className="text-[9px] text-warning-400 font-semibold">
+                          ⚠️ Has superado el límite del 40% ordinario. Se limitará automáticamente en el cálculo.
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between border-b border-subtle/50 pb-2.5">
-                  <span className="text-sm text-muted-400">Ingresos Exentos / Beneficios</span>
-                  <span className="text-sm font-bold text-success-400">$0 COP (No Configurado)</span>
-                </div>
-                <div className="flex justify-between border-b border-subtle/50 pb-2.5 bg-brand-600/5 p-2 rounded-xl">
-                  <span className="text-sm text-brand-300 font-bold">Impuesto Estimado a Declarar</span>
-                  <span className="text-sm font-black text-brand-400">{format$(calculatedTax)}</span>
+
+                {/* Retenciones Fuente input */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold text-muted-400 uppercase tracking-wide">
+                      Retenciones en la Fuente Practicadas
+                    </label>
+                    <HelpCircle size={14} className="text-muted-500 cursor-help" title="Anticipos de renta retenidos por tus clientes" />
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-muted-400 text-sm">$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={retencionesFuente || ''}
+                      onChange={(e) => setRetencionesFuente(Math.max(0, Number(e.target.value)))}
+                      placeholder="Ej: 1500000"
+                      className="w-full bg-surface-700 border border-subtle rounded-xl pl-8 pr-3 py-2 text-sm text-foreground focus:outline-none focus:border-brand-500 font-semibold"
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-500">Impuesto pagado por anticipado que se resta del saldo final.</p>
                 </div>
               </div>
+            </div>
 
-              <div className="p-4 bg-surface-700/50 rounded-2xl border border-subtle/40 space-y-3">
-                <div className="flex items-center gap-2 text-brand-400">
-                  <Info size={16} />
-                  <span className="text-xs font-bold uppercase tracking-wider">Detalle del Cálculo</span>
+            {/* Column 2: Tax Calculation Ledger */}
+            <div className="bg-surface-800 border border-subtle p-6 rounded-3xl space-y-6">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                <FileText size={18} className="text-brand-400" />
+                Depuración de Renta e Impuesto Neto
+              </h3>
+
+              <div className="space-y-3">
+                <div className="flex justify-between border-b border-subtle/30 pb-2">
+                  <span className="text-xs text-muted-400">(+) Ingresos Brutos Totales</span>
+                  <span className="text-xs font-semibold text-foreground">{format$(totalSales)}</span>
                 </div>
-                {taxType === 'juridica' ? (
-                  <p className="text-xs text-muted-400 leading-relaxed">
-                    Las personas jurídicas (empresas) en Colombia están sujetas a una tarifa única general de renta del <strong>35%</strong> (Art. 240 E.T.). Se calcula multiplicando tu Renta Líquida por 0.35.
-                  </p>
-                ) : (
-                  <div className="space-y-2 text-xs text-muted-400 leading-relaxed">
-                    <p>
-                      Las personas naturales tributan mediante una tabla progresiva medida en UVT. Con tu renta líquida de <strong>{netIncomeInUvt.toFixed(1)} UVT</strong>:
-                    </p>
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Primeras 1,090 UVT: <strong>Exentas (Tarifa 0%)</strong></li>
-                      <li>Siguiente tramo: Calculado progresivamente según rangos de la DIAN.</li>
-                    </ul>
-                  </div>
-                )}
-                <div className="text-[10px] text-muted-500 pt-2 border-t border-subtle/40">
-                  * Recuerda registrar todos tus gastos en la sección de Egresos para bajar legalmente tu Renta Líquida.
+                <div className="flex justify-between border-b border-subtle/30 pb-2">
+                  <span className="text-xs text-muted-400">(-) Ingresos No Constitutivos (INCR)</span>
+                  <span className="text-xs font-semibold text-danger-400">-{format$(ingresosNoConstitutivos)}</span>
+                </div>
+                <div className="flex justify-between border-b border-subtle/30 pb-2 font-bold bg-surface-700/20 px-2 py-1.5 rounded-lg">
+                  <span className="text-xs text-foreground">(=) Ingresos Netos</span>
+                  <span className="text-xs text-foreground">{format$(netSales)}</span>
+                </div>
+                <div className="flex justify-between border-b border-subtle/30 pb-2">
+                  <span className="text-xs text-muted-400">(-) Costos y Deducciones Operativas</span>
+                  <span className="text-xs font-semibold text-danger-400">-{format$(totalCost)}</span>
+                </div>
+                <div className="flex justify-between border-b border-subtle/30 pb-2 font-bold bg-surface-700/20 px-2 py-1.5 rounded-lg">
+                  <span className="text-xs text-foreground">(=) Renta Líquida Ordinaria</span>
+                  <span className="text-xs text-foreground">{format$(rentaLiquidaOrdinaria)}</span>
+                </div>
+                <div className="flex justify-between border-b border-subtle/30 pb-2">
+                  <span className="text-xs text-muted-400 flex items-center gap-1.5">
+                    (-) Rentas Exentas y Deducciones
+                    {rentasExentas > maxDeduccionPermitida && (
+                      <Badge variant="warning" className="text-[8px] py-0 px-1 font-bold">Limitado</Badge>
+                    )}
+                  </span>
+                  <span className="text-xs font-semibold text-danger-400">-{format$(maxDeduccionPermitida)}</span>
+                </div>
+                <div className="flex justify-between border-b border-subtle/30 pb-2 font-bold bg-brand-500/10 px-2 py-1.5 rounded-lg border border-brand-500/25">
+                  <span className="text-xs text-brand-300">(=) Renta Líquida Gravable</span>
+                  <span className="text-xs text-foreground">{format$(rentaLiquidaGravable)}</span>
+                </div>
+                <div className="flex justify-between border-b border-subtle/30 pb-2">
+                  <span className="text-xs text-muted-400">
+                    (=) Impuesto de Renta Proyectado ({taxType === 'juridica' ? '35%' : `${(calculatedTax / (rentaLiquidaGravable || 1) * 100).toFixed(1)}% prom.`})
+                  </span>
+                  <span className="text-xs font-semibold text-foreground">{format$(calculatedTax)}</span>
+                </div>
+                <div className="flex justify-between border-b border-subtle/30 pb-2">
+                  <span className="text-xs text-muted-400">(-) Retenciones en la Fuente (Anticipos)</span>
+                  <span className="text-xs font-semibold text-success-400">-{format$(retencionesFuente)}</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t-2 border-subtle font-black bg-brand-600/10 px-3 py-2.5 rounded-xl border border-brand-500/35 shadow-glow-sm">
+                  <span className="text-sm text-foreground flex items-center gap-1">
+                    (=) TOTAL NETO A PAGAR
+                  </span>
+                  <span className="text-sm text-brand-400">{format$(finalRentaToPay)}</span>
                 </div>
               </div>
             </div>
@@ -440,7 +608,7 @@ export default function DianAssistant() {
       {/* ─── TAB CONTENT: IVA ─── */}
       {activeTab === 'iva' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Sales IVA */}
             <div className="bg-surface-800 border border-subtle p-5 rounded-2xl space-y-4">
               <div className="flex justify-between items-center">
@@ -453,6 +621,51 @@ export default function DianAssistant() {
               <p className="text-xs text-muted-400">
                 Calculado a partir del desglose de IVA de las facturas de venta realizadas.
               </p>
+              <button
+                onClick={() => setShowSalesIvaDetail(!showSalesIvaDetail)}
+                className="text-xs font-bold text-brand-400 hover:text-brand-300 flex items-center gap-1 mt-2 focus:outline-none"
+              >
+                {showSalesIvaDetail ? 'Ocultar desglose' : 'Ver desglose detallado'}
+              </button>
+
+              {showSalesIvaDetail && (
+                <div className="mt-4 border-t border-subtle/50 pt-4 overflow-x-auto max-h-64 overflow-y-auto no-scrollbar">
+                  <table className="w-full text-left text-xs text-muted-400">
+                    <thead>
+                      <tr className="border-b border-subtle/40 text-[10px] uppercase font-bold text-muted-500">
+                        <th className="pb-2">Factura</th>
+                        <th className="pb-2">Cliente</th>
+                        <th className="pb-2">Fecha</th>
+                        <th className="pb-2 text-right">Total</th>
+                        <th className="pb-2 text-right">IVA</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {yearInvoices.length === 0 ? (
+                        <tr>
+                          <td colSpan="5" className="py-4 text-center text-muted-500">No hay ventas registradas en {selectedYear}</td>
+                        </tr>
+                      ) : (
+                        yearInvoices.map((inv) => {
+                          const calculatedIva = inv.tax || (inv.total * 0.19 / 1.19)
+                          return (
+                            <tr key={inv.id} className="border-b border-subtle/20 last:border-0 hover:bg-surface-700/30">
+                              <td className="py-2 font-mono text-foreground font-semibold">{inv.id.slice(-8).toUpperCase()}</td>
+                              <td className="py-2 truncate max-w-[120px]">{inv.client_name}</td>
+                              <td className="py-2">{inv.created_at.slice(0, 10)}</td>
+                              <td className="py-2 text-right font-semibold text-foreground">{format$(inv.total)}</td>
+                              <td className="py-2 text-right font-bold text-success-400">
+                                {format$(calculatedIva)}
+                                {!inv.tax && <span className="text-[9px] text-muted-500 font-normal block">(Est. 19%)</span>}
+                              </td>
+                            </tr>
+                          )
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
             {/* Expenses IVA */}
@@ -465,8 +678,64 @@ export default function DianAssistant() {
               </div>
               <h3 className="text-2xl font-black text-foreground">{format$(totalIvaDeductible)}</h3>
               <p className="text-xs text-muted-400">
-                Estimado a partir del {estimatedIvaRate}% sobre compras de inventario, publicidad y arriendos.
+                Estimado a partir del {estimatedIvaRate}% sobre egresos operacionales (excepto nóminas).
               </p>
+              <button
+                onClick={() => setShowExpensesIvaDetail(!showExpensesIvaDetail)}
+                className="text-xs font-bold text-brand-400 hover:text-brand-300 flex items-center gap-1 mt-2 focus:outline-none"
+              >
+                {showExpensesIvaDetail ? 'Ocultar desglose' : 'Ver desglose detallado'}
+              </button>
+
+              {showExpensesIvaDetail && (
+                <div className="mt-4 border-t border-subtle/50 pt-4 overflow-x-auto max-h-64 overflow-y-auto no-scrollbar">
+                  <table className="w-full text-left text-xs text-muted-400">
+                    <thead>
+                      <tr className="border-b border-subtle/40 text-[10px] uppercase font-bold text-muted-500">
+                        <th className="pb-2">Proveedor</th>
+                        <th className="pb-2">Categoría</th>
+                        <th className="pb-2">Fecha</th>
+                        <th className="pb-2 text-right">Monto</th>
+                        <th className="pb-2 text-right">IVA</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {yearExpenses.length === 0 ? (
+                        <tr>
+                          <td colSpan="5" className="py-4 text-center text-muted-500">No hay egresos registrados en {selectedYear}</td>
+                        </tr>
+                      ) : (
+                        yearExpenses.map((exp) => {
+                          const isSalary = exp.category === 'Salarios/Nómina'
+                          const hasActualIva = exp.iva_paid !== undefined && exp.iva_paid !== null && Number(exp.iva_paid) > 0
+                          const calculatedIva = hasActualIva 
+                            ? Number(exp.iva_paid)
+                            : isSalary ? 0 : (exp.amount * (estimatedIvaRate / 100) / (1 + (estimatedIvaRate / 100)))
+
+                          return (
+                            <tr key={exp.id} className="border-b border-subtle/20 last:border-0 hover:bg-surface-700/30">
+                              <td className="py-2 truncate max-w-[120px] text-foreground font-semibold">{exp.provider_name}</td>
+                              <td className="py-2">{exp.category}</td>
+                              <td className="py-2">{exp.created_at ? exp.created_at.slice(0, 10) : ''}</td>
+                              <td className="py-2 text-right font-semibold text-foreground">{format$(exp.amount)}</td>
+                              <td className="py-2 text-right font-bold text-danger-400">
+                                {format$(calculatedIva)}
+                                {isSalary ? (
+                                  <span className="text-[9px] text-muted-500 font-normal block">(Exento/Nómina)</span>
+                                ) : hasActualIva ? (
+                                  <span className="text-[9px] text-success-400 font-normal block">(Real)</span>
+                                ) : (
+                                  <span className="text-[9px] text-muted-500 font-normal block">(Est. {estimatedIvaRate}%)</span>
+                                )}
+                              </td>
+                            </tr>
+                          )
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
 
@@ -502,6 +771,47 @@ export default function DianAssistant() {
             <p className="text-xs opacity-90 mt-1 leading-relaxed">
               La DIAN exige anualmente a las empresas reportar las operaciones realizadas con terceros (clientes y proveedores) en formatos XML predefinidos. Los archivos CSV que puedes descargar a continuación consolidan y formatean automáticamente tus registros en Gestiva One para rellenar fácilmente los borradores de los <strong>Formatos 1001 y 1007</strong> del Prevalidador de la DIAN.
             </p>
+          </div>
+
+          {/* Data Audit Card */}
+          <div className="bg-surface-800 border border-subtle p-6 rounded-3xl space-y-4">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+              <Landmark size={18} className="text-brand-400" />
+              Auditoría y Calidad de los Datos (Exógena)
+            </h3>
+
+            {exogenaAudit.hasIssues ? (
+              <div className="flex gap-3.5 p-4 rounded-2xl bg-danger-500/10 border border-danger-500/25 text-danger-400 text-xs">
+                <AlertTriangle size={18} className="shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-sm">Se encontraron inconsistencias en tus datos de {selectedYear}</h4>
+                  <p className="opacity-90 mt-1 leading-relaxed">
+                    Hay registros de transacciones que no cuentan con un número de identificación (NIT/Cédula) del tercero:
+                  </p>
+                  <ul className="list-disc pl-4 mt-2 space-y-1">
+                    {exogenaAudit.clientsMissingDoc > 0 && (
+                      <li>{exogenaAudit.clientsMissingDoc} cliente(s) con NIT/Cédula faltante (afecta Formato 1007).</li>
+                    )}
+                    {exogenaAudit.expensesMissingDoc > 0 && (
+                      <li>{exogenaAudit.expensesMissingDoc} proveedor(es) con NIT/Cédula faltante (afecta Formato 1001).</li>
+                    )}
+                  </ul>
+                  <p className="opacity-80 mt-2">
+                    Aunque puedes descargar los archivos CSV, te recomendamos completar estos datos en los módulos de Clientes y Egresos para evitar sanciones de la DIAN.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-3.5 p-4 rounded-2xl bg-success-500/10 border border-success-500/25 text-success-400 text-xs">
+                <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-sm">¡Calidad de datos excelente!</h4>
+                  <p className="opacity-90 mt-1 leading-relaxed">
+                    Todos los clientes y proveedores asociados a transacciones del año {selectedYear} cuentan con tipo y número de documento registrado. Los formatos 1001 y 1007 se generarán con NITs completos.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

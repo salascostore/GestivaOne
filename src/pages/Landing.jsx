@@ -77,14 +77,14 @@ export default function Landing() {
               </button>
 
               <Link 
-                to="/auth" 
+                to="/auth?mode=login" 
                 className="hidden sm:inline-block text-sm font-semibold text-muted-400 hover:text-foreground transition-colors px-4 py-2"
               >
                 Ingresar
               </Link>
               
               <Link 
-                to="/auth" 
+                to="/auth?mode=register" 
                 className="px-4 py-2 md:px-5 md:py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs md:text-sm font-bold shadow-glow-sm transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
               >
                 Empieza Tu Gestión
@@ -137,7 +137,7 @@ export default function Landing() {
                 className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2"
               >
                 <Link 
-                  to="/auth" 
+                  to="/auth?mode=register" 
                   className="w-full sm:w-auto text-center px-8 py-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-extrabold shadow-glow hover:shadow-brand-500/30 transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
                 >
                   Empieza Tu Gestión Gratis
@@ -386,7 +386,7 @@ export default function Landing() {
               </div>
 
               <Link 
-                to="/auth?plan=standard" 
+                to="/auth?mode=register&plan=standard" 
                 className="w-full text-center py-3 rounded-xl bg-surface-600 hover:bg-surface-500 border border-subtle text-foreground text-xs font-bold transition-all block"
               >
                 Comenzar Gratis
@@ -423,7 +423,7 @@ export default function Landing() {
               </div>
 
               <Link 
-                to="/auth?plan=pro" 
+                to="/auth?mode=register&plan=pro" 
                 className="w-full text-center py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-glow transition-all block"
               >
                 Obtener Plan Pro
@@ -457,7 +457,7 @@ export default function Landing() {
               </div>
 
               <Link 
-                to="/auth?plan=empresarial" 
+                to="/auth?mode=register&plan=empresarial" 
                 className="w-full text-center py-3 rounded-xl bg-surface-600 hover:bg-surface-500 border border-subtle text-foreground text-xs font-bold transition-all block"
               >
                 Obtener Plan 360

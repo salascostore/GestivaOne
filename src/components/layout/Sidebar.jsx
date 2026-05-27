@@ -16,7 +16,6 @@ export default function Sidebar({ isMobile }) {
   const closeMobile    = useUIStore((s) => s.closeMobileSidebar)
   const user           = useAuthStore((s) => s.user)
   const location       = useLocation()
-  const getUnreadCount = useNotificationStore((s) => s.getUnreadCount)
 
   const role        = user?.role || 'despachador'
   const permissions = ROLES[role]?.permissions || {}
@@ -74,7 +73,6 @@ export default function Sidebar({ isMobile }) {
   const NavItem = ({ to, icon: Icon, label, perm, layoutId }) => {
     const isActive   = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
     const allowed    = permissions[perm] ?? true
-    const unreadCount = to === '/notifications' ? getUnreadCount() : 0
 
     return (
       <motion.div 
@@ -104,9 +102,6 @@ export default function Sidebar({ isMobile }) {
           )}
           <div className="relative shrink-0 z-10 flex items-center justify-center">
             <Icon size={18} />
-            {collapsed && unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-brand-500 border border-surface-800 animate-pulse" />
-            )}
           </div>
           <AnimatePresence mode="popLayout">
             {!collapsed && (
@@ -117,11 +112,6 @@ export default function Sidebar({ isMobile }) {
                 className="relative z-10 whitespace-nowrap overflow-hidden flex-1 flex items-center justify-between"
               >
                 <span>{label}</span>
-                {unreadCount > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-brand-600 border border-brand-500 text-[10px] font-bold text-white flex items-center justify-center animate-pulse">
-                    {unreadCount}
-                  </span>
-                )}
               </motion.span>
             )}
           </AnimatePresence>
@@ -190,11 +180,6 @@ export default function Sidebar({ isMobile }) {
                             <Icon size={18} className="shrink-0 relative z-10" />
                             <span className="relative z-10 flex-1 flex items-center justify-between">
                               <span>{label}</span>
-                              {to === '/notifications' && getUnreadCount() > 0 && (
-                                <span className="w-5 h-5 rounded-full bg-brand-600 border border-brand-500 text-[10px] font-bold text-white flex items-center justify-center animate-pulse">
-                                  {getUnreadCount()}
-                                </span>
-                              )}
                             </span>
                             {!allowed && <Lock size={12} className="text-muted-400 relative z-10" />}
                           </NavLink>
