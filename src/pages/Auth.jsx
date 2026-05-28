@@ -407,22 +407,47 @@ function SocialAccessOptions({ onProviderClick, label = "ingresar" }) {
         <button
           type="button"
           onClick={() => onProviderClick('Google')}
-          className="flex items-center justify-center gap-2 py-2 px-3 bg-surface-700 hover:bg-surface-650 border border-subtle rounded-xl text-xs text-foreground font-bold transition-all hover:scale-[1.02] shadow-sm select-none"
+          className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-surface-700 hover:bg-surface-650 rounded-xl text-xs text-foreground font-bold transition-all hover:scale-[1.02] shadow-sm select-none border-0"
         >
+          <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+            <path
+              fill="#4285F4"
+              d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69a5.74 5.74 0 0 1-2.5 3.77v3.13h4.03c2.36-2.17 3.52-5.38 3.52-8.75z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 24c3.24 0 5.97-1.08 7.96-2.91l-4.03-3.13c-1.12.75-2.55 1.19-3.93 1.19-3.03 0-5.6-2.05-6.52-4.82H1.31v3.2A11.99 11.99 0 0 0 12 24z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.48 14.33A7.16 7.16 0 0 1 5 12c0-.82.15-1.62.42-2.38V6.42H1.31A11.99 11.99 0 0 0 0 12c0 2.24.62 4.33 1.69 6.13l3.79-3.8z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.22 0 12 0A11.99 11.99 0 0 0 1.31 6.42l3.79 3.8c.92-2.77 3.49-4.82 6.9-4.82z"
+            />
+          </svg>
           Google
         </button>
         <button
           type="button"
           onClick={() => onProviderClick('Apple')}
-          className="flex items-center justify-center gap-2 py-2 px-3 bg-surface-700 hover:bg-surface-650 border border-subtle rounded-xl text-xs text-foreground font-bold transition-all hover:scale-[1.02] shadow-sm select-none"
+          className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-surface-700 hover:bg-surface-650 rounded-xl text-xs text-foreground font-bold transition-all hover:scale-[1.02] shadow-sm select-none border-0"
         >
+          <svg className="w-3.5 h-3.5 shrink-0 fill-current text-white" viewBox="0 0 24 24">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-.96.04-2.13.64-2.82 1.45-.6.69-1.12 1.84-.98 2.94.1.08.2.12.3.12.87 0 1.95-.57 2.51-1.45z" />
+          </svg>
           Apple
         </button>
         <button
           type="button"
           onClick={() => onProviderClick('Phone')}
-          className="flex items-center justify-center gap-2 py-2 px-3 bg-surface-700 hover:bg-surface-650 border border-subtle rounded-xl text-xs text-foreground font-bold transition-all hover:scale-[1.02] shadow-sm select-none"
+          className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-surface-700 hover:bg-surface-650 rounded-xl text-xs text-foreground font-bold transition-all hover:scale-[1.02] shadow-sm select-none border-0"
         >
+          <svg className="w-3.5 h-3.5 shrink-0 fill-none stroke-current stroke-[2.2] text-brand-400" viewBox="0 0 24 24">
+            <rect x="6" y="2" width="12" height="20" rx="2.5" />
+            <circle cx="12" cy="18" r="1" fill="currentColor" />
+          </svg>
           Teléfono
         </button>
       </div>
@@ -701,12 +726,7 @@ function RegisterFlow({ step, setStep, onSocialClick, socialData, onClearSocialD
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.2 }}
         >
-          {step === 'plan'  && (
-            <div className="space-y-4">
-              <PlanSelector selected={plan} onSelect={setPlan} />
-              <SocialAccessOptions onProviderClick={onSocialClick} label="registrarte" />
-            </div>
-          )}
+          {step === 'plan'  && <PlanSelector selected={plan} onSelect={setPlan} />}
           {step === 'datos' && <CompanyForm  onSubmit={goNext} defaultValues={formData} plan={plan} socialData={socialData} />}
           {step === 'pago'  && <PaymentForm  plan={plan} onSubmit={handlePayment} loading={loading} />}
           {step === 'listo' && (
