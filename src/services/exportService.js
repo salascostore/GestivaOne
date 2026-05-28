@@ -331,17 +331,18 @@ export async function exportSingleInvoicePDF(invoice, client = null, settings = 
   let clientPhone = client?.phone || invoice.client_phone || '—'
   let clientEmail = client?.email || invoice.client_email || '—'
   let clientAddress = client?.address || invoice.client_address || '—'
+  let clientDocId = client?.document_id || invoice.client_document_id || '—'
 
   let startY = 48
   if (!isMinimalist) {
-    // Corporate Info Blocks
+    // Corporate Info Blocks (Increased height to 30 to prevent overflow)
     doc.setFillColor(248, 250, 252) // slate-50
-    doc.rect(14, startY, 86, 26, 'F')
-    doc.rect(110, startY, 86, 26, 'F')
+    doc.rect(14, startY, 86, 30, 'F')
+    doc.rect(110, startY, 86, 30, 'F')
     
     doc.setDrawColor(226, 232, 240)
-    doc.rect(14, startY, 86, 26)
-    doc.rect(110, startY, 86, 26)
+    doc.rect(14, startY, 86, 30)
+    doc.rect(110, startY, 86, 30)
 
     // Left block: Client Info
     doc.setFont('helvetica', 'bold')
@@ -353,9 +354,10 @@ export async function exportSingleInvoicePDF(invoice, client = null, settings = 
     doc.setFontSize(8)
     doc.setTextColor(51, 65, 85)
     doc.text(`Nombre: ${clientName}`, 18, startY + 10)
-    doc.text(`Teléfono: ${clientPhone}`, 18, startY + 14)
-    doc.text(`Email: ${clientEmail}`, 18, startY + 18)
-    doc.text(`Dirección: ${clientAddress}`, 18, startY + 22)
+    doc.text(`C.C. / NIT / Código: ${clientDocId}`, 18, startY + 14)
+    doc.text(`Teléfono: ${clientPhone}`, 18, startY + 18)
+    doc.text(`Email: ${clientEmail}`, 18, startY + 22)
+    doc.text(`Dirección: ${clientAddress}`, 18, startY + 26)
 
     // Right block: Invoice Metadata
     doc.setFont('helvetica', 'bold')
@@ -392,9 +394,10 @@ export async function exportSingleInvoicePDF(invoice, client = null, settings = 
     
     // Client details
     doc.text(clientName, 15, startY + 8)
-    doc.text(`Tel: ${clientPhone}`, 15, startY + 13)
-    doc.text(`Email: ${clientEmail}`, 15, startY + 18)
-    if (clientAddress !== '—') doc.text(`Dirección: ${clientAddress}`, 15, startY + 23)
+    doc.text(`C.C. / NIT / Código: ${clientDocId}`, 15, startY + 13)
+    doc.text(`Tel: ${clientPhone}`, 15, startY + 18)
+    doc.text(`Email: ${clientEmail}`, 15, startY + 23)
+    if (clientAddress !== '—') doc.text(`Dirección: ${clientAddress}`, 15, startY + 28)
 
     // Invoice details
     doc.text(`Fecha: ${dateStr}`, 120, startY + 8)
@@ -405,7 +408,7 @@ export async function exportSingleInvoicePDF(invoice, client = null, settings = 
   }
 
   // 3. PRODUCT ITEMS TABLE
-  const tableStartY = isMinimalist ? startY + 32 : startY + 34
+  const tableStartY = isMinimalist ? startY + 36 : startY + 38
   const rows = itemsList.map((item, index) => [
     index + 1,
     item.name || item.product_name || 'Producto',

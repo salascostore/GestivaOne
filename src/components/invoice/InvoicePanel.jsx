@@ -248,7 +248,12 @@ export default function InvoicePanel({ isMobile }) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-foreground truncate">{selectedClient.name}</p>
-                        <p className="text-[10px] text-muted-400 truncate">{selectedClient.email || 'Sin correo'}</p>
+                        {selectedClient.document_id && (
+                          <p className="text-[9px] text-muted-400 truncate">Doc: {selectedClient.document_id}</p>
+                        )}
+                        <p className="text-[10px] text-muted-400 truncate">
+                          {selectedClient.email || selectedClient.phone || 'Sin datos de contacto'}
+                        </p>
                       </div>
                       <button onClick={clearClientSel} className="text-muted-400 hover:text-foreground">
                         <X size={12} />
@@ -401,7 +406,12 @@ export default function InvoicePanel({ isMobile }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-foreground truncate">{selectedClient.name}</p>
-                  <p className="text-[10px] text-muted-400 truncate">{selectedClient.email || 'Sin correo'}</p>
+                  {selectedClient.document_id && (
+                    <p className="text-[9px] text-muted-400 truncate">Doc: {selectedClient.document_id}</p>
+                  )}
+                  <p className="text-[10px] text-muted-400 truncate">
+                    {selectedClient.email || selectedClient.phone || 'Sin datos de contacto'}
+                  </p>
                 </div>
                 <button onClick={clearClientSel} className="text-muted-400 hover:text-foreground shrink-0">
                   <X size={12} />

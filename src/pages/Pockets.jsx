@@ -19,6 +19,7 @@ const POCKET_TYPES = [
 ]
 
 export default function Pockets() {
+  const user = useAuthStore((s) => s.user)
   const pockets = usePocketStore((s) => s.pockets)
   const fetchPockets = usePocketStore((s) => s.fetchPockets)
   const addPocket = usePocketStore((s) => s.addPocket)
@@ -95,10 +96,12 @@ export default function Pockets() {
   }
 
   useEffect(() => {
-    fetchPockets()
-    fetchInvoices()
-    fetchExpenses()
-  }, [])
+    if (user?.id) {
+      fetchPockets()
+      fetchInvoices()
+      fetchExpenses()
+    }
+  }, [user?.id])
 
   const handleCreate = async (e) => {
     e.preventDefault()

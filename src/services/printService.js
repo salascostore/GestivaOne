@@ -196,7 +196,9 @@ export function printInvoice(invoice, client = null, settings = {}) {
           <div style="font-size: 10px;">
             <div class="font-bold">CLIENTE:</div>
             <div>${client?.name || invoice.client_name}</div>
+            ${client?.document_id || invoice.client_document_id || (client && client.document_id) ? `<div>C.C./NIT/Código: ${client?.document_id || invoice.client_document_id || client.document_id}</div>` : ''}
             ${client?.phone || invoice.client_phone ? `<div>Tel: ${client?.phone || invoice.client_phone}</div>` : ''}
+            ${client?.email || invoice.client_email ? `<div>Email: ${client?.email || invoice.client_email}</div>` : ''}
           </div>
         ` : ''}
 

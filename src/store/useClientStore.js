@@ -95,6 +95,6 @@ export const useClientStore = create((set, get) => ({
     return clients.find((c) => c.id === selectedClientId) ?? null
   },
 
-  getFrequent: () => get().clients.filter((c) => c.type === 'frequent'),
+  getFrequent: () => get().clients.filter((c) => !c.type || c.type === 'frequent'),
 }))
 

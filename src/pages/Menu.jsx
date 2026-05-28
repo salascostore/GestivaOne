@@ -149,6 +149,14 @@ export default function Menu() {
   const invoices      = useInvoiceStore((s) => s.invoices)
   const format$       = useCurrencyStore((s) => s.format)
 
+  // Express Client state
+  const [showExpressModal, setShowExpressModal] = useState(false)
+  const [expressName, setExpressName] = useState('')
+  const [expressDocId, setExpressDocId] = useState('')
+  const [expressPhone, setExpressPhone] = useState('')
+  const [expressEmail, setExpressEmail] = useState('')
+  const [creatingExpress, setCreatingExpress] = useState(false)
+
   const frequent = getFrequent()
 
   useEffect(() => {
@@ -230,11 +238,7 @@ export default function Menu() {
               size="sm"
               pill
               icon={<ShoppingBag size={15} />}
-              onClick={() => {
-                selectClient(null)
-                toast.success('Cliente Express activado', { id: 'client-sel' })
-                navigate('/products')
-              }}
+              onClick={() => setShowExpressModal(true)}
               className="px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm shrink-0"
             >
               <span className="hidden sm:inline">Cliente Express</span>
@@ -302,6 +306,131 @@ export default function Menu() {
           </div>
         </div>
       </div>
+
+      {/* Express Client Modal */}
+      <AnimatePresence>
+        {showExpressModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowExpressModal(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            />
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative bg-surface-800 border border-subtle w-full max-w-md p-6 rounded-3xl shadow-modal z-10 space-y-4 font-sans"
+            >
+              <div>
+                <h3 className="text-base font-bold text-foreground">Factura Express</h3>
+                <p className="text-xs text-muted-400 mt-1">
+                  Ingresa los detalles de facturación para la venta express.
+                </p>
+              </div>
+
+              <div className="space-y-3.5">
+                <div>
+                  <label className="text-xs text-muted-400 mb-1 block">Nombre / Razón Social *</label>
+                  <input
+                    type="text"
+                    required
+                    value={expressName}
+                    onChange={(e) => setExpressName(e.target.value)}
+                    placeholder="Ej: Juan Pérez o Distribuidora SAS"
+                    className="w-full bg-surface-700 border border-subtle rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-muted-400 mb-1 block">Cédula / NIT / Código</label>
+                  <input
+                    type="text"
+                    value={expressDocId}
+                    onChange={(e) => setExpressDocId(e.target.value)}
+                    placeholder="Ej: 1020304050 o 900.123.456-7"
+                    className="w-full bg-surface-700 border border-subtle rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-muted-400 mb-1 block">Teléfono / Número</label>
+                  <input
+                    type="tel"
+                    value={expressPhone}
+                    onChange={(e) => setExpressPhone(e.target.value)}
+                    placeholder="Ej: 3001234567"
+                    className="w-full bg-surface-700 border border-subtle rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-muted-400 mb-1 block">Correo electrónico</label>
+                  <input
+                    type="email"
+                    value={expressEmail}
+                    onChange={(e) => setExpressEmail(e.target.value)}
+                    placeholder="Ej: cliente@correo.com"
+                    className="w-full bg-surface-700 border border-subtle rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="ghost"
+                  size="md"
+                  className="flex-1"
+                  onClick={() => setShowExpressModal(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="flex-1 font-bold"
+                  loading={creatingExpress}
+                  onClick={async () => {
+                    if (!expressName.trim()) {
+                      toast.error('El nombre/razón social es obligatorio')
+                      return
+                    }
+                    setCreatingExpress(true)
+                    try {
+                      const newCli = await useClientStore.getState().addClient({
+                        name: expressName.trim(),
+                        document_id: expressDocId.trim() || null,
+                        phone: expressPhone.trim() || '',
+                        email: expressEmail.trim() || '',
+                        type: 'express'
+                      })
+                      if (newCli) {
+                        selectClient(newCli.id)
+                        toast.success(`Cliente Express ${newCli.name} seleccionado`, { id: 'client-sel' })
+                        setShowExpressModal(false)
+                        setExpressName('')
+                        setExpressDocId('')
+                        setExpressPhone('')
+                        setExpressEmail('')
+                        navigate('/products')
+                      }
+                    } catch (e) {
+                      toast.error('Error al registrar cliente express')
+                    } finally {
+                      setCreatingExpress(false)
+                    }
+                  }}
+                >
+                  Continuar
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

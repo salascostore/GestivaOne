@@ -8,6 +8,7 @@ import { useCartStore } from '@/store/useCartStore'
 import { useUIStore } from '@/store/useUIStore'
 import { useCurrencyStore } from '@/store/useCurrencyStore'
 import { useAuthStore } from '@/store/useAuthStore'
+import { useClientStore } from '@/store/useClientStore'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
 
@@ -164,6 +165,7 @@ export default function Products() {
   const addCustomItem = useCartStore((s) => s.addCustomItem)
   const format$     = useCurrencyStore((s) => s.format)
   const baseCurrency = useCurrencyStore((s) => s.baseCurrency)
+  const selectedClient = useClientStore((s) => s.getSelected())
 
   const userSettings = useAuthStore((s) => s.user?.settings)
   const customCats = userSettings?.custom_categories || []
@@ -204,9 +206,28 @@ export default function Products() {
       <div className="sticky top-0 z-20 bg-surface-900/90 backdrop-blur-md pb-4 pt-1 -mx-4 px-4 md:-mx-8 md:px-8 lg:-mx-10 lg:px-10 border-b border-subtle flex flex-col gap-4">
         {/* Title and Actions */}
         <div className="flex flex-row items-center justify-between gap-4">
-          <div>
-            <h1 className="text-lg md:text-xl font-bold text-brand-600 dark:text-white">Productos</h1>
-            <p className="hidden sm:block text-xs md:text-sm text-muted-400 mt-0.5">{products.length} productos en catálogo</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <div>
+              <h1 className="text-lg md:text-xl font-bold text-brand-600 dark:text-white">Productos</h1>
+              <p className="hidden sm:block text-xs md:text-sm text-muted-400 mt-0.5">{products.length} productos en catálogo</p>
+            </div>
+            {selectedClient && (
+              <div className="flex items-center gap-2 bg-brand-600/10 border border-brand-500/20 px-3 py-1 rounded-full text-xs text-brand-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
+                <span className="font-medium text-[11px] md:text-xs">
+                  Cliente: <strong className="text-foreground dark:text-white">{selectedClient.name}</strong>
+                </span>
+                {selectedClient.type === 'express' ? (
+                  <span className="text-[9px] px-1.5 py-0.5 bg-brand-500/20 border border-brand-500/30 rounded font-bold uppercase tracking-wider text-brand-400">
+                    Express
+                  </span>
+                ) : (
+                  <span className="text-[9px] px-1.5 py-0.5 bg-success-500/15 border border-success-500/30 rounded font-bold uppercase tracking-wider text-success-400">
+                    Frecuente
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex gap-2 shrink-0">
             <Button

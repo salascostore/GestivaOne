@@ -16,6 +16,7 @@ const MOCK_INVOICE = {
   payment_type: 'immediate',
   payment_status: 'paid',
   client_name: 'Randy Mendoza',
+  client_document_id: '1020304050',
   client_phone: '312 456 7890',
   client_email: 'randy.mendoza@example.com',
   client_address: 'Calle 45 #12-89, Bogotá',
@@ -80,6 +81,25 @@ export default function Facturero() {
   const [hasPrinter, setHasPrinter] = useState(false)
   const [checkingPrinter, setCheckingPrinter] = useState(true)
 
+  // Local states for custom edit (we sync with settings on Save)
+  const [pdfTemplate, setPdfTemplate] = useState(printer.pdfTemplate || 'corporate')
+  const [thermalTemplate, setThermalTemplate] = useState(printer.template || 'classic')
+  const [themeColor, setThemeColor] = useState(printer.themeColor || 'indigo')
+  const [autoPrint, setAutoPrint] = useState(printer.autoPrint || false)
+  const [showLogo, setShowLogo] = useState(printer.showLogo !== false)
+  const [showCompanyName, setShowCompanyName] = useState(printer.showCompanyName !== false)
+  const [showProducts, setShowProducts] = useState(printer.showProducts !== false)
+  const [showContact, setShowContact] = useState(printer.showContact !== false)
+  const [showTax, setShowTax] = useState(printer.showTax === true)
+  const [footerText, setFooterText] = useState(printer.footerText || '¡Gracias por su compra!')
+  
+  // Metadata for the company
+  const [companyName, setCompanyName] = useState(user?.companyName || 'GestivaOne')
+  const [companyPhone, setCompanyPhone] = useState(user?.companyPhone || '')
+  const [companyEmail, setCompanyEmail] = useState(user?.companyEmail || '')
+  const [logoUrl, setLogoUrl] = useState(user?.companyLogo || '')
+  const [saving, setSaving] = useState(false)
+
   useEffect(() => {
     const checkDevices = async () => {
       if (typeof window.print !== 'function') {
@@ -126,25 +146,6 @@ export default function Facturero() {
       toast.error('No se vinculó ningún dispositivo')
     }
   }
-  
-  // Local states for custom edit (we sync with settings on Save)
-  const [pdfTemplate, setPdfTemplate] = useState(printer.pdfTemplate || 'corporate')
-  const [thermalTemplate, setThermalTemplate] = useState(printer.template || 'classic')
-  const [themeColor, setThemeColor] = useState(printer.themeColor || 'indigo')
-  const [autoPrint, setAutoPrint] = useState(printer.autoPrint || false)
-  const [showLogo, setShowLogo] = useState(printer.showLogo !== false)
-  const [showCompanyName, setShowCompanyName] = useState(printer.showCompanyName !== false)
-  const [showProducts, setShowProducts] = useState(printer.showProducts !== false)
-  const [showContact, setShowContact] = useState(printer.showContact !== false)
-  const [showTax, setShowTax] = useState(printer.showTax === true)
-  const [footerText, setFooterText] = useState(printer.footerText || '¡Gracias por su compra!')
-  
-  // Metadata for the company
-  const [companyName, setCompanyName] = useState(user?.companyName || 'GestivaOne')
-  const [companyPhone, setCompanyPhone] = useState(user?.companyPhone || '')
-  const [companyEmail, setCompanyEmail] = useState(user?.companyEmail || '')
-  const [logoUrl, setLogoUrl] = useState(user?.companyLogo || '')
-  const [saving, setSaving] = useState(false)
 
   // Preview type toggle: 'pdf-corporate' | 'pdf-minimalist' | 'ticket-classic' | 'ticket-modern'
   const [previewType, setPreviewType] = useState('pdf-corporate')
@@ -208,7 +209,7 @@ export default function Facturero() {
       companyEmail,
       themeColor
     }
-    printInvoice(MOCK_INVOICE, { name: MOCK_INVOICE.client_name, phone: MOCK_INVOICE.client_phone }, settingsObj)
+    printInvoice(MOCK_INVOICE, { name: MOCK_INVOICE.client_name, phone: MOCK_INVOICE.client_phone, email: MOCK_INVOICE.client_email, document_id: '1020304050' }, settingsObj)
     toast.success('Enviando ticket de prueba a la impresora...')
   }
 
@@ -233,7 +234,8 @@ export default function Facturero() {
       name: MOCK_INVOICE.client_name,
       phone: MOCK_INVOICE.client_phone,
       email: MOCK_INVOICE.client_email,
-      address: MOCK_INVOICE.client_address
+      address: MOCK_INVOICE.client_address,
+      document_id: '1020304050'
     }, settingsObj)
     toast.success('Generando descarga de PDF de prueba.')
   }
@@ -276,8 +278,9 @@ export default function Facturero() {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-slate-50 border border-slate-100 rounded-lg p-2.5">
                 <span className="text-[9px] font-bold block mb-1" style={{ color: activeColor.primary }}>FACTURAR A:</span>
-                <p className="font-bold text-slate-900">{MOCK_INVOICE.client_name}</p>
-                <p className="text-slate-500 text-[9px] mt-0.5">Tel: {MOCK_INVOICE.client_phone}</p>
+                <p className="font-bold text-slate-900 leading-tight">{MOCK_INVOICE.client_name}</p>
+                <p className="text-slate-500 text-[9px] mt-0.5">Doc: {MOCK_INVOICE.client_document_id}</p>
+                <p className="text-slate-500 text-[9px]">Tel: {MOCK_INVOICE.client_phone}</p>
                 <p className="text-slate-500 text-[9px]">{MOCK_INVOICE.client_email}</p>
                 <p className="text-slate-500 text-[9px] truncate">{MOCK_INVOICE.client_address}</p>
               </div>
@@ -373,7 +376,8 @@ export default function Facturero() {
             <div>
               <span className="font-bold block mb-1" style={{ color: activeColor.primary }}>CLIENTE</span>
               <p className="font-black text-slate-800 text-sm">{MOCK_INVOICE.client_name}</p>
-              <p className="text-slate-600 mt-1">Tel: {MOCK_INVOICE.client_phone}</p>
+              <p className="text-slate-600 mt-1">Doc: {MOCK_INVOICE.client_document_id}</p>
+              <p className="text-slate-600">Tel: {MOCK_INVOICE.client_phone}</p>
               <p className="text-slate-600">{MOCK_INVOICE.client_email}</p>
               <p className="text-slate-600 truncate">{MOCK_INVOICE.client_address}</p>
             </div>
@@ -466,7 +470,13 @@ export default function Facturero() {
           <div className="space-y-0.5 text-[9.5px]">
             <div>FACTURA: #{MOCK_INVOICE.id.slice(-8).toUpperCase()}</div>
             <div>FECHA: {new Date(MOCK_INVOICE.created_at).toLocaleDateString('es-CO')}</div>
-            {showContact && <div>CLIENTE: {MOCK_INVOICE.client_name}</div>}
+            {showContact && (
+              <>
+                <div>CLIENTE: {MOCK_INVOICE.client_name}</div>
+                <div>DOC: {MOCK_INVOICE.client_document_id}</div>
+                <div>TEL: {MOCK_INVOICE.client_phone}</div>
+              </>
+            )}
           </div>
 
           <div className="border-t border-dashed border-black my-2"></div>
@@ -550,8 +560,10 @@ export default function Facturero() {
               <span className="font-bold text-slate-800">Fecha:</span> {new Date(MOCK_INVOICE.created_at).toLocaleDateString('es-CO')}
             </div>
             {showContact && (
-              <div className="col-span-2">
-                <span className="font-bold text-slate-800">Cliente:</span> {MOCK_INVOICE.client_name}
+              <div className="col-span-2 space-y-0.5">
+                <div><span className="font-bold text-slate-800">Cliente:</span> {MOCK_INVOICE.client_name}</div>
+                <div><span className="font-bold text-slate-800">Doc:</span> {MOCK_INVOICE.client_document_id}</div>
+                <div><span className="font-bold text-slate-800">Tel:</span> {MOCK_INVOICE.client_phone}</div>
               </div>
             )}
           </div>

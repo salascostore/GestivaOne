@@ -13,6 +13,7 @@ import { useClientStore } from '@/store/useClientStore'
 import { useProductStore } from '@/store/useProductStore'
 import { useInvoiceStore } from '@/store/useInvoiceStore'
 import { useEmployeeStore } from '@/store/useEmployeeStore'
+import { usePocketStore } from '@/store/usePocketStore'
 
 export default function AppLayout() {
   console.log('🏗️ AppLayout Rendering...')
@@ -23,6 +24,7 @@ export default function AppLayout() {
   const fetchProducts  = useProductStore((s) => s.fetchProducts)
   const fetchInvoices  = useInvoiceStore((s) => s.fetchInvoices)
   const fetchEmployees = useEmployeeStore((s) => s.fetchEmployees)
+  const fetchPockets   = usePocketStore((s) => s.fetchPockets)
 
   const mobileSidebarOpen = useUIStore((s) => s.mobileSidebarOpen)
   const invoicePanelOpen  = useUIStore((s) => s.invoicePanelOpen)
@@ -59,6 +61,7 @@ export default function AppLayout() {
       fetchClients()
       fetchProducts()
       fetchInvoices()
+      fetchPockets()
       if (user.role === 'administrador') fetchEmployees()
     }
   }, [user?.id])
