@@ -9,12 +9,29 @@ import Input from '@/components/ui/Input'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
 
+import { useInvoiceStore } from '@/store/useInvoiceStore'
+import { useExpenseStore } from '@/store/useExpenseStore'
+import { usePocketStore } from '@/store/usePocketStore'
+
 const PERSONAL_CATEGORIES = ['Alimentación', 'Transporte', 'Entretenimiento', 'Suscripciones', 'Salud/Bienestar', 'Educación', 'Otros']
 
 export default function PersonalFinance() {
   const user = useAuthStore((s) => s.user)
   const updateProfile = useAuthStore((s) => s.updateProfile)
   const format = useCurrencyStore((s) => s.format)
+
+  const invoices = useInvoiceStore((s) => s.invoices)
+  const fetchInvoices = useInvoiceStore((s) => s.fetchInvoices)
+  const createInvoice = useInvoiceStore((s) => s.createInvoice)
+
+  const expensesList = useExpenseStore((s) => s.expenses)
+  const fetchExpenses = useExpenseStore((s) => s.fetchExpenses)
+  const addExpense = useExpenseStore((s) => s.addExpense)
+
+  const pockets = usePocketStore((s) => s.pockets)
+  const fetchPockets = usePocketStore((s) => s.fetchPockets)
+  const addFunds = usePocketStore((s) => s.addFunds)
+  const withdrawFunds = usePocketStore((s) => s.withdrawFunds)
 
   const [balance, setBalance] = useState(0)
   const [expenses, setExpenses] = useState([])
@@ -27,11 +44,15 @@ export default function PersonalFinance() {
   
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
   const [showExpenseModal, setShowExpenseModal] = useState(false)
   const [showLoanModal, setShowLoanModal] = useState(false)
   
   // Form fields (no defaults, only placeholders as requested)
   const [addAmount, setAddAmount] = useState('')
+  const [addSource, setAddSource] = useState('manual') // 'manual' | 'utility' | pocketId
+  const [withdrawAmount, setWithdrawAmount] = useState('')
+  const [withdrawDest, setWithdrawDest] = useState('utility') // 'utility' | pocketId
   const [expAmount, setExpAmount] = useState('')
   const [expCategory, setExpCategory] = useState('Alimentación')
   const [expDesc, setExpDesc] = useState('')
@@ -76,6 +97,9 @@ export default function PersonalFinance() {
       setBalance(data.balance || 0)
       setExpenses(data.expenses || [])
       fetchLoans()
+      fetchInvoices()
+      fetchExpenses()
+      fetchPockets()
     } else {
       const local = localStorage.getItem(storageKey)
       if (local) {
@@ -93,6 +117,15 @@ export default function PersonalFinance() {
       }
     }
   }, [user, storageKey])
+
+  const utilidadNetaReal = useMemo(() => {
+    const totalRev = invoices
+      .filter((i) => i.payment_status === 'paid')
+      .reduce((sum, i) => sum + (Number(i.total) || 0), 0)
+    const totalExp = expensesList
+      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
+    return totalRev - totalExp
+  }, [invoices, expensesList])
 
   const saveData = async (newBalance, newExpenses) => {
     setBalance(newBalance)
@@ -120,11 +153,101 @@ export default function PersonalFinance() {
 
     setLoading(true)
     try {
+      if (addSource === 'utility') {
+        if (utilidadNetaReal < amt) {
+          toast.error('Fondos insuficientes en la Utilidad Neta del negocio')
+          setLoading(false)
+          return
+        }
+        const expResult = await addExpense({
+          amount: amt,
+          category: 'Retiros',
+          description: 'Retiro de utilidad para finanzas personales'
+        })
+        if (!expResult.success) {
+          toast.error(expResult.error || 'Error al retirar fondos de la utilidad neta')
+          setLoading(false)
+          return
+        }
+      } else if (addSource !== 'manual') {
+        const p = pockets.find(p => p.id === addSource)
+        if (!p || p.balance < amt) {
+          toast.error('Fondos insuficientes en el bolsillo seleccionado')
+          setLoading(false)
+          return
+        }
+        const wResult = await withdrawFunds(addSource, amt)
+        if (!wResult) {
+          setLoading(false)
+          return
+        }
+      }
+
       const newBalance = balance + amt
       await saveData(newBalance, expenses)
       toast.success('Dinero ingresado a tu bolsillo personal')
       setAddAmount('')
+      setAddSource('manual')
       setShowAddModal(false)
+    } catch (err) {
+      console.error(err)
+      toast.error('Error al ingresar saldo')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleWithdrawFunds = async (e) => {
+    e.preventDefault()
+    const amt = Number(withdrawAmount)
+    if (isNaN(amt) || amt <= 0) return toast.error('Ingresa un monto válido')
+    if (balance < amt) return toast.error('No tienes fondos suficientes en tu bolsillo personal')
+
+    setLoading(true)
+    try {
+      if (withdrawDest === 'utility') {
+        const invResult = await createInvoice({
+          client: null,
+          items: [{ name: 'Aporte de Capital de Finanzas Personales', qty: 1, price: amt, total: amt }],
+          subtotal: amt,
+          total: amt,
+          paymentType: 'immediate',
+          note: JSON.stringify({
+            notes: 'Aporte de capital de bolsillo personal',
+            payments: [],
+            custom_charges: [],
+            pocket_id: 'general'
+          }),
+          pocketId: 'general'
+        })
+        if (!invResult) {
+          toast.error('Error al depositar fondos en la utilidad neta')
+          setLoading(false)
+          return
+        }
+      } else {
+        const p = pockets.find(p => p.id === withdrawDest)
+        if (!p) {
+          toast.error('El bolsillo seleccionado no existe')
+          setLoading(false)
+          return
+        }
+        const aResult = await addFunds(withdrawDest, amt)
+        if (!aResult) {
+          setLoading(false)
+          return
+        }
+      }
+
+      const newBalance = balance - amt
+      await saveData(newBalance, expenses)
+      toast.success('Fondos retirados y transferidos')
+      setWithdrawAmount('')
+      setWithdrawDest('utility')
+      setShowWithdrawModal(false)
+    } catch (err) {
+      console.error(err)
+      toast.error('Error al retirar saldo')
     } finally {
       setLoading(false)
     }
@@ -296,9 +419,19 @@ export default function PersonalFinance() {
                 pill
                 icon={<ArrowUpRight size={14} />}
                 onClick={() => setShowAddModal(true)}
-                title="Añadir fondos de forma manual a tu bolsillo personal"
+                title="Ingresar saldo desde utilidad del negocio o bolsillos de ahorro"
               >
                 Ingresar Dinero
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                pill
+                icon={<ArrowDownRight size={14} />}
+                onClick={() => setShowWithdrawModal(true)}
+                title="Retirar saldo y enviarlo a la utilidad del negocio o a un bolsillo"
+              >
+                Retirar Dinero
               </Button>
               <Button
                 variant="primary"
@@ -343,8 +476,9 @@ export default function PersonalFinance() {
               <p className="text-3xl font-black text-white mt-1.5 drop-shadow-[0_0_12px_rgba(139,92,246,0.2)]">{format(balance)}</p>
             </div>
 
-            <div className="flex gap-2 mt-6 relative z-10">
+            <div className="flex gap-3 mt-6 relative z-10">
               <button
+                type="button"
                 onClick={() => setShowAddModal(true)}
                 title="Añadir saldo disponible al bolsillo personal"
                 className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
@@ -353,11 +487,21 @@ export default function PersonalFinance() {
                 Agregar Saldo
               </button>
               <button
+                type="button"
+                onClick={() => setShowWithdrawModal(true)}
+                title="Retirar saldo del bolsillo personal hacia negocio/bolsillos"
+                className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ArrowDownRight size={13} />
+                Retirar Saldo
+              </button>
+              <button
+                type="button"
                 onClick={() => setShowExpenseModal(true)}
                 title="Gastar dinero restándolo de tus fondos"
                 className="flex-1 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-glow-sm cursor-pointer"
               >
-                <ArrowDownRight size={13} />
+                <Coins size={13} />
                 Gastar
               </button>
             </div>
@@ -626,9 +770,70 @@ export default function PersonalFinance() {
                   autoFocus
                 />
 
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-muted-500 uppercase tracking-wide">Procedencia de los Fondos *</label>
+                  <select
+                    value={addSource}
+                    onChange={e => setAddSource(e.target.value)}
+                    className="w-full bg-surface-700 border border-subtle rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500/50 cursor-pointer"
+                  >
+                    <option value="manual">Ingreso Manual (Sin origen/Efectivo)</option>
+                    <option value="utility">Utilidad Neta (Negocio) - Disp: {format(utilidadNetaReal)}</option>
+                    {pockets.map(p => (
+                      <option key={p.id} value={p.id}>Bolsillo: {p.name} - Disp: {format(p.balance)}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="flex gap-3 pt-1">
                   <Button type="button" variant="ghost" size="md" className="flex-1" onClick={() => setShowAddModal(false)}>Cancelar</Button>
                   <Button type="submit" variant="primary" size="md" className="flex-1" loading={loading}>Confirmar Ingreso</Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* WITHDRAW SALDO MODAL */}
+      <AnimatePresence>
+        {showWithdrawModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowWithdrawModal(false)} className="fixed inset-0 bg-black/60 backdrop-blur-xs" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-surface-800 border border-subtle w-full max-w-sm p-6 rounded-3xl shadow-modal z-10 space-y-4">
+              <div>
+                <h2 className="text-base font-bold text-foreground">Retirar Saldo</h2>
+                <p className="text-xs text-muted-400 mt-0.5">Retira capital de tu bolsillo personal y envíalo al negocio o bolsillos de ahorro</p>
+              </div>
+
+              <form onSubmit={handleWithdrawFunds} className="space-y-4">
+                <Input 
+                  label="Monto a retirar ($) *" 
+                  value={withdrawAmount} 
+                  onChange={e => setWithdrawAmount(e.target.value)} 
+                  placeholder="Ej: 50000" 
+                  type="number" 
+                  required 
+                  autoFocus
+                />
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-muted-500 uppercase tracking-wide">Destino de los Fondos *</label>
+                  <select
+                    value={withdrawDest}
+                    onChange={e => setWithdrawDest(e.target.value)}
+                    className="w-full bg-surface-700 border border-subtle rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500/50 cursor-pointer"
+                  >
+                    <option value="utility">Utilidad Neta (Negocio)</option>
+                    {pockets.map(p => (
+                      <option key={p.id} value={p.id}>Bolsillo: {p.name} (Saldo: {format(p.balance)})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex gap-3 pt-1">
+                  <Button type="button" variant="ghost" size="md" className="flex-1" onClick={() => setShowWithdrawModal(false)}>Cancelar</Button>
+                  <Button type="submit" variant="primary" size="md" className="flex-1" loading={loading}>Confirmar Retiro</Button>
                 </div>
               </form>
             </motion.div>

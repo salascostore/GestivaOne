@@ -29,10 +29,13 @@ export const useClientStore = create((set, get) => ({
     const { user } = useAuthStore.getState()
     if (!user) return
 
+    const cleanDocumentId = data.document_id && data.document_id.trim() !== '' ? data.document_id.trim() : null
+
     const newClient = {
       ...data,
       company_id: user.companyId,
       type: data.type ?? 'frequent',
+      document_id: cleanDocumentId
     }
 
     const { data: saved, error } = await supabase
@@ -52,14 +55,20 @@ export const useClientStore = create((set, get) => ({
   },
 
   updateClient: async (id, data) => {
+    const cleanDocumentId = data.document_id && data.document_id.trim() !== '' ? data.document_id.trim() : null
+    const cleanData = {
+      ...data,
+      document_id: cleanDocumentId
+    }
+
     const { error } = await supabase
       .from('clients')
-      .update(data)
+      .update(cleanData)
       .eq('id', id)
 
     if (!error) {
       set((s) => ({
-        clients: s.clients.map((c) => (c.id === id ? { ...c, ...data } : c)),
+        clients: s.clients.map((c) => (c.id === id ? { ...c, ...cleanData } : c)),
       }))
     }
   },

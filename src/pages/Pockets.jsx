@@ -18,6 +18,7 @@ export default function Pockets() {
   const pockets = usePocketStore((s) => s.pockets)
   const fetchPockets = usePocketStore((s) => s.fetchPockets)
   const addPocket = usePocketStore((s) => s.addPocket)
+  const updatePocket = usePocketStore((s) => s.updatePocket)
   const deletePocket = usePocketStore((s) => s.deletePocket)
   const addFunds = usePocketStore((s) => s.addFunds)
   const withdrawFunds = usePocketStore((s) => s.withdrawFunds)
@@ -35,6 +36,43 @@ export default function Pockets() {
   const [type, setType] = useState('caja')
   const [percentage, setPercentage] = useState('')
   const [balance, setBalance] = useState('')
+
+  // Edit Form state
+  const [editPocketId, setEditPocketId] = useState(null)
+  const [editName, setEditName] = useState('')
+  const [editTarget, setEditTarget] = useState('')
+  const [editPercentage, setEditPercentage] = useState('')
+  const [editType, setEditType] = useState('caja')
+
+  const handleOpenEdit = (pocket) => {
+    setEditPocketId(pocket.id)
+    setEditName(pocket.name)
+    setEditTarget(pocket.target || '')
+    setEditPercentage(pocket.percentage || '')
+    setEditType(pocket.type || 'caja')
+  }
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault()
+    if (!editName.trim()) return toast.error('Ingresa un nombre para el bolsillo')
+    
+    setLoading(true)
+    try {
+      const success = await updatePocket(editPocketId, {
+        name: editName.trim(),
+        target: Number(editTarget) || 0,
+        type: editType,
+        percentage: Number(editPercentage) || 0,
+      })
+
+      if (success) {
+        toast.success('Bolsillo actualizado')
+        setEditPocketId(null)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     fetchPockets()
@@ -220,6 +258,13 @@ export default function Pockets() {
                     Retirar
                   </button>
                   <button
+                    onClick={() => handleOpenEdit(p)}
+                    className="p-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/30 text-brand-400 transition-all shrink-0"
+                    title="Editar bolsillo"
+                  >
+                    <Edit size={12} />
+                  </button>
+                  <button
                     onClick={() => setDeleteConfirmId(p.id)}
                     className="p-1.5 rounded-xl bg-danger-900/10 hover:bg-danger-900/30 text-danger-400 transition-all shrink-0"
                     title="Eliminar este bolsillo permanentemente y retirar su saldo"
@@ -354,6 +399,59 @@ export default function Pockets() {
                   Eliminar
                 </Button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* EDIT POCKET MODAL */}
+      <AnimatePresence>
+        {editPocketId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setEditPocketId(null)} className="fixed inset-0 bg-black/60 backdrop-blur-xs" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative bg-surface-800 border border-subtle w-full max-w-md p-6 rounded-3xl shadow-modal z-10 space-y-4">
+              <div>
+                <h2 className="text-base font-bold text-foreground">Editar Bolsillo</h2>
+                <p className="text-xs text-muted-400 mt-0.5">Modifica los detalles y límites de tu bolsillo</p>
+              </div>
+
+              <form onSubmit={handleSaveEdit} className="space-y-4">
+                <Input label="Nombre del Bolsillo *" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Ej: Pago de Impuestos" required />
+                <Input label="Meta/Tope Limite (Opcional)" value={editTarget} onChange={e => setEditTarget(e.target.value)} placeholder="Ej: 1000000" type="number" />
+                <Input label="Desviar porcentaje de cobros (%)" value={editPercentage} onChange={e => setEditPercentage(e.target.value)} placeholder="Ej: 10" type="number" min="0" max="100" />
+                
+                {/* Pocket type selector */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-muted-500 uppercase tracking-wide">Diseño / Formato</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {POCKET_TYPES.map((t) => {
+                      const Icon = t.icon
+                      const active = editType === t.id
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setEditType(t.id)}
+                          className={clsx(
+                            "flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all text-center",
+                            active 
+                              ? "border-brand-500 bg-brand-600/10 text-brand-400"
+                              : "border-subtle bg-surface-700 hover:border-surface-600 text-muted-400"
+                          )}
+                        >
+                          <Icon size={16} />
+                          <span className="text-[10px] font-bold">{t.label}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <Button type="button" variant="ghost" size="md" className="flex-1" onClick={() => setEditPocketId(null)}>Cancelar</Button>
+                  <Button type="submit" variant="primary" size="md" className="flex-1" loading={loading}>Guardar Cambios</Button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}

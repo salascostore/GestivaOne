@@ -28,12 +28,16 @@ export const useInvoiceStore = create((set, get) => ({
       const mappedInvoices = (data || []).map((inv) => {
         const dbNote = inv.note || ''
         let notesText = dbNote
+        let customCharges = []
+        let pocketId = 'general'
         
         // If database note contains JSON legacy structure, parse it
         if (dbNote.trim().startsWith('{') && dbNote.trim().endsWith('}')) {
           try {
             const parsed = JSON.parse(dbNote)
             notesText = parsed.notes || ''
+            customCharges = parsed.custom_charges || []
+            pocketId = parsed.pocket_id || 'general'
           } catch (e) {}
         }
 
@@ -47,7 +51,9 @@ export const useInvoiceStore = create((set, get) => ({
           ...inv,
           note: JSON.stringify({
             notes: notesText,
-            payments: paymentsList
+            payments: paymentsList,
+            custom_charges: customCharges,
+            pocket_id: pocketId
           })
         }
       })
@@ -59,7 +65,7 @@ export const useInvoiceStore = create((set, get) => ({
     set({ loading: false })
   },
 
-  createInvoice: async ({ client, items, subtotal, total, paymentType, scheduledDate, note }) => {
+  createInvoice: async ({ client, items, subtotal, total, paymentType, scheduledDate, note, pocketId }) => {
     const { user } = useAuthStore.getState()
     if (!user) return null
 
@@ -101,11 +107,27 @@ export const useInvoiceStore = create((set, get) => ({
       return null
     }
 
+    let notesText = ''
+    let parsedPocketId = pocketId || 'general'
+    let customCharges = []
+    try {
+      if (note && note.trim().startsWith('{') && note.trim().endsWith('}')) {
+        const parsed = JSON.parse(note)
+        notesText = parsed.notes || ''
+        parsedPocketId = parsed.pocket_id || parsedPocketId
+        customCharges = parsed.custom_charges || []
+      } else {
+        notesText = note || ''
+      }
+    } catch (e) {}
+
     const mappedSaved = {
       ...saved,
       note: JSON.stringify({
-        notes: note ?? '',
-        payments: []
+        notes: notesText,
+        payments: [],
+        custom_charges: customCharges,
+        pocket_id: parsedPocketId
       })
     }
 
@@ -148,7 +170,23 @@ export const useInvoiceStore = create((set, get) => ({
     })
 
     if (paymentType === 'immediate') {
-      await usePocketStore.getState().distributeInvoicePayment(Number(total))
+      let targetPocketId = pocketId
+      if (!targetPocketId && note) {
+        try {
+          if (note.trim().startsWith('{') && note.trim().endsWith('}')) {
+            const parsed = JSON.parse(note)
+            targetPocketId = parsed.pocket_id
+          }
+        } catch (e) {}
+      }
+      if (!targetPocketId) targetPocketId = 'general'
+
+      if (targetPocketId && targetPocketId !== 'general') {
+        const { usePocketStore } = await import('./usePocketStore')
+        await usePocketStore.getState().addFunds(targetPocketId, Number(total))
+      } else {
+        await usePocketStore.getState().distributeInvoicePayment(Number(total))
+      }
     }
 
     return mappedSaved;
@@ -183,8 +221,23 @@ export const useInvoiceStore = create((set, get) => ({
         } catch (e) {
           console.error('❌ Error triggering payment notification:', e)
         }
-        // Distribute to pockets
-        await usePocketStore.getState().distributeInvoicePayment(Number(inv.total))
+        
+        let targetPocketId = 'general'
+        if (inv.note) {
+          try {
+            if (inv.note.trim().startsWith('{') && inv.note.trim().endsWith('}')) {
+              const parsed = JSON.parse(inv.note)
+              targetPocketId = parsed.pocket_id || 'general'
+            }
+          } catch (e) {}
+        }
+
+        if (targetPocketId && targetPocketId !== 'general') {
+          const { usePocketStore } = await import('./usePocketStore')
+          await usePocketStore.getState().addFunds(targetPocketId, Number(inv.total))
+        } else {
+          await usePocketStore.getState().distributeInvoicePayment(Number(inv.total))
+        }
       }
     } else {
       console.error('❌ Error marking invoice as paid:', error)
@@ -272,8 +325,23 @@ export const useInvoiceStore = create((set, get) => ({
       }
     }
 
-    // Distribute payment to pockets
-    await usePocketStore.getState().distributeInvoicePayment(Number(abonoAmount))
+    // Distribute or send to specific pocket
+    let targetPocketId = 'general'
+    if (inv && inv.note) {
+      try {
+        if (inv.note.trim().startsWith('{') && inv.note.trim().endsWith('}')) {
+          const parsed = JSON.parse(inv.note)
+          targetPocketId = parsed.pocket_id || 'general'
+        }
+      } catch (e) {}
+    }
+
+    if (targetPocketId && targetPocketId !== 'general') {
+      const { usePocketStore } = await import('./usePocketStore')
+      await usePocketStore.getState().addFunds(targetPocketId, Number(abonoAmount))
+    } else {
+      await usePocketStore.getState().distributeInvoicePayment(Number(abonoAmount))
+    }
 
     // Refresh state from Supabase relationally
     await get().fetchInvoices(true)

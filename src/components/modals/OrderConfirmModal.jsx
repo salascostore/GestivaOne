@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle, Clock, CalendarDays, Zap, PartyPopper } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
@@ -8,6 +8,7 @@ import Badge from '@/components/ui/Badge'
 import { useCartStore, selectSubtotal } from '@/store/useCartStore'
 import { useClientStore } from '@/store/useClientStore'
 import { useInvoiceStore } from '@/store/useInvoiceStore'
+import { usePocketStore } from '@/store/usePocketStore'
 import { useUIStore } from '@/store/useUIStore'
 import { useCurrencyStore } from '@/store/useCurrencyStore'
 import { useAuthStore } from '@/store/useAuthStore'
@@ -59,6 +60,16 @@ export default function OrderConfirmModal({ open }) {
   const closeModal = useUIStore((s) => s.closeModal)
   const format = useCurrencyStore((s) => s.format)
 
+  const pockets = usePocketStore((s) => s.pockets)
+  const fetchPockets = usePocketStore((s) => s.fetchPockets)
+  const [destinationPocketId, setDestinationPocketId] = useState('general')
+
+  useEffect(() => {
+    if (open) {
+      fetchPockets()
+    }
+  }, [open, fetchPockets])
+
   const handleConfirm = async () => {
     if (paymentType === 'scheduled' && !scheduledDate) {
       toast.error('Selecciona una fecha de pago')
@@ -77,10 +88,12 @@ export default function OrderConfirmModal({ open }) {
         scheduledDate: scheduledDate || null,
         taxAmount,
         taxRate: includeTax ? taxRate : 0,
+        pocketId: destinationPocketId,
         note: JSON.stringify({
           notes: '',
           payments: [],
-          custom_charges: customCharges.filter(c => c.applied).map(({ name, type, value }) => ({ name, type, value }))
+          custom_charges: customCharges.filter(c => c.applied).map(({ name, type, value }) => ({ name, type, value })),
+          pocket_id: destinationPocketId
         })
       })
 
@@ -216,6 +229,23 @@ export default function OrderConfirmModal({ open }) {
                 ))}
               </div>
             </div>
+
+            {/* Pocket select */}
+            {paymentType === 'immediate' && pockets.length > 0 && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-300 block">Destino de los Fondos (Venta Inmediata)</label>
+                <select
+                  value={destinationPocketId}
+                  onChange={(e) => setDestinationPocketId(e.target.value)}
+                  className="w-full bg-surface-700 border border-subtle rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500/50 cursor-pointer"
+                >
+                  <option value="general">Utilidad Neta Real (General)</option>
+                  {pockets.map(p => (
+                    <option key={p.id} value={p.id}>Bolsillo: {p.name} (Saldo: {format(p.balance)})</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Scheduled date picker */}
             <AnimatePresence>

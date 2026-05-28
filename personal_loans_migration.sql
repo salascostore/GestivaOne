@@ -74,3 +74,84 @@ CREATE POLICY "Permitir actualización de empresa a administradores"
             WHERE profiles.id = auth.uid() AND profiles.role = 'administrador'
         )
     );
+
+
+-- 4. AJUSTE DE RLS EN LA TABLA DE CLIENTES (clients)
+ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
+
+-- Política de lectura de clientes
+DROP POLICY IF EXISTS "Permitir lectura de clientes a miembros de la empresa" ON public.clients;
+CREATE POLICY "Permitir lectura de clientes a miembros de la empresa"
+    ON public.clients
+    FOR SELECT
+    TO authenticated
+    USING (
+        company_id IN (
+            SELECT company_id 
+            FROM public.profiles 
+            WHERE profiles.id = auth.uid()
+        )
+    );
+
+-- Política de inserción de clientes
+DROP POLICY IF EXISTS "Permitir inserción de clientes a miembros de la empresa" ON public.clients;
+CREATE POLICY "Permitir inserción de clientes a miembros de la empresa"
+    ON public.clients
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (
+        company_id IN (
+            SELECT company_id 
+            FROM public.profiles 
+            WHERE profiles.id = auth.uid()
+        )
+    );
+
+-- Política de actualización de clientes
+DROP POLICY IF EXISTS "Permitir actualización de clientes a miembros de la empresa" ON public.clients;
+CREATE POLICY "Permitir actualización de clientes a miembros de la empresa"
+    ON public.clients
+    FOR UPDATE
+    TO authenticated
+    USING (
+        company_id IN (
+            SELECT company_id 
+            FROM public.profiles 
+            WHERE profiles.id = auth.uid()
+        )
+    )
+    WITH CHECK (
+        company_id IN (
+            SELECT company_id 
+            FROM public.profiles 
+            WHERE profiles.id = auth.uid()
+        )
+    );
+
+-- Política de eliminación de clientes
+DROP POLICY IF EXISTS "Permitir eliminación de clientes a administradores" ON public.clients;
+CREATE POLICY "Permitir eliminación de clientes a administradores"
+    ON public.clients
+    FOR DELETE
+    TO authenticated
+    USING (
+        company_id IN (
+            SELECT company_id 
+            FROM public.profiles 
+            WHERE profiles.id = auth.uid() AND profiles.role = 'administrador'
+        )
+    );
+
+
+-- 5. ACTUALIZAR PLAN A PREMIUM PARA dayanneguiselle@gmail.com
+UPDATE public.companies
+SET plan = 'empresarial'
+WHERE id IN (
+    SELECT company_id
+    FROM public.profiles
+    WHERE LOWER(email) = 'dayanneguiselle@gmail.com'
+);
+
+UPDATE public.profiles
+SET plan = 'empresarial'
+WHERE LOWER(email) = 'dayanneguiselle@gmail.com';
