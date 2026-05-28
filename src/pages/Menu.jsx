@@ -114,13 +114,15 @@ function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistor
           onClick={onOpenHistory}
           isPurple={true}
         />
-        <ExpandableButton
-          icon={Edit2}
-          label="Editar Cliente"
-          value="Modificar"
-          onClick={onEdit}
-          isPurple={true}
-        />
+        <motion.button
+          layout
+          onClick={(e) => { e.stopPropagation(); onEdit() }}
+          className="h-10 w-10 rounded-full flex items-center justify-center border border-subtle bg-surface-700 hover:bg-surface-600 text-muted-400 hover:text-foreground transition-colors duration-300 shrink-0 cursor-pointer shadow-sm"
+          title="Editar cliente"
+          transition={smoothTransition}
+        >
+          <Edit2 size={14} />
+        </motion.button>
         <motion.button
           layout
           onClick={(e) => { e.stopPropagation(); onDelete() }}
