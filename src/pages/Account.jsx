@@ -2,12 +2,14 @@ import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   User, Shield, Bell, Zap, LogOut, Building2, Phone, Mail,
-  Camera, Check, Eye, EyeOff, ChevronDown, ChevronUp, Key, Copy
+  Camera, Check, Eye, EyeOff, ChevronDown, ChevronUp, Key, Copy,
+  Database, Download, Upload, Trash2
 } from 'lucide-react'
 import { useAuthStore, PLANS, ROLES } from '@/store/useAuthStore'
 import { useSettingsStore } from '@/store/useSettingsStore'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { clearAccountData, exportAccountBackup, importAccountBackup } from '@/services/accountDataService'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
 
@@ -311,6 +313,77 @@ function NotificationsSection({ variants }) {
 }
 
 // ── Main Account page ─────────────────────────────────────────
+function DataManagementSection({ user, variants }) {
+  const fileRef = useRef(null)
+  const [busy, setBusy] = useState(false)
+  const isAdmin = user?.role === 'administrador'
+
+  const run = async (action, successMessage) => {
+    try {
+      setBusy(true)
+      await action()
+      toast.success(successMessage)
+    } catch (err) {
+      toast.error(err.message || 'No se pudo completar la accion')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleImport = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    if (!window.confirm('Importar este backup reemplazara los datos actuales de gestion. Continua solo si ya tienes una copia segura.')) return
+    await run(() => importAccountBackup(file), 'Backup importado')
+  }
+
+  const handleClear = async () => {
+    if (!window.confirm('Esta accion borrara productos, clientes, facturas, abonos, egresos, notificaciones, bolsillos y prestamos personales. No elimina tu usuario ni tu empresa. Deseas continuar?')) return
+    if (window.prompt('Escribe ELIMINAR para confirmar') !== 'ELIMINAR') return toast.error('Confirmacion cancelada')
+    await run(clearAccountData, 'Datos de gestion eliminados')
+  }
+
+  return (
+    <Section icon={Database} title="Datos y respaldo" desc="Backup Excel, importacion y limpieza de informacion" variants={variants}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => run(exportAccountBackup, 'Backup generado')}
+          disabled={busy}
+          className="flex items-center justify-center gap-2 bg-surface-700 hover:bg-surface-600 disabled:opacity-50 border border-subtle text-foreground text-sm font-semibold px-4 py-3 rounded-xl transition-colors"
+        >
+          <Download size={15} /> Generar Backup
+        </button>
+
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={busy || !isAdmin}
+          className="flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold px-4 py-3 rounded-xl transition-colors"
+        >
+          <Upload size={15} /> Importar Backup
+        </button>
+        <input ref={fileRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleImport} />
+      </div>
+
+      <div className="border-t border-subtle pt-4">
+        <button
+          type="button"
+          onClick={handleClear}
+          disabled={busy || !isAdmin}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-danger-500/25 text-danger-400 hover:bg-danger-500/10 hover:border-danger-500/50 disabled:opacity-40 transition-all text-sm font-bold"
+        >
+          <Trash2 size={15} /> Eliminar todos los datos de gestion
+        </button>
+        {!isAdmin && (
+          <p className="text-[11px] text-muted-400 mt-2 text-center">Solo el administrador puede importar o eliminar datos.</p>
+        )}
+      </div>
+    </Section>
+  )
+}
+
 export default function Account() {
   const user         = useAuthStore((s) => s.user)
   const updateProfile = useAuthStore((s) => s.updateProfile)
@@ -376,6 +449,7 @@ export default function Account() {
       <ProfileSection      user={user} updateProfile={updateProfile} variants={itemVariants} />
       <SecuritySection     user={user} updateProfile={updateProfile} variants={itemVariants} />
       <NotificationsSection variants={itemVariants} />
+      <DataManagementSection user={user} variants={itemVariants} />
 
       <motion.button 
         variants={itemVariants}
