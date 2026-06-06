@@ -1001,17 +1001,6 @@ export default function Auth() {
           <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-brand-700/4 rounded-full blur-[120px]" />
         </div>
 
-        {/* Home button - volver al landing page */}
-        <motion.button
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          onClick={() => window.location.href = '/'}
-          className="absolute top-3 sm:top-6 left-3 sm:left-6 z-20 p-2 sm:p-3 rounded-xl bg-surface-800/50 hover:bg-surface-700 border border-subtle hover:border-brand-500/50 transition-all duration-300 group"
-          title="Volver al inicio"
-        >
-          <Home size={18} className="text-muted-400 group-hover:text-brand-400 transition-colors" />
-        </motion.button>
-
         <div className={clsx(
           "w-full relative z-10 transition-all duration-500",
           (tab === 'register' && regStep === 'plan') ? "max-w-5xl" : "max-w-md"
@@ -1045,8 +1034,20 @@ export default function Auth() {
             ))}
           </div>
 
-          {/* Form card */}
-          <div className="bg-surface-800 border border-subtle rounded-2xl p-4 sm:p-5 shadow-modal">
+          {/* Form card - with relative positioning for button overlay */}
+          <div className="relative bg-surface-800 border border-subtle rounded-2xl p-4 sm:p-5 shadow-modal">
+            {/* Home button - positioned in top-right inside the form card (green box) */}
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25, delay: 0.1 }}
+              onClick={() => window.location.href = '/'}
+              className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 sm:p-2.5 rounded-xl bg-success-500/10 hover:bg-success-500/20 border border-success-500/30 hover:border-success-500/50 transition-all duration-300 group"
+              title="Volver al inicio"
+            >
+              <Home size={16} className="text-success-400 group-hover:text-success-300 transition-colors" />
+            </motion.button>
+
             <AnimatePresence mode="wait">
               <motion.div
                 key={tab}
@@ -1080,12 +1081,19 @@ export default function Auth() {
                 )}
               </motion.div>
             </AnimatePresence>
-            <div className="mt-3.5 pt-3 sm:mt-4 sm:pt-3.5 border-t border-subtle flex items-center justify-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
-              <p className="text-[10px] text-muted-500 font-medium uppercase tracking-widest flex items-center gap-1.5">
-                <Lock size={10} className="text-success-500" /> Conexión segura SSL
+
+            {/* Security badge - positioned at bottom-right (red box area) */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-success-500/10 border border-success-500/30 hover:border-success-500/50 transition-all duration-300"
+            >
+              <div className="w-1 h-1 rounded-full bg-success-500 animate-pulse" />
+              <p className="text-[8px] sm:text-[10px] text-success-400 font-bold uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
+                <Lock size={8} className="text-success-500" /> SSL
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
