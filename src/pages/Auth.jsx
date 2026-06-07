@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Mail, Lock, Eye, EyeOff, CheckCircle2, ArrowLeft, Check, Camera, Home } from 'lucide-react'
+import { Zap, Mail, Lock, Eye, EyeOff, CheckCircle2, ArrowLeft, Check, Camera, Home, ChevronLeft } from 'lucide-react'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useEmployeeStore } from '@/store/useEmployeeStore'
 import { supabase } from '@/lib/supabase'
@@ -1045,16 +1045,16 @@ export default function Auth() {
 
           {/* Form card - with relative positioning for button overlay */}
           <div className="relative bg-surface-800 border border-subtle rounded-2xl p-4 sm:p-5 shadow-modal">
-            {/* Home button - positioned in top-right inside the form card (green box) */}
+            {/* Home button - positioned as a side tab on the bottom left */}
             <motion.button
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25, delay: 0.1 }}
               onClick={() => window.location.href = '/'}
-              className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 sm:p-2.5 rounded-xl bg-success-500/10 hover:bg-success-500/20 border border-success-500/30 hover:border-success-500/50 transition-all duration-300 group"
+              className="absolute bottom-6 sm:bottom-12 -left-8 sm:-left-12 w-8 sm:w-12 h-16 sm:h-20 bg-surface-800 border border-subtle border-r-0 rounded-l-xl sm:rounded-l-2xl flex items-center justify-center hover:bg-surface-700 transition-colors group z-[-1] shadow-[-6px_0_15px_-5px_rgba(0,0,0,0.3)]"
               title="Volver al inicio"
             >
-              <Home size={16} className="text-success-400 group-hover:text-success-300 transition-colors" />
+              <ChevronLeft size={20} className="text-muted-500 group-hover:text-foreground transition-colors mr-1 sm:mr-0" />
             </motion.button>
 
             <AnimatePresence mode="wait">
@@ -1088,19 +1088,6 @@ export default function Auth() {
                 )}
               </motion.div>
             </AnimatePresence>
-
-            {/* Security badge - positioned at bottom-right (red box area) */}
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-success-500/10 border border-success-500/30 hover:border-success-500/50 transition-all duration-300"
-            >
-              <div className="w-1 h-1 rounded-full bg-success-500 animate-pulse" />
-              <p className="text-[8px] sm:text-[10px] text-success-400 font-bold uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
-                <Lock size={8} className="text-success-500" /> SSL
-              </p>
-            </motion.div>
           </div>
         </div>
       </div>
