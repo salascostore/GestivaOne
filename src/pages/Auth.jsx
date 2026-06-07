@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Mail, Lock, Eye, EyeOff, CheckCircle2, ArrowLeft, Check, Camera } from 'lucide-react'
+import { Zap, Mail, Lock, Eye, EyeOff, CheckCircle2, ArrowLeft, Check, Camera, Home } from 'lucide-react'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useEmployeeStore } from '@/store/useEmployeeStore'
 import { supabase } from '@/lib/supabase'
@@ -154,7 +154,7 @@ function WorkerLogin({ onSocialClick, socialData, onClearSocialData }) {
               placeholder="••••••"
               type={showPw ? 'text' : 'password'}
               required
-              className="w-full bg-surface-900 border border-subtle rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 pr-10"
+              className="w-full bg-surface-900 border border-subtle rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 pr-10" 
             />
             <button
               type="button"
@@ -301,7 +301,7 @@ function WorkerLogin({ onSocialClick, socialData, onClearSocialData }) {
             type="tel"
             required
             disabled={!!socialData}
-            className="w-full bg-surface-900 border border-subtle rounded-xl px-4 py-2 text-sm text-foreground placeholder:text-muted-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 disabled:opacity-75 disabled:cursor-not-allowed"
+            className="w-full bg-surface-900 border border-subtle rounded-xl px-4 py-2 text-sm text-foreground placeholder:text-muted-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 disabled:opacity-75 disabled:cursor-not-allowed" 
           />
         </div>
       )}
@@ -316,7 +316,7 @@ function WorkerLogin({ onSocialClick, socialData, onClearSocialData }) {
             type="email"
             required
             disabled={!!socialData}
-            className="w-full bg-surface-900 border border-subtle rounded-xl px-4 py-2 text-sm text-foreground placeholder:text-muted-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 disabled:opacity-75 disabled:cursor-not-allowed"
+            className="w-full bg-surface-900 border border-subtle rounded-xl px-4 py-2 text-sm text-foreground placeholder:text-muted-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 disabled:opacity-75 disabled:cursor-not-allowed" 
           />
         </div>
       )}
@@ -329,7 +329,7 @@ function WorkerLogin({ onSocialClick, socialData, onClearSocialData }) {
           placeholder="••••••"
           type={showPw ? 'text' : 'password'}
           required
-          className="w-full bg-surface-900 border border-subtle rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 pr-10"
+          className="w-full bg-surface-900 border border-subtle rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 pr-10" 
         />
         <button
           type="button"
@@ -352,7 +352,7 @@ function WorkerLogin({ onSocialClick, socialData, onClearSocialData }) {
           placeholder="GO-XXXXXX"
           type="text"
           required
-          className="w-full bg-brand-50 border border-brand-500/30 rounded-xl px-4 py-2.5 text-sm text-brand-750 placeholder:text-brand-400/70 focus:outline-none focus:ring-2 focus:ring-brand-500/30 font-black text-center tracking-wider"
+          className="w-full bg-brand-50 border border-brand-500/30 rounded-xl px-4 py-2.5 text-sm text-brand-750 placeholder:text-brand-400/70 focus:outline-none focus:ring-2 focus:ring-brand-500/30 font-black text-center tracking-wider" 
         />
       </div>
 
@@ -407,7 +407,7 @@ function SocialAccessOptions({ onProviderClick, label = "ingresar" }) {
         <button
           type="button"
           onClick={() => onProviderClick('Google')}
-          className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-surface-700 hover:bg-surface-650 rounded-xl text-xs text-foreground font-bold transition-all hover:scale-[1.02] shadow-sm select-none border-0"
+          className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-surface-700 hover:bg-surface-650 rounded-xl text-xs text-foreground font-bold transition-all hover:scale-[1.02] shadow-sm"
         >
           <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
             <path
@@ -432,17 +432,17 @@ function SocialAccessOptions({ onProviderClick, label = "ingresar" }) {
         <button
           type="button"
           onClick={() => onProviderClick('Apple')}
-          className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-black hover:bg-neutral-900 rounded-xl text-xs text-white font-bold transition-all hover:scale-[1.02] shadow-sm select-none border-0"
+          className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-black hover:bg-neutral-900 rounded-xl text-xs text-white font-bold transition-all hover:scale-[1.02] shadow-sm"
         >
           <svg className="w-3.5 h-3.5 shrink-0 fill-current text-white" viewBox="0 0 24 24">
-            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-.96.04-2.13.64-2.82 1.45-.6.69-1.12 1.84-.98 2.94.1.08.2.12.3.12.87 0 1.95-.57 2.51-1.45z" />
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.35.87.86 0 2.22-1.08 3.74-.91.63.03 2.44.2 3.57 1.6-.03.02-2.18 1.28-2.15 3.81.03 3.02 2.6 4.09 2.61 4.14-.23.72-1.31 2.26-2.39 2.26-.63 0-1.19-.32-1.95-.32-.75 0-1.54.4-2.15.4z" />
           </svg>
           Apple
         </button>
         <button
           type="button"
           onClick={() => onProviderClick('Phone')}
-          className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-surface-700 hover:bg-surface-650 rounded-xl text-xs text-foreground font-bold transition-all hover:scale-[1.02] shadow-sm select-none border-0"
+          className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-surface-700 hover:bg-surface-650 rounded-xl text-xs text-foreground font-bold transition-all hover:scale-[1.02] shadow-sm"
         >
           <svg className="w-3.5 h-3.5 shrink-0 fill-none stroke-current stroke-[2.2] text-brand-400" viewBox="0 0 24 24">
             <rect x="6" y="2" width="12" height="20" rx="2.5" />
@@ -457,8 +457,8 @@ function SocialAccessOptions({ onProviderClick, label = "ingresar" }) {
 
 // ── Login tab ─────────────────────────────────────────────────
 function LoginForm({ onSocialClick, socialAutofill, onClearAutofill }) {
-  const navigate = useNavigate()
-  const login = useAuthStore((s) => s.login)
+  const navigate   = useNavigate()
+  const login      = useAuthStore((s) => s.login)
   const loginWithSocialEmail = useAuthStore((s) => s.loginWithSocialEmail)
   const loginWithSocialPhone = useAuthStore((s) => s.loginWithSocialPhone)
   const loading = useAuthStore((s) => s.loading)
@@ -469,6 +469,9 @@ function LoginForm({ onSocialClick, socialAutofill, onClearAutofill }) {
     const saved = localStorage.getItem('gestiva-remember-me')
     return saved === 'true'
   })
+  const [magicLinkMode, setMagicLinkMode] = useState(false)
+  const [magicEmail, setMagicEmail] = useState('')
+  const [magicSent, setMagicSent] = useState(false)
 
   useEffect(() => {
     const savedEmail = localStorage.getItem('gestiva-remembered-email')
@@ -587,6 +590,86 @@ function LoginForm({ onSocialClick, socialAutofill, onClearAutofill }) {
     toast.success('Te enviamos un enlace para cambiar tu contraseña')
   }
 
+  const handleMagicLink = async (e) => {
+    e.preventDefault()
+    const cleanEmail = magicEmail.trim().toLowerCase()
+    if (!cleanEmail) return toast.error('Ingresa tu correo electrónico')
+
+    const sendMagicLink = useAuthStore.getState().sendMagicLink
+    const result = await sendMagicLink(cleanEmail)
+    
+    if (!result.success) {
+      return toast.error(result.error)
+    }
+
+    toast.success('¡Revisa tu correo electrónico para acceder!')
+    setMagicSent(true)
+  }
+
+  if (magicLinkMode) {
+    return (
+      <div className="space-y-4">
+        {!magicSent ? (
+          <form onSubmit={handleMagicLink} className="space-y-3 sm:space-y-4">
+            <div className="bg-brand-500/10 border border-brand-500/25 rounded-xl p-3 text-xs text-brand-200">
+              Te enviaremos un enlace mágico a tu correo. Sin contraseña, sin complicaciones.
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-muted-600 mb-1 block">Correo electrónico</label>
+              <input 
+                value={magicEmail} 
+                onChange={(e) => setMagicEmail(e.target.value)} 
+                placeholder="tu@empresa.com" 
+                type="email" 
+                required
+                className="w-full bg-surface-900 border border-subtle rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30" 
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white text-sm font-semibold transition-colors shadow-glow-sm"
+            >
+              {loading ? 'Enviando enlace...' : 'Enviar enlace mágico'}
+            </button>
+
+            <button 
+              type="button" 
+              onClick={() => setMagicLinkMode(false)}
+              className="w-full py-3 rounded-xl border border-subtle hover:bg-surface-700 text-muted-400 text-sm font-semibold transition-colors"
+            >
+              Volver a ingresar con contraseña
+            </button>
+          </form>
+        ) : (
+          <div className="text-center space-y-4 py-4">
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
+              <CheckCircle2 size={48} className="text-success-400 mx-auto" />
+            </motion.div>
+            <div>
+              <h3 className="text-sm font-bold text-foreground">¡Enlace enviado!</h3>
+              <p className="text-xs text-muted-400 mt-1">Revisa tu correo <span className="font-semibold text-brand-300">{magicEmail}</span></p>
+            </div>
+            <p className="text-[10px] text-muted-500">El enlace expira en 24 horas</p>
+
+            <button 
+              type="button"
+              onClick={() => {
+                setMagicSent(false)
+                setMagicEmail('')
+              }}
+              className="w-full py-3 rounded-xl border border-subtle hover:bg-surface-700 text-muted-400 text-sm font-semibold transition-colors"
+            >
+              Intentar de nuevo
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       <form onSubmit={submit} className="space-y-3 sm:space-y-4">
@@ -677,7 +760,20 @@ function LoginForm({ onSocialClick, socialAutofill, onClearAutofill }) {
           }
         </button>
       </form>
-      {!socialAutofill && <SocialAccessOptions onProviderClick={onSocialClick} label="ingresar" />}
+
+      {!socialAutofill && (
+        <>
+          <button 
+            type="button"
+            onClick={() => setMagicLinkMode(true)}
+            className="w-full py-2.5 text-xs font-bold text-brand-400 hover:text-brand-300 transition-colors"
+          >
+            ¿Prefieres un enlace mágico?
+          </button>
+
+          <SocialAccessOptions onProviderClick={onSocialClick} label="ingresar" />
+        </>
+      )}
     </div>
   )
 }
@@ -865,14 +961,14 @@ function SocialAuthModal({ isOpen, onClose, provider, action, onConfirm }) {
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-      <motion.div
+      <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
         className="bg-surface-800 border border-subtle w-full max-w-md rounded-3xl p-6 relative overflow-hidden shadow-2xl"
       >
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-brand-500/10 rounded-full blur-[60px] pointer-events-none" />
-
+        
         <div className="flex items-center justify-between border-b border-subtle pb-4 mb-4">
           <div className="flex items-center gap-2">
             <div className={clsx(
@@ -884,7 +980,7 @@ function SocialAuthModal({ isOpen, onClose, provider, action, onConfirm }) {
             </h3>
           </div>
           {!loading && (
-            <button
+            <button 
               onClick={onClose}
               className="text-xs font-bold text-muted-500 hover:text-foreground transition-colors"
             >
@@ -902,7 +998,7 @@ function SocialAuthModal({ isOpen, onClose, provider, action, onConfirm }) {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-xs text-muted-400">
-              {isPhone
+              {isPhone 
                 ? 'Introduce tu número telefónico verificado por tu operador móvil para autorizar el acceso.'
                 : `Verifica tu cuenta vinculando el correo electrónico asociado a tu perfil de ${provider}.`
               }
@@ -942,6 +1038,7 @@ function SocialAuthModal({ isOpen, onClose, provider, action, onConfirm }) {
 }
 
 export default function Auth() {
+  const navigate = useNavigate()
   const [tab, setTab] = useState('login')
   const [regStep, setRegStep] = useState('plan')
 
@@ -950,17 +1047,32 @@ export default function Auth() {
     provider: null, // 'Google' | 'Apple' | 'Phone'
     action: null,   // 'login' | 'register' | 'worker_login' | 'worker_register'
   })
-
+  
   const [workerSocialData, setWorkerSocialData] = useState(null)
   const [registerSocialData, setRegisterSocialData] = useState(null)
   const [socialAutofill, setSocialAutofill] = useState(null)
 
-  const handleSocialClick = (provider, action) => {
-    setSocialModal({
-      isOpen: true,
-      provider,
-      action
-    })
+  const handleSocialClick = async (provider, action) => {
+    if (action === 'login' || action === 'register') {
+      // Direct OAuth redirect (full-page)
+      if (provider === 'Google') {
+        await signInWithGoogle()
+      } else if (provider === 'Apple') {
+        await signInWithApple()
+      } else if (provider === 'Phone') {
+        // Phone is handled with the old modal logic if needed
+        toast.info('Inicia sesión con tu número de teléfono registrado')
+      }
+    } else if (action === 'worker_login' || action === 'worker_register') {
+      // Workers use the modal-based approach for now
+      if (provider === 'Google') {
+        toast.info('Acceso con Google para trabajadores próximamente')
+      } else if (provider === 'Apple') {
+        toast.info('Acceso con Apple para trabajadores próximamente')
+      } else if (provider === 'Phone') {
+        toast.info('Ingresa tu número de teléfono registrado')
+      }
+    }
   }
 
   const handleClearWorkerSocialData = () => {
@@ -970,29 +1082,6 @@ export default function Auth() {
   const handleClearRegisterSocialData = () => {
     setRegisterSocialData(null)
     setRegStep('plan')
-  }
-
-  const handleSocialConfirm = (value) => {
-    const { provider, action } = socialModal
-    setSocialModal({ isOpen: false, provider: null, action: null })
-
-    if (action === 'login' || action === 'worker_login') {
-      if (action === 'worker_login') {
-        setTab('login')
-      }
-      setSocialAutofill({
-        provider,
-        email: provider === 'Phone' ? null : value,
-        phone: provider === 'Phone' ? value : null
-      })
-    } else if (action === 'register') {
-      setRegisterSocialData({ provider, value })
-      setTab('register')
-      setRegStep('datos')
-    } else if (action === 'worker_register') {
-      setWorkerSocialData({ provider, value })
-      setTab('worker')
-    }
   }
 
   useEffect(() => {
@@ -1006,8 +1095,12 @@ export default function Auth() {
       setRegStep('plan')
     } else if (mode === 'login') {
       setTab('login')
+    } else if (mode === 'confirm_email') {
+      // Handle magic link confirmation
+      toast.success('¡Correo confirmado! Iniciando sesión...')
+      // The session should already be established by Supabase
     }
-  }, [window.location.search])
+  }, [])
 
   return (
     <div className="min-h-screen bg-surface-900 flex">
@@ -1097,8 +1190,20 @@ export default function Auth() {
             ))}
           </div>
 
-          {/* Form card */}
-          <div className="bg-surface-800 border border-subtle rounded-2xl p-4 sm:p-5 shadow-modal">
+          {/* Form card - with relative positioning for button overlay */}
+          <div className="relative bg-surface-800 border border-subtle rounded-2xl p-4 sm:p-5 shadow-modal">
+            {/* Home button - positioned in top-right inside the form card (green box) */}
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25, delay: 0.1 }}
+              onClick={() => window.location.href = '/'}
+              className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 sm:p-2.5 rounded-xl bg-success-500/10 hover:bg-success-500/20 border border-success-500/30 hover:border-success-500/50 transition-all duration-300 group"
+              title="Volver al inicio"
+            >
+              <Home size={16} className="text-success-400 group-hover:text-success-300 transition-colors" />
+            </motion.button>
+
             <AnimatePresence mode="wait">
               <motion.div
                 key={tab}
@@ -1132,27 +1237,22 @@ export default function Auth() {
                 )}
               </motion.div>
             </AnimatePresence>
-            <div className="mt-3.5 pt-3 sm:mt-4 sm:pt-3.5 border-t border-subtle flex items-center justify-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
-              <p className="text-[10px] text-muted-500 font-medium uppercase tracking-widest flex items-center gap-1.5">
-                <Lock size={10} className="text-success-500" /> Conexión segura SSL
+
+            {/* Security badge - positioned at bottom-right (red box area) */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-success-500/10 border border-success-500/30 hover:border-success-500/50 transition-all duration-300"
+            >
+              <div className="w-1 h-1 rounded-full bg-success-500 animate-pulse" />
+              <p className="text-[8px] sm:text-[10px] text-success-400 font-bold uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
+                <Lock size={8} className="text-success-500" /> SSL
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
-
-      <AnimatePresence>
-        {socialModal.isOpen && (
-          <SocialAuthModal
-            isOpen={socialModal.isOpen}
-            provider={socialModal.provider}
-            action={socialModal.action}
-            onClose={() => setSocialModal({ isOpen: false, provider: null, action: null })}
-            onConfirm={handleSocialConfirm}
-          />
-        )}
-      </AnimatePresence>
     </div>
   )
 }

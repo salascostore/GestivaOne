@@ -175,6 +175,148 @@ export const useAuthStore = create(
         })
       },
 
+      // ── OAuth Methods ────────────────────────────────────
+      signInWithGoogle: async () => {
+        set({ loading: true })
+        try {
+          const redirectTo = `${window.location.origin}/auth`
+          const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo,
+              queryParams: {
+                access_type: 'offline',
+                prompt: 'consent',
+              },
+            },
+          })
+
+          if (error) {
+            set({ loading: false })
+            return { success: false, error: error.message }
+          }
+
+          set({ loading: false })
+          return { success: true }
+        } catch (err) {
+          set({ loading: false })
+          return { success: false, error: err.message }
+        }
+      },
+
+      signInWithApple: async () => {
+        set({ loading: true })
+        try {
+          const redirectTo = `${window.location.origin}/auth`
+          const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'apple',
+            options: {
+              redirectTo,
+            },
+          })
+
+          if (error) {
+            set({ loading: false })
+            return { success: false, error: error.message }
+          }
+
+          set({ loading: false })
+          return { success: true }
+        } catch (err) {
+          set({ loading: false })
+          return { success: false, error: err.message }
+        }
+      },
+
+      // ── Magic Link (Email OTP) ────────────────────────────
+      sendMagicLink: async (email) => {
+        set({ loading: true })
+        try {
+          const emailLower = email.trim().toLowerCase()
+          const redirectTo = `${window.location.origin}/auth?mode=confirm_email`
+
+          const { error } = await supabase.auth.signInWithOtp({
+            email: emailLower,
+            options: {
+              emailRedirectTo: redirectTo,
+            },
+          })
+
+          if (error) {
+            set({ loading: false })
+            return { success: false, error: error.message }
+          }
+
+          set({ loading: false })
+          return { success: true, email: emailLower }
+        } catch (err) {
+          set({ loading: false })
+          return { success: false, error: err.message }
+        }
+      },
+
+      // ── Auto-provision OAuth user profile ─────────────────
+      ensureProfileExists: async (userId, authUser) => {
+        try {
+          // Check if profile already exists
+          const { data: existingProfile, error: fetchError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', userId)
+            .single()
+
+          if (existingProfile) {
+            // Profile exists, just sync it
+            return await get().syncProfile(userId)
+          }
+
+          if (fetchError && fetchError.code !== 'PGRST116') {
+            // PGRST116 = not found (expected), other errors are real problems
+            console.warn('Error checking profile:', fetchError)
+          }
+
+          // Profile doesn't exist, create one automatically
+          const { data: newCompany, error: compError } = await supabase
+            .from('companies')
+            .insert([{ name: 'Mi Empresa' }])
+            .select()
+            .single()
+
+          if (compError) {
+            console.warn('Error creating company:', compError)
+            return { success: false, error: 'No se pudo crear la empresa' }
+          }
+
+          // Extract name from Google/Apple auth user
+          const fullName = authUser?.user_metadata?.full_name || authUser?.email?.split('@')[0] || 'Usuario'
+          const avatarUrl = authUser?.user_metadata?.avatar_url || null
+
+          const { error: profError } = await supabase
+            .from('profiles')
+            .insert([{
+              id: userId,
+              company_id: newCompany.id,
+              full_name: fullName,
+              email: authUser?.email,
+              phone: authUser?.phone || '',
+              avatar_url: avatarUrl,
+              role: 'administrador',
+              plan: 'standard'
+            }])
+
+          if (profError) {
+            console.warn('Error creating profile:', profError)
+            return { success: false, error: 'No se pudo crear el perfil' }
+          }
+
+          await get().syncProfile(userId)
+          return { success: true }
+        } catch (err) {
+          console.error('ensureProfileExists error:', err)
+          return { success: false, error: err.message }
+        }
+      },
+
       register: async (data) => {
         set({ loading: true })
 
@@ -715,4 +857,3 @@ export const useAuthStore = create(
     }
   )
 )
-
