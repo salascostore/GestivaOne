@@ -631,7 +631,6 @@ export default function Facturero() {
       <div className="bg-surface-900/90 backdrop-blur-md pb-4 pt-1 -mx-4 px-4 md:-mx-8 md:px-8 lg:-mx-10 lg:px-10 border-b border-subtle flex flex-row items-center justify-between gap-4 shrink-0">
         <div>
           <h1 className="text-lg md:text-xl font-bold text-brand-600 dark:text-white">
-            <Printer className="text-brand-400" />
             Facturero
           </h1>
           <p className="hidden sm:block text-sm text-muted-400 mt-0.5">
@@ -971,8 +970,8 @@ export default function Facturero() {
                     onClick={() => setThemeColor(key)}
                     title={`Aplicar el tema de color ${col.name} a tus facturas y PDFs`}
                     className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all duration-300 ${themeColor === key
-                        ? 'bg-surface-700 border-brand-500 ring-2 ring-brand-500/20'
-                        : 'bg-surface-850 border-subtle hover:border-muted-500'
+                      ? 'bg-surface-700 border-brand-500 ring-2 ring-brand-500/20'
+                      : 'bg-surface-850 border-subtle hover:border-muted-500'
                       }`}
                   >
                     <span

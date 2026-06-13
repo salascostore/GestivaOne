@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  Calculator, Download, AlertTriangle, ArrowUpRight, 
+import {
+  Calculator, Download, AlertTriangle, ArrowUpRight,
   ArrowDownRight, FileText, Info, HelpCircle, Landmark, CheckCircle2
 } from 'lucide-react'
 import { useInvoiceStore } from '@/store/useInvoiceStore'
@@ -108,12 +108,12 @@ export default function DianAssistant() {
   // ─── Renta Calculations (Estatuto Tributario Colombiano) ───
   // 1. Ingresos Netos
   const netSales = Math.max(0, totalSales - ingresosNoConstitutivos)
-  
+
   // 2. Renta Líquida Ordinaria (Ingresos Netos - Costos)
   const rentaLiquidaOrdinaria = Math.max(0, netSales - totalCost)
 
   // 3. Rentas Exentas y Deducciones (Limitadas al 40% de la Renta Líquida Ordinaria o 1340 UVT para personas naturales)
-  const maxDeduccionPermitida = taxType === 'natural' 
+  const maxDeduccionPermitida = taxType === 'natural'
     ? Math.min(rentasExentas, rentaLiquidaOrdinaria * 0.40, 1340 * uvtValue)
     : rentasExentas
 
@@ -184,7 +184,7 @@ export default function DianAssistant() {
   const exogenaAudit = useMemo(() => {
     let clientsMissingDoc = 0
     let expensesMissingDoc = 0
-    
+
     // Audit invoices / clients
     const uniqueClientsInInvoices = new Set(yearInvoices.map(inv => inv.client_id || 'CLIENTE_EXPRESS'))
     uniqueClientsInInvoices.forEach(cId => {
@@ -212,15 +212,15 @@ export default function DianAssistant() {
   // ─── Exógena Exporters ───
   const downloadExogena1007 = () => {
     const clientMap = {}
-    
+
     yearInvoices.forEach((inv) => {
       const clientId = inv.client_id || 'CLIENTE_EXPRESS'
       const clientObj = clients.find(c => c.id === clientId)
-      
+
       const docType = clientObj?.document_type || '13'
       const docNum = clientObj?.document_id || '222222222'
       const name = clientObj?.name || 'Cliente Express / Consumidor Final'
-      
+
       if (!clientMap[clientId]) {
         clientMap[clientId] = {
           concepto: '4001',
@@ -241,14 +241,14 @@ export default function DianAssistant() {
     })
 
     const rows = Object.values(clientMap)
-    
+
     if (rows.length === 0) {
       toast.error('No hay datos de ventas en este año para generar el Formato 1007')
       return
     }
 
     let csvContent = "Concepto,Tipo Documento,Numero Identificacion,Primer Apellido,Primer Nombre,Razon Social,Direccion,Departamento,Municipio,Pais,Ingresos Brutos,Devoluciones y Descuentos\r\n"
-    
+
     rows.forEach(r => {
       csvContent += `${r.concepto},${r.tipoDoc},${r.identificacion},"${r.primerApellido}","${r.primerNombre}","${r.razonSocial}","${r.direccion}",${r.departamento},${r.municipio},${r.pais},${Math.round(r.ingresosBrutos)},0\r\n`
     })
@@ -309,7 +309,6 @@ export default function DianAssistant() {
       <div className="sticky top-0 z-20 bg-surface-900/90 backdrop-blur-md pb-4 pt-1 -mx-4 px-4 md:-mx-8 md:px-8 lg:-mx-10 lg:px-10 border-b border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-lg md:text-xl font-bold text-brand-600 dark:text-white">
-            <Calculator className="text-brand-400" />
             Asistente DIAN
           </h1>
           <p className="hidden sm:block text-sm text-muted-400 mt-0.5">
@@ -317,7 +316,7 @@ export default function DianAssistant() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <select 
+          <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
             className="h-10 px-3 rounded-xl bg-surface-800 border border-subtle text-sm text-foreground focus:outline-none focus:border-brand-500 font-bold transition-colors cursor-pointer"
@@ -346,21 +345,19 @@ export default function DianAssistant() {
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setTaxType('juridica')}
-              className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all duration-300 ${
-                taxType === 'juridica'
+              className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all duration-300 ${taxType === 'juridica'
                   ? 'bg-brand-600 border-brand-500 text-white shadow-glow-sm'
                   : 'bg-surface-800 border-subtle text-muted-400 hover:text-foreground'
-              }`}
+                }`}
             >
               Jurídica (35%)
             </button>
             <button
               onClick={() => setTaxType('natural')}
-              className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all duration-300 ${
-                taxType === 'natural'
+              className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all duration-300 ${taxType === 'natural'
                   ? 'bg-brand-600 border-brand-500 text-white shadow-glow-sm'
                   : 'bg-surface-800 border-subtle text-muted-400 hover:text-foreground'
-              }`}
+                }`}
             >
               Natural (UVT)
             </button>
@@ -388,31 +385,28 @@ export default function DianAssistant() {
       <div className="flex overflow-x-auto scrollbar-none whitespace-nowrap border-b border-subtle -mx-4 px-4 sm:mx-0 sm:px-0">
         <button
           onClick={() => setActiveTab('renta')}
-          className={`pb-3 px-4 font-bold text-sm border-b-2 transition-colors ${
-            activeTab === 'renta'
+          className={`pb-3 px-4 font-bold text-sm border-b-2 transition-colors ${activeTab === 'renta'
               ? 'border-brand-500 text-brand-400'
               : 'border-transparent text-muted-400 hover:text-foreground dark:hover:text-white'
-          }`}
+            }`}
         >
           Simulador Renta
         </button>
         <button
           onClick={() => setActiveTab('iva')}
-          className={`pb-3 px-4 font-bold text-sm border-b-2 transition-colors ${
-            activeTab === 'iva'
+          className={`pb-3 px-4 font-bold text-sm border-b-2 transition-colors ${activeTab === 'iva'
               ? 'border-brand-500 text-brand-400'
               : 'border-transparent text-muted-400 hover:text-foreground dark:hover:text-white'
-          }`}
+            }`}
         >
           Liquidación IVA
         </button>
         <button
           onClick={() => setActiveTab('exogena')}
-          className={`pb-3 px-4 font-bold text-sm border-b-2 transition-colors ${
-            activeTab === 'exogena'
+          className={`pb-3 px-4 font-bold text-sm border-b-2 transition-colors ${activeTab === 'exogena'
               ? 'border-brand-500 text-brand-400'
               : 'border-transparent text-muted-400 hover:text-foreground dark:hover:text-white'
-          }`}
+            }`}
         >
           Información Exógena
         </button>
@@ -717,7 +711,7 @@ export default function DianAssistant() {
                         yearExpenses.map((exp) => {
                           const isSalary = exp.category === 'Salarios/Nómina'
                           const hasActualIva = exp.iva_paid !== undefined && exp.iva_paid !== null && Number(exp.iva_paid) > 0
-                          const calculatedIva = hasActualIva 
+                          const calculatedIva = hasActualIva
                             ? Number(exp.iva_paid)
                             : isSalary ? 0 : (exp.amount * (estimatedIvaRate / 100) / (1 + (estimatedIvaRate / 100)))
 
