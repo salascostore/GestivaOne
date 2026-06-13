@@ -676,7 +676,7 @@ export default function Facturero() {
                     <Building2 size={16} />
                   </div>
                   <div>
-                    <h4 className= shadow-glow-sm"text-xs font-bold text-foreground">One Corporate (Clásica)</h4>
+                    <h4 className="text-xs font-bold text-foreground shadow-glow-sm">One Corporate (Clásica)</h4>
                     <p className="text-xs text-muted-300 mt-0.5">Encabezado formal con color corporativo, doble bloque estructurado y diseño robusto.</p>
                   </div>
                 </button>
@@ -696,7 +696,7 @@ export default function Facturero() {
                     <FileText size={16} />
                   </div>
                   <div>
-                    <h4 className= shadow-glow-sm"text-xs font-bold text-foreground">One Minimalist (Moderna)</h4>
+                    <h4 className="text-xs font-bold text-foreground shadow-glow-sm">One Minimalist (Moderna)</h4>
                     <p className="text-xs text-muted-300 mt-0.5">Diseño minimalista con alto espacio en blanco, líneas limpias y diseño contemporáneo.</p>
                   </div>
                 </button>
@@ -722,7 +722,7 @@ export default function Facturero() {
                     <Printer size={16} />
                   </div>
                   <div>
-                    <h4 className= shadow-glow-sm"text-xs font-bold text-foreground">Ticket Clásico</h4>
+                    <h4 className="text-xs font-bold text-foreground shadow-glow-sm">Ticket Clásico</h4>
                     <p className="text-xs text-muted-300 mt-0.5">Estilo tradicional monoespaciado en Courier, divisores de guiones y formato compacto.</p>
                   </div>
                 </button>
@@ -742,7 +742,7 @@ export default function Facturero() {
                     <Sparkles size={16} />
                   </div>
                   <div>
-                    <h4 className= shadow-glow-sm"text-xs font-bold text-foreground">Ticket Moderno</h4>
+                    <h4 className="text-xs font-bold text-foreground shadow-glow-sm">Ticket Moderno</h4>
                     <p className="text-xs text-muted-300 mt-0.5">Tipografía sans-serif limpia, tarjeta superior para datos de empresa y bordes sutiles.</p>
                   </div>
                 </button>
