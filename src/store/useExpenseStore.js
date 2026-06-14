@@ -73,6 +73,16 @@ export const useExpenseStore = create(
     }
 
     set((s) => ({ expenses: [saved, ...s.expenses] }))
+
+    // Notify admin via email asynchronously
+    import('../services/emailService').then(({ sendExpenseEmail }) => {
+      const { user } = useAuthStore.getState()
+      if (user?.email) {
+        const company = { companyName: user.companyName || 'GestivaOne', companyLogo: user.companyLogo || null }
+        sendExpenseEmail(saved, user.email, company).catch(() => {})
+      }
+    }).catch(() => {})
+
     return { success: true, data: saved }
   },
 

@@ -571,12 +571,113 @@ export function resetWorkspaceTemplate(company = {}) {
 }
 
 // ── 8. Test Email Template ────────────────────────────────────────────────────
+
+// ── 8. Expense Registered Template ───────────────────────────────────────────
+export function expenseRegisteredTemplate(expense = {}, company = {}) {
+  const { companyName = 'GestivaOne', companyLogo = null } = company
+  const amount = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(expense.amount || 0)
+  const content = `
+    <table width="100%" cellpadding="0" cellspacing="0">
+      ${accentBar('#f59e0b')}
+      ${cardHeading('💸', 'Gasto Registrado', 'Se registró un nuevo gasto en ' + companyName, '#f59e0b')}
+      ${divider()}
+      <tr><td style="padding:0 32px 24px;">
+        <div style="background:linear-gradient(135deg,#f59e0b22,#d9770622);border:1px solid #f59e0b44;border-radius:16px;padding:20px;text-align:center;margin-bottom:20px;">
+          <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;">Monto</p>
+          <p style="margin:4px 0 0;font-size:32px;font-weight:900;color:#fbbf24;font-family:monospace;">${amount}</p>
+        </div>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Categoría</td><td style="font-size:12px;color:#e5e7eb;text-align:right;font-weight:600;">${expense.category || 'Otros'}</td></tr>
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Proveedor</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">${expense.provider_name || 'N/A'}</td></tr>
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Descripción</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">${expense.description || '—'}</td></tr>
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">IVA pagado</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">${new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(expense.iva_paid||0)}</td></tr>
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Fecha</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">${formatDate(new Date().toISOString())}</td></tr>
+        </table>
+      </td></tr>
+      ${ctaButton('Ver Gastos →', 'https://gestivaone.com', '#f59e0b')}
+    </table>`
+  return wrapper(content, { companyName, companyLogo })
+}
+
+// ── 9. New Client Added Template ──────────────────────────────────────────────
+export function newClientTemplate(client = {}, company = {}) {
+  const { companyName = 'GestivaOne', companyLogo = null } = company
+  const content = `
+    <table width="100%" cellpadding="0" cellspacing="0">
+      ${accentBar('#10b981')}
+      ${cardHeading('👤', '¡Nuevo Cliente!', (client.name || 'Un cliente') + ' se añadió a ' + companyName, '#10b981')}
+      ${divider()}
+      <tr><td style="padding:0 32px 24px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Nombre</td><td style="font-size:12px;color:#e5e7eb;text-align:right;font-weight:600;">${client.name || '—'}</td></tr>
+          ${client.email ? '<tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Correo</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">' + client.email + '</td></tr>' : ''}
+          ${client.phone ? '<tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Teléfono</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">' + client.phone + '</td></tr>' : ''}
+          ${client.document_id ? '<tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Documento</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">' + client.document_id + '</td></tr>' : ''}
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Tipo</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">${client.type === 'frequent' ? 'Frecuente' : 'Express'}</td></tr>
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Fecha</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">${formatDate(new Date().toISOString())}</td></tr>
+        </table>
+      </td></tr>
+      ${ctaButton('Ver Clientes →', 'https://gestivaone.com', '#10b981')}
+    </table>`
+  return wrapper(content, { companyName, companyLogo })
+}
+
+// ── 10. Low Stock Alert Template ──────────────────────────────────────────────
+export function lowStockTemplate(product = {}, company = {}) {
+  const { companyName = 'GestivaOne', companyLogo = null } = company
+  const content = `
+    <table width="100%" cellpadding="0" cellspacing="0">
+      ${accentBar('#ef4444')}
+      ${cardHeading('⚠️', 'Alerta: Stock Bajo', '"' + (product.name || 'Producto') + '" tiene stock crítico', '#ef4444')}
+      ${divider()}
+      <tr><td style="padding:0 32px 24px;">
+        <div style="background:linear-gradient(135deg,#ef444422,#dc262622);border:1px solid #ef444444;border-radius:16px;padding:20px;text-align:center;margin-bottom:20px;">
+          <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;">Stock Actual</p>
+          <p style="margin:4px 0 0;font-size:48px;font-weight:900;color:#f87171;font-family:monospace;">${product.stock ?? 0}</p>
+          <p style="margin:4px 0 0;font-size:12px;color:#9ca3af;">${product.unit || 'UND'} disponibles</p>
+        </div>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Producto</td><td style="font-size:12px;color:#e5e7eb;text-align:right;font-weight:600;">${product.name || '—'}</td></tr>
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Categoría</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">${product.category || '—'}</td></tr>
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Precio</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">${new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(product.price||0)}</td></tr>
+        </table>
+        <p style="margin:16px 0 0;font-size:13px;color:#fca5a5;padding:12px;background:#ef444411;border-radius:8px;border-left:3px solid #ef4444;">
+          Reabastece este producto pronto para evitar interrupciones en ventas.
+        </p>
+      </td></tr>
+      ${ctaButton('Ir al Inventario →', 'https://gestivaone.com', '#ef4444')}
+    </table>`
+  return wrapper(content, { companyName, companyLogo })
+}
+
+// ── 11. New Employee Added Template ───────────────────────────────────────────
+export function newEmployeeTemplate(employee = {}, company = {}) {
+  const { companyName = 'GestivaOne', companyLogo = null } = company
+  const roleLabel = { administrador: 'Administrador', despachador: 'Despachador', contable: 'Contable' }[employee.role] || employee.role || 'Empleado'
+  const content = `
+    <table width="100%" cellpadding="0" cellspacing="0">
+      ${accentBar('#6366f1')}
+      ${cardHeading('👷', 'Nuevo Empleado Registrado', (employee.full_name || 'Un empleado') + ' se unió a ' + companyName, '#6366f1')}
+      ${divider()}
+      <tr><td style="padding:0 32px 24px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Nombre</td><td style="font-size:12px;color:#e5e7eb;text-align:right;font-weight:600;">${employee.full_name || '—'}</td></tr>
+          ${employee.email ? '<tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Correo</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">' + employee.email + '</td></tr>' : ''}
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Rol</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">${roleLabel}</td></tr>
+          <tr><td style="font-size:12px;color:#6b7280;padding:6px 0;">Fecha</td><td style="font-size:12px;color:#e5e7eb;text-align:right;">${formatDate(new Date().toISOString())}</td></tr>
+        </table>
+      </td></tr>
+      ${ctaButton('Ver Equipo →', 'https://gestivaone.com', '#6366f1')}
+    </table>`
+  return wrapper(content, { companyName, companyLogo })
+}
+
+// ── 8. Test Email Template ────────────────────────────────────────────────────
 export function testEmailTemplate(company = {}) {
   const { companyName = 'GestivaOne', companyLogo = null } = company
 
   const content = `
-    <table width="100%" cellpadding="0" cellspacing="0">
-      ${accentBar('#7c3aed')}
+
       ${cardHeading('🧪', '¡Correo de prueba exitoso!', 'El sistema de correos de GestivaOne está configurado correctamente', '#7c3aed')}
       ${divider()}
 

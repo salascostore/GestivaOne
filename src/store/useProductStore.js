@@ -100,6 +100,20 @@ export const useProductStore = create(
       set((s) => ({
         products: s.products.map((p) => (p.id === id ? { ...p, ...data } : p)),
       }))
+
+      // Low stock alert: fire when stock drops to 5 or below
+      if (typeof data.stock === 'number' && data.stock <= 5) {
+        const updatedProduct = get().products.find(p => p.id === id)
+        if (updatedProduct && updatedProduct.unit !== 'ILIMITADO') {
+          import('../services/emailService').then(({ sendLowStockEmail }) => {
+            const { user } = useAuthStore.getState()
+            if (user?.email) {
+              const company = { companyName: user.companyName || 'GestivaOne', companyLogo: user.companyLogo || null }
+              sendLowStockEmail({ ...updatedProduct, ...data }, user.email, company).catch(() => {})
+            }
+          }).catch(() => {})
+        }
+      }
     }
   },
 

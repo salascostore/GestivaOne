@@ -59,6 +59,15 @@ export const useClientStore = create(
     }
 
     set((s) => ({ clients: [saved, ...s.clients] }))
+
+    // Notify admin via email asynchronously
+    import('../services/emailService').then(({ sendNewClientEmail }) => {
+      if (user?.email) {
+        const company = { companyName: user.companyName || 'GestivaOne', companyLogo: user.companyLogo || null }
+        sendNewClientEmail(saved, user.email, company).catch(() => {})
+      }
+    }).catch(() => {})
+
     return saved
   },
 

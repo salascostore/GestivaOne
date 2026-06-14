@@ -6,7 +6,11 @@ import {
   workerInviteTemplate,
   weeklyReportTemplate,
   resetWorkspaceTemplate,
-  testEmailTemplate
+  testEmailTemplate,
+  expenseRegisteredTemplate,
+  newClientTemplate,
+  lowStockTemplate,
+  newEmployeeTemplate
 } from './emailTemplates'
 import { useSettingsStore } from '../store/useSettingsStore'
 
@@ -185,5 +189,50 @@ export async function sendTestEmail(toEmail, company = {}) {
     to: toEmail,
     subject,
     html
+  })
+}
+
+// ── Expense Created ──────────────────────────────────────────────────────────
+export async function sendExpenseEmail(expense, toEmail, company = {}) {
+  if (!toEmail) return { success: false, error: 'Email de destino vacío' }
+
+  const amount = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(expense.amount || 0)
+  return await callResendAPI({
+    to: toEmail,
+    subject: `💸 Nuevo gasto registrado: ${amount} (${expense.category || 'Otros'})`,
+    html: expenseRegisteredTemplate(expense, company)
+  })
+}
+
+// ── New Client Added ─────────────────────────────────────────────────────────
+export async function sendNewClientEmail(client, toEmail, company = {}) {
+  if (!toEmail) return { success: false, error: 'Email de destino vacío' }
+
+  return await callResendAPI({
+    to: toEmail,
+    subject: `👤 Nuevo cliente añadido: ${client.name || 'Cliente'}`,
+    html: newClientTemplate(client, company)
+  })
+}
+
+// ── Low Stock Alert ──────────────────────────────────────────────────────────
+export async function sendLowStockEmail(product, toEmail, company = {}) {
+  if (!toEmail) return { success: false, error: 'Email de destino vacío' }
+
+  return await callResendAPI({
+    to: toEmail,
+    subject: `⚠️ Stock bajo: ${product.name || 'Producto'} (${product.stock ?? 0} ${product.unit || 'UND'})`,
+    html: lowStockTemplate(product, company)
+  })
+}
+
+// ── New Employee Added ───────────────────────────────────────────────────────
+export async function sendNewEmployeeEmail(employee, toEmail, company = {}) {
+  if (!toEmail) return { success: false, error: 'Email de destino vacío' }
+
+  return await callResendAPI({
+    to: toEmail,
+    subject: `👷 Nuevo empleado en ${company.companyName || 'GestivaOne'}: ${employee.full_name || 'Empleado'}`,
+    html: newEmployeeTemplate(employee, company)
   })
 }

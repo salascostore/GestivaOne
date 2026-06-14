@@ -64,6 +64,15 @@ export const useEmployeeStore = create(
 
     if (!error) {
       set((s) => ({ employees: [...s.employees, saved] }))
+
+      // Notify admin via email asynchronously
+      import('../services/emailService').then(({ sendNewEmployeeEmail }) => {
+        if (user?.email) {
+          const company = { companyName: user.companyName || 'GestivaOne', companyLogo: user.companyLogo || null }
+          sendNewEmployeeEmail(saved, user.email, company).catch(() => {})
+        }
+      }).catch(() => {})
+
       return saved
     }
   },
