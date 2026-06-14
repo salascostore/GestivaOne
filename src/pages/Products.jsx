@@ -35,7 +35,7 @@ const UNIT_LABELS = { ILIMITADO: 'Ilimitado' }
 function ProductCard({ product, onEdit, onDelete, onAdd, format$ }) {
   const [qty, setQty] = useState('')
   const [added, setAdded] = useState(false)
-  const hasUnlimitedStock = product.unit === 'ILIMITADO'
+  const hasUnlimitedStock = product.unit === 'ILIMITADO' || product.stock >= 999999999
   const isOutOfStock = !hasUnlimitedStock && product.stock !== undefined && product.stock !== null && product.stock <= 0
 
   const handleAdd = () => {

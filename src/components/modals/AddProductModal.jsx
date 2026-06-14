@@ -17,15 +17,15 @@ const schema = z.object({
   name:     z.string().min(2, 'Mínimo 2 caracteres'),
   price:    z.coerce.number().positive('Precio inválido'),
   cost:     z.coerce.number().min(0, 'Costo inválido').optional().or(z.literal('')),
-  unit:     z.enum(['KG', 'LB', 'UND', 'L', 'M', 'ILIMITADO']),
+  unit:     z.enum(['KG', 'LB', 'UND', 'L', 'M']),
   category: z.string().optional(),
   stock:    z.coerce.number().min(0).optional(),
   attachment_url: z.string().optional(),
   attachment_name: z.string().optional(),
 })
 
-const UNITS = ['KG', 'LB', 'UND', 'L', 'M', 'ILIMITADO']
-const UNIT_LABELS = { ILIMITADO: 'Ilimitado' }
+const UNITS = ['KG', 'LB', 'UND', 'L', 'M']
+const UNIT_LABELS = { }
 
 export default function AddProductModal({ open }) {
   const addProduct    = useProductStore((s) => s.addProduct)
@@ -47,21 +47,30 @@ export default function AddProductModal({ open }) {
 
   const unit = watch('unit')
   const selectedCategory = watch('category')
-
-  useEffect(() => {
-    if (unit === 'ILIMITADO') setValue('stock', 0)
-  }, [unit, setValue])
+  
+  // Derived state for unlimited
+  const [isUnlimited, setIsUnlimited] = useState(false)
 
   useEffect(() => {
     if (open && editing) {
-      reset({ ...editing, stock: editing.stock ?? 0, cost: editing.cost ?? 0, attachment_url: editing.attachment_url ?? '', attachment_name: editing.attachment_name ?? '' })
+      const isEditingUnlimited = editing.unit === 'ILIMITADO' || editing.stock >= 999999999
+      setIsUnlimited(isEditingUnlimited)
+      reset({ 
+        ...editing, 
+        unit: editing.unit === 'ILIMITADO' ? 'UND' : editing.unit,
+        stock: isEditingUnlimited ? 0 : (editing.stock ?? 0), 
+        cost: editing.cost ?? 0, 
+        attachment_url: editing.attachment_url ?? '', 
+        attachment_name: editing.attachment_name ?? '' 
+      })
       setCustomCategoryName('')
     }
     else if (open) {
+      setIsUnlimited(false)
       reset({ unit: 'UND', stock: 0, category: 'Otros', name: '', price: '', cost: 0, attachment_url: '', attachment_name: '' })
       setCustomCategoryName('')
     }
-  }, [open, editing])
+  }, [open, editing, reset])
 
   const onSubmit = async (data) => {
     let finalCategory = data.category
@@ -78,7 +87,7 @@ export default function AddProductModal({ open }) {
     const finalData = {
       ...data,
       category: finalCategory,
-      stock: data.unit === 'ILIMITADO' ? 999999999 : Number(data.stock || 0),
+      stock: isUnlimited ? 999999999 : Number(data.stock || 0),
     }
 
     if (editing) {
@@ -124,15 +133,30 @@ export default function AddProductModal({ open }) {
         </div>
         
         <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-medium text-muted-500 uppercase tracking-wide">Stock disponible</label>
+            <button
+              type="button"
+              onClick={() => {
+                setIsUnlimited(!isUnlimited)
+                if (!isUnlimited) setValue('stock', 0)
+              }}
+              className={clsx(
+                'text-[10px] font-bold px-2 py-0.5 rounded-full transition-colors',
+                isUnlimited ? 'bg-success-500/20 text-success-400' : 'bg-surface-700 text-muted-400 hover:text-foreground'
+              )}
+            >
+              Ilimitado
+            </button>
+          </div>
           <Input
-            label="Stock disponible"
             icon={<Archive size={14} />}
             placeholder="0"
             type="number"
-            disabled={unit === 'ILIMITADO'}
+            disabled={isUnlimited}
             {...register('stock')}
           />
-          {unit === 'ILIMITADO' && (
+          {isUnlimited && (
             <p className="text-[11px] text-muted-400 mt-1.5">Este producto no descuenta inventario al venderse.</p>
           )}
         </div>
