@@ -5,6 +5,7 @@ import { UserPlus, Users, Edit2, Trash2, Check, ShoppingBag, History, CalendarDa
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import SearchBar from '@/components/ui/SearchBar'
+import SortFilterBar from '@/components/ui/SortFilterBar'
 import { useClientStore } from '@/store/useClientStore'
 import { useUIStore } from '@/store/useUIStore'
 import { useInvoiceStore } from '@/store/useInvoiceStore'
@@ -166,20 +167,56 @@ export default function Menu() {
   const [expressEmail, setExpressEmail] = useState('')
   const [creatingExpress, setCreatingExpress] = useState(false)
 
+  // Sort & Filter state
+  const [sortMode, setSortMode] = useState('recent')
+  const [activeLetter, setActiveLetter] = useState(null)
+
   const frequent = getFrequent()
 
   useEffect(() => {
     useClientStore.getState().fetchClients()
   }, [])
 
+  const letters = useMemo(() => {
+    const unique = new Set(frequent.map(c => (c.name || '').charAt(0).toUpperCase()))
+    return Array.from(unique).filter(c => c && /[A-Z]/.test(c)).sort()
+  }, [frequent])
+
   const filtered = useMemo(() => {
-    const q = search.toLowerCase()
-    return frequent.filter((c) =>
-      c.name.toLowerCase().includes(q) ||
-      c.email?.toLowerCase().includes(q) ||
-      c.phone?.includes(q)
-    )
-  }, [frequent, search])
+    let list = [...frequent]
+
+    // 1. Search filter
+    if (search) {
+      const q = search.toLowerCase()
+      list = list.filter((c) =>
+        (c.name || '').toLowerCase().includes(q) ||
+        (c.email || '').toLowerCase().includes(q) ||
+        (c.phone || '').includes(q) ||
+        (c.doc_id || '').includes(q)
+      )
+    }
+
+    // 2. Letter filter
+    if (sortMode === 'letter' && activeLetter) {
+      list = list.filter((c) => (c.name || '').charAt(0).toUpperCase() === activeLetter)
+    }
+
+    // 3. Sorting
+    if (sortMode === 'recent') {
+      list.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+    } else if (sortMode === 'id') {
+      // Sort by doc_id or id if possible
+      list.sort((a, b) => {
+        const idA = a.doc_id || a.id || ''
+        const idB = b.doc_id || b.id || ''
+        return idA.toString().localeCompare(idB.toString(), undefined, { numeric: true })
+      })
+    } else if (sortMode === 'letter') {
+      list.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+    }
+
+    return list
+  }, [frequent, search, sortMode, activeLetter])
 
   const getClientStatus = (clientId) => {
     const clientInvoices = invoices.filter((i) => i.client_id === clientId)
@@ -256,12 +293,24 @@ export default function Menu() {
           </div>
         </div>
 
-        {/* Search Bar inside sticky panel */}
-        <SearchBar
-          value={search}
-          onChange={setSearch}
-          placeholder="Buscar cliente por nombre, correo o teléfono..."
-        />
+        {/* Search Bar & Filters inside sticky panel */}
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center">
+          <div className="flex-1">
+            <SearchBar
+              value={search}
+              onChange={setSearch}
+              placeholder="Buscar cliente por nombre, correo, teléfono o ID..."
+            />
+          </div>
+          
+          <SortFilterBar 
+            sortMode={sortMode} 
+            onSortChange={setSortMode} 
+            activeLetter={activeLetter} 
+            onLetterChange={setActiveLetter} 
+            letters={letters} 
+          />
+        </div>
       </div>
 
       {/* Frequent clients */}

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Package, Plus, Trash2, Edit2, Copy, Link2, FileText, DollarSign, ShoppingCart } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import SearchBar from '@/components/ui/SearchBar'
+import SortFilterBar from '@/components/ui/SortFilterBar'
 import { useProductStore, CATEGORIES, getProductDiscount } from '@/store/useProductStore'
 import { useCartStore } from '@/store/useCartStore'
 import { useUIStore } from '@/store/useUIStore'
@@ -206,6 +207,10 @@ export default function Products() {
   const [freeName, setFreeName]   = useState('')
   const [showFree, setShowFree]   = useState(false)
 
+  // Sort & Filter state
+  const [sortMode, setSortMode] = useState('recent')
+  const [activeLetter, setActiveLetter] = useState(null)
+
   const products      = useProductStore((s) => s.products)
   const deleteProduct = useProductStore((s) => s.deleteProduct)
   const openModal     = useUIStore((s) => s.openModal)
@@ -220,12 +225,44 @@ export default function Products() {
   const customCats = userSettings?.custom_categories || []
   const dynamicCategories = [...CATEGORIES.filter(c => c !== 'Otros'), ...customCats, 'Otros']
 
+  const letters = useMemo(() => {
+    const unique = new Set(products.map(p => (p.name || '').charAt(0).toUpperCase()))
+    return Array.from(unique).filter(c => c && /[A-Z]/.test(c)).sort()
+  }, [products])
+
   const filtered = useMemo(() => {
-    let list = products
+    let list = [...products]
+
+    // 1. Basic filters (Search & Category)
     if (activeCat) list = list.filter((p) => p.category === activeCat)
-    if (search)    list = list.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+    if (search) {
+      const q = search.toLowerCase()
+      list = list.filter((p) => p.name.toLowerCase().includes(q) || (p.code && p.code.toLowerCase().includes(q)))
+    }
+
+    // 2. Letter filter
+    if (sortMode === 'letter' && activeLetter) {
+      list = list.filter((p) => (p.name || '').charAt(0).toUpperCase() === activeLetter)
+    }
+
+    // 3. Sorting
+    if (sortMode === 'recent') {
+      // Assuming products are appended or have created_at. Since store usually unshifts/pushes, we can rely on ID if created_at is missing, or just reverse. 
+      // If they have created_at:
+      list.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+    } else if (sortMode === 'id') {
+      // Sort by ID/Code, numeric if possible
+      list.sort((a, b) => {
+        const idA = a.code || a.id || ''
+        const idB = b.code || b.id || ''
+        return idA.toString().localeCompare(idB.toString(), undefined, { numeric: true })
+      })
+    } else if (sortMode === 'letter') {
+      list.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+    }
+
     return list
-  }, [products, activeCat, search])
+  }, [products, activeCat, search, sortMode, activeLetter])
 
   const handleAdd = (product, qty) => {
     addItem(product, qty)
@@ -306,10 +343,21 @@ export default function Products() {
         </AnimatePresence>
 
         {/* Search & filters */}
-        <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
-          <div className="flex-1">
-            <SearchBar value={search} onChange={setSearch} placeholder="Buscar producto..." />
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center">
+            <div className="flex-1">
+              <SearchBar value={search} onChange={setSearch} placeholder="Buscar producto..." />
+            </div>
+            
+            <SortFilterBar 
+              sortMode={sortMode} 
+              onSortChange={setSortMode} 
+              activeLetter={activeLetter} 
+              onLetterChange={setActiveLetter} 
+              letters={letters} 
+            />
           </div>
+
           <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar select-none -mx-4 px-4 md:mx-0 md:px-0">
             <button
               onClick={() => setActiveCat(null)}
