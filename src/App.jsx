@@ -22,6 +22,8 @@ import { useInvoiceStore } from '@/store/useInvoiceStore'
 import { useAuthStore, ROLES } from '@/store/useAuthStore'
 import CookieBanner from '@/components/ui/CookieBanner'
 import CountrySelectorModal from '@/components/modals/CountrySelectorModal'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 
 // ── Guards ────────────────────────────────────────────────────
 function RequireAuth({ children }) {
@@ -270,6 +272,8 @@ export default function App() {
 
       <CookieBanner />
       <CountrySelectorModal />
+      <Analytics />
+      <SpeedInsights />
     </>
   )
 }

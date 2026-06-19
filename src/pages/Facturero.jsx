@@ -282,7 +282,7 @@ export default function Facturero() {
   }
 
   // Mock rendering helpers for the visual preview pane
-  const renderLivePreview = () => {
+  const livePreview = useMemo(() => {
     const totalVal = MOCK_INVOICE.total
     const taxVal = showTax ? MOCK_INVOICE.taxAmount : 0
     const subtotalVal = showTax ? MOCK_INVOICE.subtotal : totalVal
@@ -659,7 +659,11 @@ export default function Facturero() {
         </div>
       )
     }
-  }
+  }, [
+    previewType, showTax, themeColor, bannerUrl, logoUrl, showLogo, 
+    showCompanyName, companyName, showContact, companyPhone, companyEmail, 
+    showProducts, footerText, format
+  ])
 
   return (
     <motion.div initial="hidden" animate="visible" variants={containerVariants} className="page-container flex flex-col gap-6 h-full lg:h-full lg:overflow-hidden pb-12 lg:pb-0">
@@ -1084,7 +1088,7 @@ export default function Facturero() {
 
             {/* Simulated Sheet Canvas */}
             <div className="p-3 bg-surface-900 border border-subtle rounded-xl flex-1 overflow-y-auto no-scrollbar min-h-[300px]">
-              {renderLivePreview()}
+              {livePreview}
             </div>
 
             {/* Test Action Buttons */}

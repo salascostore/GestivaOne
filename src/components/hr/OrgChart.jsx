@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Shield, Briefcase, ChevronDown, ChevronRight, Search } from 'lucide-react'
 import { useAuthStore } from '@/store/useAuthStore'
 import SearchBar from '@/components/ui/SearchBar'
 
-function OrgNode({ employee, subordinates, allEmployees, searchQuery, level = 1 }) {
+const OrgNode = memo(function OrgNode({ employee, subordinates, allEmployees, searchQuery, level = 1 }) {
   const [expanded, setExpanded] = useState(true)
 
   // Check if this node or any of its children match the search query
@@ -97,16 +97,16 @@ function OrgNode({ employee, subordinates, allEmployees, searchQuery, level = 1 
       </AnimatePresence>
     </div>
   )
-}
+})
 
 export default function OrgChart({ employees }) {
   const { user } = useAuthStore()
   const [searchQuery, setSearchQuery] = useState('')
 
-  const activeEmployees = employees.filter(e => e.status === 'active')
+  const activeEmployees = useMemo(() => employees.filter(e => e.status === 'active'), [employees])
   
   // Root subordinates are those without a reports_to
-  const rootSubordinates = activeEmployees.filter(e => !e.reports_to)
+  const rootSubordinates = useMemo(() => activeEmployees.filter(e => !e.reports_to), [activeEmployees])
 
   return (
     <div className="space-y-6 flex flex-col items-center py-6 w-full">
