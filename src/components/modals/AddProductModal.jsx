@@ -95,7 +95,7 @@ export default function AddProductModal({ open }) {
   useEffect(() => {
     // Duplicating: pre-fill form but treat as new product (no id)
     if (open && duplicating) {
-      const isEditingUnlimited = duplicating.unit === 'ILIMITADO' || duplicating.stock >= 999999999
+      const isEditingUnlimited = duplicating.unit === 'ILIMITADO' || duplicating.stock >= 999990000
       setIsUnlimited(isEditingUnlimited)
       setHasDiscount(!!duplicating.discount_value && duplicating.discount_value > 0)
       reset({
@@ -115,7 +115,7 @@ export default function AddProductModal({ open }) {
     }
     // Editing existing product
     if (open && editing) {
-      const isEditingUnlimited = editing.unit === 'ILIMITADO' || editing.stock >= 999999999
+      const isEditingUnlimited = editing.unit === 'ILIMITADO' || editing.stock >= 999990000
       setIsUnlimited(isEditingUnlimited)
       setHasDiscount(!!editing.discount_value && editing.discount_value > 0)
       reset({

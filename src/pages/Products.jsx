@@ -32,7 +32,7 @@ const UNIT_LABELS = { ILIMITADO: 'Ilimitado' }
 function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ }) {
   const [qty, setQty] = useState('')
   const [added, setAdded] = useState(false)
-  const hasUnlimitedStock = product.unit === 'ILIMITADO' || product.stock >= 999999999
+  const hasUnlimitedStock = product.unit === 'ILIMITADO' || product.stock >= 999990000
   const isOutOfStock = !hasUnlimitedStock && product.stock !== undefined && product.stock !== null && product.stock <= 0
   const discountInfo = getProductDiscount(product)
 
@@ -180,7 +180,7 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
             'text-[10px] font-semibold shrink-0',
             hasUnlimitedStock ? 'text-success-400' : isOutOfStock ? 'text-danger-400' : 'text-muted-400'
           )}>
-            {hasUnlimitedStock ? '∞' : isOutOfStock ? 'Agotado' : `${product.stock}`}
+            {hasUnlimitedStock ? 'Ilimitado' : isOutOfStock ? 'Agotado' : `${product.stock}`}
           </span>
         </div>
 

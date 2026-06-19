@@ -172,7 +172,7 @@ export const useInvoiceStore = create(
     items.forEach(async (item) => {
       if (!item.productId) return
       const product = products.find((p) => p.id === item.productId)
-      if (product && product.unit !== 'ILIMITADO' && typeof product.stock === 'number') {
+      if (product && product.unit !== 'ILIMITADO' && typeof product.stock === 'number' && product.stock < 999990000) {
         const newStock = Math.max(0, product.stock - item.qty)
         await updateProduct(item.productId, { stock: newStock })
       }
