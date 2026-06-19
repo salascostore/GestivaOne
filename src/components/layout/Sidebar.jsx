@@ -103,7 +103,6 @@ export default function Sidebar({ isMobile }) {
       items: [
         { to: '/facturero', icon: Printer, label: 'Facturero', perm: 'dashboard' },
         { to: '/dian', icon: Calculator, label: 'Asistente DIAN', perm: 'dashboard' },
-        { to: '/notifications', icon: Bell, label: 'Notificaciones', perm: 'dashboard' },
         { to: '/seguridad', icon: Lock, label: 'GestiToken', perm: 'dashboard' },
       ]
     }
@@ -277,6 +276,42 @@ export default function Sidebar({ isMobile }) {
                 {/* Settings at bottom */}
                 <div className="mt-auto pt-2 border-t border-subtle shrink-0 flex flex-col gap-1">
                   <NavLink
+                    to={permissions['dashboard'] ? '/notifications' : '#'}
+                    onClick={permissions['dashboard'] ? handleNavClick : (e) => e.preventDefault()}
+                    target="_self"
+                    className={clsx(
+                      'relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-300',
+                      !permissions['dashboard'] && 'opacity-50 cursor-not-allowed',
+                      location.pathname.startsWith('/notifications') && permissions['dashboard']
+                        ? 'text-brand-300'
+                        : permissions['dashboard']
+                        ? 'text-muted-400 hover:text-white hover:bg-surface-600'
+                        : 'text-muted-400'
+                    )}
+                  >
+                    {location.pathname.startsWith('/notifications') && permissions['dashboard'] && (
+                      <motion.div
+                        layoutId="activeIndicatorMobile"
+                        className="absolute inset-0 rounded-xl bg-brand-600/20 border border-brand-500/30"
+                        transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                      />
+                    )}
+                    <Bell size={18} className="shrink-0 relative z-10" />
+                    <span className="relative z-10 flex-1 flex items-center justify-between">
+                      <span>Notificaciones</span>
+                      {unreadCount > 0 && (
+                        <motion.div
+                          initial={{ scale: 0 }} animate={{ scale: 1 }}
+                          className="bg-danger-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                        >
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </motion.div>
+                      )}
+                    </span>
+                    {!permissions['dashboard'] && <Lock size={12} className="text-muted-400 relative z-10" />}
+                  </NavLink>
+
+                  <NavLink
                     to={permissions['settings'] ? '/settings' : '#'}
                     onClick={permissions['settings'] ? handleNavClick : (e) => e.preventDefault()}
                     target="_self"
@@ -397,8 +432,9 @@ export default function Sidebar({ isMobile }) {
         ))}
       </nav>
 
-      {/* Settings */}
+      {/* Notifications & Settings */}
       <div className="px-2 py-1.5 border-t border-subtle shrink-0 flex flex-col gap-1">
+        <NavItem to="/notifications" icon={Bell} label="Notificaciones" perm="dashboard" />
         <NavItem to="/settings" icon={Settings} label="Configuración" perm="settings" />
       </div>
 

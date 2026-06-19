@@ -5,7 +5,7 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import toast from 'react-hot-toast'
 
-export default function EmployeeDetail360({ employee, onUpdate, onClose }) {
+export default function EmployeeDetail360({ employee, allEmployees = [], onUpdate, onClose }) {
   const [activeTab, setActiveTab] = useState('contract') // contract, docs, payroll
   
   // Form states
@@ -15,6 +15,7 @@ export default function EmployeeDetail360({ employee, onUpdate, onClose }) {
   const [salary, setSalary] = useState(employee.salary || 1300000)
   const [position, setPosition] = useState(employee.position || '')
   const [department, setDepartment] = useState(employee.department || '')
+  const [reportsTo, setReportsTo] = useState(employee.reports_to || '')
   const [arlClass, setArlClass] = useState(employee.arl_class || 'clase_1')
   const [bankAccount, setBankAccount] = useState(employee.bank_account || '')
   const [bankName, setBankName] = useState(employee.bank_name || '')
@@ -50,6 +51,7 @@ export default function EmployeeDetail360({ employee, onUpdate, onClose }) {
       salary: Number(salary),
       position,
       department,
+      reports_to: reportsTo || null,
       arl_class: arlClass,
       bank_account: bankAccount,
       bank_name: bankName
@@ -205,6 +207,23 @@ export default function EmployeeDetail360({ employee, onUpdate, onClose }) {
                 onChange={e => setDepartment(e.target.value)}
                 className="w-full bg-surface-900/60 disabled:opacity-60 disabled:cursor-not-allowed border border-subtle rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-brand-500"
               />
+            </div>
+
+            {/* Reports To */}
+            <div>
+              <label className="text-[10px] uppercase font-bold text-muted-500 mb-1.5 block">Jerarquía (¿A quién reporta?)</label>
+              <select
+                disabled={!isEditing}
+                value={reportsTo}
+                onChange={e => setReportsTo(e.target.value)}
+                className="w-full bg-surface-900/60 disabled:opacity-60 disabled:cursor-not-allowed border border-subtle rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-brand-500"
+              >
+                <option value="">Nadie / Director</option>
+                {allEmployees.map(emp => {
+                  if (emp.id === employee.id) return null // Can't report to self
+                  return <option key={emp.id} value={emp.id}>{emp.full_name} ({emp.position})</option>
+                })}
+              </select>
             </div>
 
             {/* ARL Class */}

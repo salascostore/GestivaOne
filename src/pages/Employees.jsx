@@ -394,6 +394,7 @@ export default function Employees() {
               {selectedEmployee ? (
                 <EmployeeDetail360
                   employee={selectedEmployee}
+                  allEmployees={employees}
                   onUpdate={updateEmployee}
                   onClose={() => setSelectedEmployee(null)}
                 />

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Package, Plus, Trash2, Edit2, Copy, Link2, FileText, DollarSign, ShoppingCart } from 'lucide-react'
+import { Package, Plus, Trash2, Edit2, Copy, Link2, FileText, DollarSign, ShoppingCart, LayoutGrid, Layers } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import SearchBar from '@/components/ui/SearchBar'
 import SortFilterBar from '@/components/ui/SortFilterBar'
@@ -97,14 +97,14 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
           {discountInfo ? (
             <>
               <span className="text-xs text-muted-400 line-through">{format$(product.price)}</span>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-base sm:text-lg font-bold text-brand-400">{format$(discountInfo.finalPrice)}</span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-brand-500/15 text-brand-400">
+              <div className="flex items-center gap-2 flex-wrap mt-1">
+                <span className="text-lg sm:text-xl font-black text-brand-400 drop-shadow-sm">{format$(discountInfo.finalPrice)}</span>
+                <span className="text-xs font-black px-2 py-0.5 rounded-md bg-brand-500/20 text-brand-300 border border-brand-500/30">
                   {discountInfo.type === 'percentage' ? `-${discountInfo.value}%` : `-${format$(discountInfo.value)}`}
                 </span>
               </div>
               {product.discount_ends_at && (
-                <span className="text-[9px] text-muted-500 mt-0.5">
+                <span className="text-[10px] text-muted-400 font-medium mt-1">
                   Promo hasta {new Date(product.discount_ends_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </span>
               )}
@@ -206,6 +206,7 @@ export default function Products() {
   const [freePrice, setFreePrice] = useState('')
   const [freeName, setFreeName]   = useState('')
   const [showFree, setShowFree]   = useState(false)
+  const [isGrouped, setIsGrouped] = useState(false)
 
   // Sort & Filter state
   const [sortMode, setSortMode] = useState('recent')
@@ -263,6 +264,17 @@ export default function Products() {
 
     return list
   }, [products, activeCat, search, sortMode, activeLetter])
+
+  const groupedProducts = useMemo(() => {
+    if (!isGrouped) return {}
+    const groups = {}
+    filtered.forEach(p => {
+      const cat = p.category || 'Otros'
+      if (!groups[cat]) groups[cat] = []
+      groups[cat].push(p)
+    })
+    return groups
+  }, [filtered, isGrouped])
 
   const handleAdd = (product, qty) => {
     addItem(product, qty)
@@ -358,22 +370,41 @@ export default function Products() {
             />
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar select-none -mx-4 px-4 md:mx-0 md:px-0">
-            <button
-              onClick={() => setActiveCat(null)}
-              className={clsx('px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 border', !activeCat ? 'bg-brand-600 border-brand-500 text-white shadow-glow-sm' : 'bg-surface-700/50 border-subtle text-muted-400 hover:text-foreground')}
-            >
-              Todos
-            </button>
-            {dynamicCategories.map((cat) => (
+          <div className="flex items-center justify-between gap-3 overflow-x-auto pb-1 no-scrollbar select-none -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="flex gap-2">
               <button
-                key={cat}
-                onClick={() => setActiveCat(activeCat === cat ? null : cat)}
-                className={clsx('px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 border', activeCat === cat ? 'bg-brand-600 border-brand-500 text-white shadow-glow-sm' : 'bg-surface-700/50 border-subtle text-muted-400 hover:text-foreground')}
+                onClick={() => setActiveCat(null)}
+                className={clsx('px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 border', !activeCat ? 'bg-brand-600 border-brand-500 text-white shadow-glow-sm' : 'bg-surface-700/50 border-subtle text-muted-400 hover:text-foreground')}
               >
-                {cat}
+                Todos
               </button>
-            ))}
+              {dynamicCategories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCat(activeCat === cat ? null : cat)}
+                  className={clsx('px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 border', activeCat === cat ? 'bg-brand-600 border-brand-500 text-white shadow-glow-sm' : 'bg-surface-700/50 border-subtle text-muted-400 hover:text-foreground')}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex bg-surface-800 border border-subtle rounded-lg p-0.5 shrink-0">
+              <button
+                onClick={() => setIsGrouped(false)}
+                className={clsx('p-1.5 rounded-md transition-colors', !isGrouped ? 'bg-surface-600 text-foreground shadow-sm' : 'text-muted-400 hover:text-foreground')}
+                title="Vista tradicional"
+              >
+                <LayoutGrid size={14} />
+              </button>
+              <button
+                onClick={() => setIsGrouped(true)}
+                className={clsx('p-1.5 rounded-md transition-colors', isGrouped ? 'bg-surface-600 text-foreground shadow-sm' : 'text-muted-400 hover:text-foreground')}
+                title="Agrupar por categoría"
+              >
+                <Layers size={14} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -388,6 +419,33 @@ export default function Products() {
               {!search && !activeCat && (
                 <Button variant="outline" size="sm" icon={<Plus size={14} />} onClick={() => openModal('addProduct')}>Crear producto</Button>
               )}
+            </motion.div>
+          ) : isGrouped ? (
+            <motion.div layout className="flex flex-col gap-6">
+              {Object.entries(groupedProducts).map(([category, items]) => (
+                <div key={category} className="space-y-3">
+                  <h3 className="text-sm font-black text-brand-400 uppercase tracking-widest px-1 flex items-center gap-2">
+                    {category}
+                    <span className="text-[10px] bg-surface-700 text-muted-400 px-2 py-0.5 rounded-full">{items.length}</span>
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {items.map((p) => (
+                      <ProductCard
+                        key={p.id}
+                        product={p}
+                        onEdit={(prod) => openModal('addProduct', { product: prod })}
+                        onDuplicate={(prod) => {
+                          const { id, created_at, updated_at, ...duplicateData } = prod
+                          openDuplicate('addProduct', duplicateData)
+                        }}
+                        onDelete={handleDelete}
+                        onAdd={handleAdd}
+                        format$={format$}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
             </motion.div>
           ) : (
             <motion.div layout className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

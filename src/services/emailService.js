@@ -10,7 +10,8 @@ import {
   expenseRegisteredTemplate,
   newClientTemplate,
   lowStockTemplate,
-  newEmployeeTemplate
+  newEmployeeTemplate,
+  verificationCodeTemplate
 } from './emailTemplates'
 import { useSettingsStore } from '../store/useSettingsStore'
 
@@ -234,5 +235,16 @@ export async function sendNewEmployeeEmail(employee, toEmail, company = {}) {
     to: toEmail,
     subject: `👷 Nuevo empleado en ${company.companyName || 'GestivaOne'}: ${employee.full_name || 'Empleado'}`,
     html: newEmployeeTemplate(employee, company)
+  })
+}
+
+// ── Verification Code ────────────────────────────────────────────────────────
+export async function sendVerificationCodeEmail(code, toEmail, company = {}) {
+  if (!toEmail) return { success: false, error: 'Email de destino vacío' }
+
+  return await callResendAPI({
+    to: toEmail,
+    subject: `🔐 Código de Verificación de Seguridad`,
+    html: verificationCodeTemplate(code, company)
   })
 }

@@ -34,7 +34,7 @@ function OrgNode({ employee, subordinates, allEmployees, searchQuery, level = 1 
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`bg-surface-800 border ${isDirectMatch && searchQuery ? 'border-brand-500 shadow-glow-sm' : 'border-subtle hover:border-brand-500/30'} p-3 rounded-2xl w-44 text-center shadow-sm relative transition-all z-10`}
+        className={`bg-surface-800 border ${isDirectMatch && searchQuery ? 'border-brand-500 shadow-glow-sm' : 'border-subtle hover:border-brand-500/30'} p-3 rounded-2xl w-36 sm:w-44 text-center shadow-sm relative transition-all z-10`}
       >
         <div className="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center text-muted-300 mx-auto mb-1.5 font-bold text-xs">
           {employee.full_name?.charAt(0).toUpperCase()}
@@ -128,7 +128,7 @@ export default function OrgChart({ employees }) {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="liquid-glass border-2 border-brand-500 bg-brand-500/10 p-4 rounded-3xl text-center w-52 shadow-glow-sm relative z-10"
+              className="liquid-glass border-2 border-brand-500 bg-brand-500/10 p-4 rounded-3xl text-center w-44 sm:w-52 shadow-glow-sm relative z-10"
             >
               <div className="w-10 h-10 rounded-full bg-brand-500 flex items-center justify-center text-white mx-auto mb-2 font-black text-sm">
                 {(user?.name || 'A').charAt(0).toUpperCase()}

@@ -22,6 +22,9 @@ import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import clsx from 'clsx'
+import { clearAccountData, exportAccountBackup, importAccountBackup } from '@/services/accountDataService'
+import Modal from '@/components/ui/Modal'
+import { supabase } from '@/lib/supabase'
 
 function SectionTitle({ icon: Icon, title, desc }) {
   return (
@@ -336,6 +339,16 @@ export default function Settings() {
 
       {/* ─── Export ─── */}
       <ExportBlock />
+
+      {/* ─── Seguridad ─── */}
+      <SecurityBlock />
+
+      {/* ─── Backup & Limpieza ─── */}
+      <DataManagementBlock />
+
+      {/* ─── Zona de Peligro ─── */}
+      <ResetWorkspaceBlock />
+
     </motion.div>
   )
 }
@@ -972,6 +985,403 @@ function PrinterBlock() {
           </motion.div>
         )}
       </AnimatePresence>
+    </motion.section>
+  )
+}
+
+// ── Security Block ──────────────────────────────────────────────
+function SecurityBlock() {
+  const user          = useAuthStore(s => s.user)
+  const [current, setCurrent] = useState('')
+  const [next, setNext]       = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [show, setShow]       = useState(false)
+  const [twoFA, setTwoFA]     = useState(false)
+  const [codes, setCodes]     = useState(null)
+  const [saving, setSaving]   = useState(false)
+  const [open, setOpen]       = useState(false)
+
+  const changePassword = async () => {
+    if (next.length < 6)            return toast.error('Mínimo 6 caracteres')
+    if (next !== confirm)           return toast.error('Las contraseñas no coinciden')
+    setSaving(true)
+    
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: user?.email,
+      password: current
+    })
+
+    if (authError) {
+      setSaving(false)
+      return toast.error('Contraseña actual incorrecta')
+    }
+
+    const { error: updateError } = await supabase.auth.updateUser({ password: next })
+    setSaving(false)
+
+    if (updateError) {
+      return toast.error('Error al actualizar la contraseña: ' + updateError.message)
+    }
+
+    setCurrent(''); setNext(''); setConfirm('')
+    toast.success('Contraseña actualizada')
+  }
+
+  const generateBackupCodes = () => {
+    const c = Array.from({ length: 8 }, () => Math.random().toString(36).slice(2, 8).toUpperCase())
+    setCodes(c)
+    toast('Guarda estos códigos en un lugar seguro', { icon: '🔐' })
+  }
+
+  const pwInput = (label, value, onChange) => (
+    <div className="relative">
+      <label className="text-xs text-muted-400 mb-1 block">{label}</label>
+      <input type={show ? 'text' : 'password'} value={value} onChange={e => onChange(e.target.value)} placeholder="••••••••"
+        className="w-full bg-surface-700 border border-subtle rounded-xl px-4 py-2.5 pr-10 text-sm text-foreground placeholder:text-muted-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50" />
+      <button type="button" onClick={() => setShow(!show)} className="absolute right-3 bottom-2.5 text-muted-400 hover:text-foreground transition-colors">
+        {show ? <AlertTriangle size={14} /> : <Check size={14} />} {/* Mocked icon toggle */}
+      </button>
+    </div>
+  )
+
+  return (
+    <motion.section 
+      initial={{ opacity: 0, y: 15 }} 
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-surface-800 border border-subtle rounded-3xl overflow-hidden shadow-glow-sm"
+    >
+      <button onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-3 p-5 hover:bg-surface-700/40 transition-colors text-left">
+        <div className="p-2 rounded-xl bg-surface-700 text-muted-400"><Lock size={16} /></div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-foreground">Seguridad</p>
+          <p className="text-xs text-muted-400">Contraseña, 2FA y sesiones activas</p>
+        </div>
+        <span className="text-muted-400 ml-1">{open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }} 
+            animate={{ height: 'auto', opacity: 1 }} 
+            exit={{ height: 0, opacity: 0 }} 
+            className="overflow-hidden"
+            transition={{ duration: 0.2 }}
+          >
+            <div className="px-5 pb-5 border-t border-subtle pt-4 space-y-4">
+              <p className="text-[11px] font-bold text-brand-400 uppercase tracking-wider mb-2">Cambiar contraseña</p>
+              <div className="space-y-3">
+                {pwInput('Contraseña actual', current, setCurrent)}
+                {pwInput('Nueva contraseña', next, setNext)}
+                {pwInput('Confirmar nueva contraseña', confirm, setConfirm)}
+              </div>
+              <button onClick={changePassword} disabled={saving || !current || !next || !confirm}
+                className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors w-full sm:w-auto justify-center">
+                <Lock size={14} /> {saving ? 'Guardando...' : 'Actualizar contraseña'}
+              </button>
+
+              <div className="border-t border-subtle pt-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Autenticación de dos factores (2FA)</p>
+                    <p className="text-[11px] text-muted-400">Añade una capa extra de seguridad a tu cuenta</p>
+                  </div>
+                  <Toggle checked={twoFA} onChange={(v) => { setTwoFA(v); toast(v ? '2FA activado (simulado)' : '2FA desactivado', { icon: v ? '✅' : '🔓' }) }} />
+                </div>
+                {twoFA && (
+                  <div className="space-y-2">
+                    <button onClick={generateBackupCodes} className="text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1 font-semibold">
+                      <Lock size={11} /> Generar códigos de respaldo
+                    </button>
+                    {codes && (
+                      <div className="bg-surface-900 border border-brand-500/20 rounded-xl p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-[11px] text-muted-400 font-medium">Códigos de respaldo</p>
+                          <button onClick={() => { navigator.clipboard.writeText(codes.join('\n')); toast('Copiados', { icon: '📋' }) }}
+                            className="text-[11px] text-brand-400 flex items-center gap-1 font-semibold">Copiar</button>
+                        </div>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {codes.map(c => <span key={c} className="font-mono text-[11px] text-foreground bg-surface-700 px-2 py-1 rounded text-center">{c}</span>)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.section>
+  )
+}
+
+// ── Data Management Block ───────────────────────────────────────
+function DataManagementBlock() {
+  const user = useAuthStore(s => s.user)
+  const isAdmin = user?.role === 'administrador'
+  const fileRef = useRef(null)
+  const [busy, setBusy] = useState(false)
+  const [pendingImportFile, setPendingImportFile] = useState(null)
+  const [open, setOpen] = useState(false)
+
+  const run = async (action, successMessage) => {
+    try {
+      setBusy(true)
+      await action()
+      toast.success(successMessage)
+    } catch (err) {
+      toast.error(err.message || 'No se pudo completar la acción')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleImport = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    setPendingImportFile(file)
+  }
+
+  const confirmImport = async () => {
+    const file = pendingImportFile
+    setPendingImportFile(null)
+    if (!file) return
+    await run(() => importAccountBackup(file), 'Backup importado exitosamente')
+  }
+
+  return (
+    <motion.section 
+      initial={{ opacity: 0, y: 15 }} 
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-surface-800 border border-subtle rounded-3xl overflow-hidden shadow-glow-sm"
+    >
+      <button onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-3 p-5 hover:bg-surface-700/40 transition-colors text-left">
+        <div className="p-2 rounded-xl bg-surface-700 text-muted-400"><Database size={16} /></div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-foreground">Datos y Respaldo</p>
+          <p className="text-xs text-muted-400">Genera o importa un backup local (Excel)</p>
+        </div>
+        <span className="text-muted-400 ml-1">{open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }} 
+            animate={{ height: 'auto', opacity: 1 }} 
+            exit={{ height: 0, opacity: 0 }} 
+            className="overflow-hidden"
+            transition={{ duration: 0.2 }}
+          >
+            <div className="px-5 pb-5 border-t border-subtle pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => run(exportAccountBackup, 'Backup generado')}
+                  disabled={busy}
+                  className="flex items-center justify-center gap-2 bg-surface-700 hover:bg-surface-600 disabled:opacity-50 border border-subtle text-foreground text-sm font-semibold px-4 py-3 rounded-xl transition-colors"
+                >
+                  <Download size={15} /> Generar Backup (Excel)
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={busy || !isAdmin}
+                  className="flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold px-4 py-3 rounded-xl transition-colors"
+                >
+                  <Upload size={15} /> Importar Backup
+                </button>
+                <input ref={fileRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleImport} />
+              </div>
+              {!isAdmin && (
+                <p className="text-[11px] text-muted-400 mt-2 text-center">Solo el administrador puede importar datos.</p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Modal open={!!pendingImportFile} onClose={() => setPendingImportFile(null)} title="Importar backup" size="sm">
+        <div className="space-y-5">
+          <p className="text-sm text-muted-300 leading-relaxed">
+            Importar este backup reemplazará los datos actuales de gestión. Continúa solo si ya tienes una copia segura.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-end gap-3">
+            <button type="button" onClick={() => setPendingImportFile(null)} className="px-5 py-2.5 rounded-xl border border-subtle text-sm font-semibold text-muted-300 hover:bg-surface-600 transition-colors">
+              Cancelar
+            </button>
+            <button type="button" onClick={confirmImport} disabled={busy} className="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-bold transition-colors">
+              Importar
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </motion.section>
+  )
+}
+
+// ── Reset Workspace Block (Danger Zone) ─────────────────────────
+function ResetWorkspaceBlock() {
+  const user = useAuthStore(s => s.user)
+  const isAdmin = user?.role === 'administrador'
+  const resetWorkspaceData = useAuthStore(s => s.resetWorkspaceData)
+  
+  const [open, setOpen] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [confirmCode, setConfirmCode] = useState('')
+  const [sentCode, setSentCode] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [sendingEmail, setSendingEmail] = useState(false)
+
+  const handleRequestReset = async () => {
+    setSendingEmail(true)
+    const code = Math.floor(1000 + Math.random() * 9000).toString()
+    setSentCode(code)
+    
+    try {
+      const { sendVerificationCodeEmail } = await import('@/services/emailService')
+      const company = {
+        companyName: user?.companyName || 'GestivaOne',
+        companyEmail: user?.email || ''
+      }
+      
+      const res = await sendVerificationCodeEmail(code, user.email, company) 
+      if (res.success) {
+        toast.success('Código de seguridad enviado a tu correo')
+        setModalOpen(true)
+      } else {
+        toast.error('Error al enviar el código de verificación')
+      }
+    } catch (e) {
+      toast.error('Error enviando el correo')
+    } finally {
+      setSendingEmail(false)
+    }
+  }
+
+  const handleReset = async () => {
+    if (confirmCode !== sentCode) return toast.error('Código incorrecto')
+    setBusy(true)
+    try {
+      const result = await resetWorkspaceData()
+      if (result?.success) {
+        toast.success('Espacio de trabajo limpiado exitosamente')
+        setModalOpen(false)
+        setConfirmCode('')
+        setSentCode(null)
+      } else {
+        toast.error(result?.error || 'Error al limpiar el espacio de trabajo')
+      }
+    } catch (err) {
+      toast.error(err.message || 'Ocurrió un error inesperado')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <motion.section 
+      initial={{ opacity: 0, y: 15 }} 
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-surface-800 border-2 border-danger-500/20 rounded-3xl overflow-hidden shadow-glow-sm"
+    >
+      <button onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-3 p-5 hover:bg-surface-700/40 transition-colors text-left group">
+        <div className="p-2 rounded-xl bg-danger-500/10 text-danger-400 group-hover:bg-danger-500/20 transition-colors"><AlertTriangle size={16} /></div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-danger-400">Zona de peligro</p>
+          <p className="text-xs text-muted-400">Acciones irreversibles sobre tu espacio de trabajo</p>
+        </div>
+        <span className="text-muted-400 ml-1">{open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }} 
+            animate={{ height: 'auto', opacity: 1 }} 
+            exit={{ height: 0, opacity: 0 }} 
+            className="overflow-hidden"
+            transition={{ duration: 0.2 }}
+          >
+            <div className="px-5 pb-5 border-t border-danger-500/10 pt-4">
+              <div className="bg-danger-500/5 border border-danger-500/20 rounded-2xl p-4 space-y-2">
+                <p className="text-sm font-bold text-danger-300">Limpiar espacio de trabajo</p>
+                <p className="text-xs text-muted-400 leading-relaxed">
+                  Elimina <strong className="text-foreground">permanentemente</strong> toda la información de gestión: clientes, productos, facturas, pagos, egresos, bolsillos, préstamos y notificaciones.
+                  Tu cuenta, empresa y trabajadores <span className="text-foreground font-medium">no se verán afectados</span>.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleRequestReset}
+                  disabled={busy || sendingEmail || !isAdmin}
+                  className="mt-2 flex items-center gap-2 bg-danger-600 hover:bg-danger-700 disabled:opacity-40 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-danger-900/30"
+                >
+                  {sendingEmail ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                  Limpiar todo el espacio de trabajo
+                </button>
+                {!isAdmin && (
+                  <p className="text-[11px] text-muted-400">Solo el administrador puede realizar esta acción.</p>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Modal open={modalOpen} onClose={() => { setModalOpen(false); setConfirmCode(''); setSentCode(null) }} title="⚠️ Confirmación requerida" size="sm">
+        <div className="space-y-5">
+          <div className="bg-danger-500/10 border border-danger-500/25 rounded-xl p-4 space-y-2">
+            <p className="text-sm font-bold text-danger-300 flex items-center gap-2">
+              <AlertTriangle size={14} /> Esta acción es irreversible
+            </p>
+            <p className="text-xs text-muted-300 leading-relaxed">
+              Hemos enviado un correo electrónico a <strong>{user?.email}</strong> con un código numérico de 4 dígitos. Ingrésalo a continuación para confirmar el borrado de datos.
+            </p>
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-400 mb-1 block">
+              Código de verificación (4 dígitos)
+            </label>
+            <input
+              type="text"
+              maxLength={4}
+              value={confirmCode}
+              onChange={(e) => setConfirmCode(e.target.value.replace(/\D/g, ''))}
+              placeholder="0000"
+              className="w-full bg-surface-800 border border-subtle rounded-xl px-4 py-2.5 text-center tracking-[1em] font-mono text-xl text-foreground focus:outline-none focus:ring-2 focus:ring-danger-500/40 placeholder:text-muted-500"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => { setModalOpen(false); setConfirmCode(''); setSentCode(null) }}
+              className="px-5 py-2.5 rounded-xl border border-subtle text-sm font-semibold text-muted-300 hover:bg-surface-600 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleReset}
+              disabled={busy || confirmCode.length < 4}
+              className="px-5 py-2.5 rounded-xl bg-danger-600 hover:bg-danger-700 disabled:opacity-40 text-white text-sm font-bold transition-colors flex items-center gap-2"
+            >
+              {busy ? (
+                <>
+                  <Loader2 size={13} className="animate-spin" />
+                  Limpiando...
+                </>
+              ) : (
+                <><Trash2 size={13} /> Confirmar borrado</>
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </motion.section>
   )
 }

@@ -8,6 +8,8 @@ import { printInvoice } from '@/services/printService'
 import { exportSingleInvoicePDF } from '@/services/exportService'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
+import Modal from '@/components/ui/Modal'
+import Badge from '@/components/ui/Badge'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
 
@@ -196,30 +198,38 @@ export default function Facturero() {
     }
   }
 
+  // Upload modals state
+  const [logoModalOpen, setLogoModalOpen] = useState(false)
+  const [bannerModalOpen, setBannerModalOpen] = useState(false)
+
   // Logo upload simulation
   const handleUploadLogo = () => {
-    const url = prompt('Ingresa la URL de la imagen de tu Logo:', logoUrl)
-    if (url !== null) {
-      if (url.length > 5000) {
-        toast.error('La imagen es demasiado pesada (base64). Por favor usa un enlace (URL) a la imagen para optimizar la base de datos.')
-        return
-      }
-      setLogoUrl(url)
-      toast.success('Logo actualizado temporalmente. Recuerda guardar cambios.')
+    setLogoModalOpen(true)
+  }
+
+  const submitLogo = (url) => {
+    if (url.length > 5000) {
+      toast.error('La imagen es demasiado pesada (base64). Por favor usa un enlace (URL) a la imagen.')
+      return
     }
+    setLogoUrl(url)
+    setLogoModalOpen(false)
+    toast.success('Logo actualizado temporalmente. Recuerda guardar cambios.')
   }
 
   // Banner upload simulation
   const handleUploadBanner = () => {
-    const url = prompt('Ingresa la URL de la imagen del Banner (Recomendado 1200x300px o 4:1):', bannerUrl)
-    if (url !== null) {
-      if (url.length > 5000) {
-        toast.error('La imagen es demasiado pesada (base64). Por favor usa un enlace (URL) a la imagen para optimizar la base de datos.')
-        return
-      }
-      setBannerUrl(url)
-      toast.success('Banner actualizado temporalmente. Recuerda guardar cambios.')
+    setBannerModalOpen(true)
+  }
+
+  const submitBanner = (url) => {
+    if (url.length > 5000) {
+      toast.error('La imagen es demasiado pesada (base64). Por favor usa un enlace (URL) a la imagen.')
+      return
     }
+    setBannerUrl(url)
+    setBannerModalOpen(false)
+    toast.success('Banner actualizado temporalmente. Recuerda guardar cambios.')
   }
 
   // Trigger test print
@@ -280,31 +290,31 @@ export default function Facturero() {
 
     if (previewType === 'pdf-corporate') {
       return (
-        <div className="bg-white text-slate-800 rounded-2xl shadow-xl border border-slate-200 overflow-hidden font-sans text-[11px] leading-relaxed max-w-lg mx-auto transition-all duration-300">
+        <div className="bg-white text-slate-800 rounded-2xl shadow-xl border border-slate-200 overflow-hidden font-sans text-sm leading-relaxed max-w-2xl mx-auto transition-all duration-300">
           {/* Corporate Header */}
-          <div className="text-white p-6 flex justify-between items-start relative overflow-hidden" style={{ backgroundColor: activeColor.primaryDark }}>
+          <div className="text-white p-8 flex justify-between items-start relative overflow-hidden" style={{ backgroundColor: activeColor.primaryDark }}>
             {bannerUrl && (
               <img src={bannerUrl} alt="Banner" className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-overlay" />
             )}
             <div className="relative z-10 w-full flex justify-between items-start">
               <div>
                 {showLogo && logoUrl ? (
-                  <img src={logoUrl} alt="Logo" className="w-12 h-12 rounded-full object-cover mb-2 border-2 border-white/20" />
+                  <img src={logoUrl} alt="Logo" className="w-16 h-16 rounded-full object-cover mb-3 border-2 border-white/20" />
                 ) : (
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-2" style={{ backgroundColor: activeColor.primary }}><Sparkles className="text-white w-5 h-5" /></div>
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: activeColor.primary }}><Sparkles className="text-white w-7 h-7" /></div>
                 )}
-                {showCompanyName && <h4 className="text-base font-black tracking-wide uppercase" style={{ color: activeColor.primaryLight }}>{companyName}</h4>}
-                <p className="text-[11px] text-slate-300 mt-1 font-medium">NIT: 901.458.789-2</p>
+                {showCompanyName && <h4 className="text-xl font-black tracking-wide uppercase drop-shadow-md" style={{ color: activeColor.primaryLight }}>{companyName}</h4>}
+                <p className="text-xs text-slate-200 mt-1 font-medium drop-shadow-md">NIT: 901.458.789-2</p>
                 {showContact && (
-                  <div className="text-[11px] text-slate-300 space-y-0.5 mt-2 font-medium">
+                  <div className="text-xs text-slate-200 space-y-0.5 mt-2 font-medium drop-shadow-md">
                     {companyPhone && <p>Tel: {companyPhone}</p>}
                     {companyEmail && <p>{companyEmail}</p>}
                   </div>
                 )}
               </div>
-              <div className="px-5 py-3 rounded-xl text-right min-w-[140px] shadow-lg" style={{ backgroundColor: activeColor.primary }}>
-                <span className="text-[10px] font-bold uppercase block tracking-wider" style={{ color: activeColor.primaryLight }}>Factura de Venta</span>
-                <span className="text-sm font-black block mt-0.5">#{MOCK_INVOICE.id.toUpperCase()}</span>
+              <div className="text-right">
+                <span className="text-sm font-bold uppercase tracking-wider block drop-shadow-md">Factura de Venta</span>
+                <span className="text-2xl font-black drop-shadow-md">#{MOCK_INVOICE.id.toUpperCase()}</span>
               </div>
             </div>
           </div>
@@ -642,9 +652,9 @@ export default function Facturero() {
 
           <div className="my-3 border-t border-dashed border-slate-200"></div>
 
-          <div className="text-center text-[9px] space-y-1 text-slate-500">
+          <div className="text-center text-xs space-y-1 text-slate-500">
             <p className="font-bold italic">"{footerText}"</p>
-            <p className="text-[7.5px]">GestivaOne</p>
+            <p className="text-[10px]">GestivaOne</p>
           </div>
         </div>
       )
@@ -1124,6 +1134,49 @@ export default function Facturero() {
           </div>
         </div>
       </div>
+
+      {/* URL Modals */}
+      {logoModalOpen && (
+        <Modal open={logoModalOpen} onClose={() => setLogoModalOpen(false)} title="Actualizar Logotipo">
+          <div className="p-5 space-y-4">
+            <p className="text-sm text-muted-400">Ingresa la URL de la imagen de tu Logotipo corporativo.</p>
+            <Input 
+              label="URL de la imagen" 
+              placeholder="https://..." 
+              defaultValue={logoUrl} 
+              id="logo-url-input"
+            />
+            <div className="flex gap-3 pt-2">
+              <Button variant="secondary" className="flex-1 rounded-xl" onClick={() => setLogoModalOpen(false)}>Cancelar</Button>
+              <Button className="flex-1 rounded-xl" onClick={() => submitLogo(document.getElementById('logo-url-input').value)}>Actualizar Logo</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {bannerModalOpen && (
+        <Modal open={bannerModalOpen} onClose={() => setBannerModalOpen(false)} title="Actualizar Banner">
+          <div className="p-5 space-y-4">
+            <div className="bg-brand-500/10 border border-brand-500/20 rounded-xl p-3 flex gap-3 mb-2">
+              <AlertCircle className="text-brand-400 shrink-0 mt-0.5" size={16} />
+              <p className="text-xs text-brand-300">
+                <strong>Guía de medidas:</strong> Te recomendamos usar una imagen de <strong>1200x300 píxeles</strong> (Proporción 4:1) para que se vea en alta definición y encaje perfectamente en el encabezado corporativo.
+              </p>
+            </div>
+            <p className="text-sm text-muted-400">Ingresa la URL de la imagen de tu Banner corporativo.</p>
+            <Input 
+              label="URL del Banner" 
+              placeholder="https://..." 
+              defaultValue={bannerUrl} 
+              id="banner-url-input"
+            />
+            <div className="flex gap-3 pt-2">
+              <Button variant="secondary" className="flex-1 rounded-xl" onClick={() => setBannerModalOpen(false)}>Cancelar</Button>
+              <Button className="flex-1 rounded-xl" onClick={() => submitBanner(document.getElementById('banner-url-input').value)}>Actualizar Banner</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </motion.div>
   )
 }

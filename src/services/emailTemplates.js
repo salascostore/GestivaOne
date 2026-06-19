@@ -722,3 +722,24 @@ export function testEmailTemplate(company = {}) {
   `
   return wrapper(content, { companyName, companyLogo })
 }
+
+// ── 12. Verification Code Template ───────────────────────────────────────────
+export function verificationCodeTemplate(code, company = {}) {
+  const { companyName = 'GestivaOne', companyLogo = null } = company
+  const content = `
+    <table width="100%" cellpadding="0" cellspacing="0">
+      ${accentBar('#ef4444')}
+      ${cardHeading('🔐', 'Código de verificación', 'Has solicitado eliminar los datos de tu espacio de trabajo en ' + companyName, '#ef4444')}
+      ${divider()}
+      <tr><td style="padding:0 32px 24px;">
+        <p style="margin:0 0 16px;font-size:13px;color:#9ca3af;line-height:1.7;">
+          Usa este código para confirmar la acción. Si no solicitaste esto, ignora este mensaje.
+        </p>
+        <div style="background:linear-gradient(135deg,#ef444422,#dc262622);border:2px dashed #ef444466;border-radius:16px;padding:24px;text-align:center;">
+          <p style="margin:0 0 6px;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:2px;">Código de seguridad</p>
+          <p style="margin:0;font-size:36px;font-weight:900;color:#f87171;letter-spacing:6px;font-family:monospace;">${code}</p>
+        </div>
+      </td></tr>
+    </table>`
+  return wrapper(content, { companyName, companyLogo })
+}

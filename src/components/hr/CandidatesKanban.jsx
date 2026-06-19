@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, ChevronLeft, ChevronRight, User, Trash2, Mail, Phone, Calendar } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, User, Trash2, Mail, Phone, Calendar, GripVertical } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import toast from 'react-hot-toast'
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 
 const COLUMNS = [
   { id: 'applied', title: 'Postulados', color: 'bg-blue-500/10 border-blue-500/30 text-blue-400' },
@@ -64,21 +65,20 @@ export default function CandidatesKanban({ candidates, addCandidate, updateCandi
     return null
   }
 
-  // HTML5 Drag & Drop handlers
-  const handleDragStart = (e, candId) => {
-    e.dataTransfer.setData('candidateId', candId)
-  }
+  // @hello-pangea/dnd Drag handler
+  const onDragEnd = (result) => {
+    const { destination, source, draggableId } = result
 
-  const handleDrop = (e, colId) => {
-    e.preventDefault()
-    const candId = e.dataTransfer.getData('candidateId')
-    if (candId) {
-      updateCandidateStage(candId, colId)
+    if (!destination) return
+
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return
     }
-  }
 
-  const handleDragOver = (e) => {
-    e.preventDefault()
+    updateCandidateStage(draggableId, destination.droppableId)
   }
 
   return (
@@ -98,106 +98,116 @@ export default function CandidatesKanban({ candidates, addCandidate, updateCandi
       </div>
 
       {/* Kanban Board Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto pb-4 no-scrollbar">
-        {COLUMNS.map((col) => {
-          const colCandidates = candidates.filter(c => c.stage === col.id)
-          return (
-            <div 
-              key={col.id} 
-              className="bg-surface-800/40 border border-subtle/70 rounded-3xl p-4 min-w-[220px] flex flex-col h-[500px]"
-              onDrop={(e) => handleDrop(e, col.id)}
-              onDragOver={handleDragOver}
-            >
-              
-              {/* Column Title */}
-              <div className={`p-2.5 rounded-2xl border ${col.color} mb-4 flex items-center justify-between text-xs font-black uppercase tracking-widest`}>
-                <span>{col.title}</span>
-                <span className="bg-surface-900/60 text-foreground px-2 py-0.5 rounded-lg border border-subtle/50 text-[10px]">
-                  {colCandidates.length}
-                </span>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto pb-4 no-scrollbar">
+          {COLUMNS.map((col) => {
+            const colCandidates = candidates.filter(c => c.stage === col.id)
+            return (
+              <div 
+                key={col.id} 
+                className="bg-surface-800/40 border border-subtle/70 rounded-3xl p-4 min-w-[220px] flex flex-col h-[500px]"
+              >
+                {/* Column Title */}
+                <div className={`p-2.5 rounded-2xl border ${col.color} mb-4 flex items-center justify-between text-xs font-black uppercase tracking-widest`}>
+                  <span>{col.title}</span>
+                  <span className="bg-surface-900/60 text-foreground px-2 py-0.5 rounded-lg border border-subtle/50 text-[10px]">
+                    {colCandidates.length}
+                  </span>
+                </div>
+
+                {/* Column Cards Container */}
+                <Droppable droppableId={col.id}>
+                  {(provided, snapshot) => (
+                    <div 
+                      className={`flex-1 overflow-y-auto space-y-3 pr-1 no-scrollbar ${snapshot.isDraggingOver ? 'bg-surface-800/60 rounded-2xl' : ''}`}
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      {colCandidates.map((cand, index) => {
+                        const next = getNextStage(cand.stage)
+                        const prev = getPrevStage(cand.stage)
+                        return (
+                          <Draggable key={cand.id} draggableId={cand.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={`bg-surface-800 border border-subtle hover:border-brand-500/20 rounded-2xl p-3 space-y-3 shadow-sm ${snapshot.isDragging ? 'shadow-glow-sm border-brand-500/50 rotate-2' : ''}`}
+                                style={provided.draggableProps.style}
+                              >
+                                <div className="flex items-start justify-between gap-1.5">
+                                  <div className="flex items-start gap-2 min-w-0">
+                                    <div {...provided.dragHandleProps} className="mt-1 text-muted-500 cursor-grab active:cursor-grabbing hover:text-brand-400">
+                                      <GripVertical size={14} />
+                                    </div>
+                                    <div>
+                                      <p className="text-xs font-bold text-foreground truncate">{cand.full_name}</p>
+                                      <p className="text-[10px] text-brand-400 font-bold tracking-wider mt-0.5">{cand.position}</p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => removeCandidate(cand.id)}
+                                    className="text-muted-500 hover:text-danger-500 transition-colors p-1 rounded-lg hover:bg-danger-500/10 shrink-0"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+
+                                {/* Candidate Contact Details */}
+                                <div className="space-y-1 text-[10px] text-muted-400 leading-tight pl-5">
+                                  <div className="flex items-center gap-1.5 truncate">
+                                    <Mail size={10} className="shrink-0" />
+                                    <span>{cand.email}</span>
+                                  </div>
+                                  {cand.phone && (
+                                    <div className="flex items-center gap-1.5">
+                                      <Phone size={10} className="shrink-0" />
+                                      <span>{cand.phone}</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Interactive Move Stage Controls */}
+                                <div className="flex justify-between items-center pt-2 border-t border-subtle/50">
+                                  <button
+                                    disabled={!prev}
+                                    onClick={() => updateCandidateStage(cand.id, prev)}
+                                    className="p-1 rounded-lg bg-surface-700/50 hover:bg-surface-700 border border-subtle text-muted-400 hover:text-foreground disabled:opacity-35 disabled:cursor-not-allowed transition-all"
+                                  >
+                                    <ChevronLeft size={12} />
+                                  </button>
+                                  
+                                  <span className="text-[9px] uppercase font-bold text-muted-500 select-none">
+                                    Mover
+                                  </span>
+
+                                  <button
+                                    disabled={!next}
+                                    onClick={() => updateCandidateStage(cand.id, next)}
+                                    className="p-1 rounded-lg bg-surface-700/50 hover:bg-surface-700 border border-subtle text-muted-400 hover:text-foreground disabled:opacity-35 disabled:cursor-not-allowed transition-all"
+                                  >
+                                    <ChevronRight size={12} />
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </Draggable>
+                        )
+                      })}
+                      {provided.placeholder}
+                      {colCandidates.length === 0 && !snapshot.isDraggingOver && (
+                        <div className="h-full flex items-center justify-center border-2 border-dashed border-subtle/50 rounded-2xl p-6 text-center mt-2">
+                          <span className="text-[10px] font-bold text-muted-500 uppercase tracking-wider">Arrastra aquí</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </Droppable>
               </div>
-
-              {/* Column Cards Container */}
-              <div className="flex-1 overflow-y-auto space-y-3 pr-1 no-scrollbar">
-                <AnimatePresence mode="popLayout">
-                  {colCandidates.map((cand) => {
-                    const next = getNextStage(cand.stage)
-                    const prev = getPrevStage(cand.stage)
-                    return (
-                      <motion.div
-                        key={cand.id}
-                        layout
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        whileHover={{ y: -2 }}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, cand.id)}
-                        className="bg-surface-800 border border-subtle hover:border-brand-500/20 rounded-2xl p-3 space-y-3 shadow-sm cursor-grab active:cursor-grabbing"
-                      >
-                        <div className="flex items-start justify-between gap-1.5">
-                          <div className="min-w-0">
-                            <p className="text-xs font-bold text-foreground truncate">{cand.full_name}</p>
-                            <p className="text-[10px] text-brand-400 font-bold tracking-wider mt-0.5">{cand.position}</p>
-                          </div>
-                          <button
-                            onClick={() => removeCandidate(cand.id)}
-                            className="text-muted-500 hover:text-danger-500 transition-colors p-1 rounded-lg hover:bg-danger-500/10 shrink-0"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-
-                        {/* Candidate Contact Details */}
-                        <div className="space-y-1 text-[10px] text-muted-400 leading-tight">
-                          <div className="flex items-center gap-1.5 truncate">
-                            <Mail size={10} className="shrink-0" />
-                            <span>{cand.email}</span>
-                          </div>
-                          {cand.phone && (
-                            <div className="flex items-center gap-1.5">
-                              <Phone size={10} className="shrink-0" />
-                              <span>{cand.phone}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Interactive Move Stage Controls */}
-                        <div className="flex justify-between items-center pt-2 border-t border-subtle/50">
-                          <button
-                            disabled={!prev}
-                            onClick={() => updateCandidateStage(cand.id, prev)}
-                            className="p-1 rounded-lg bg-surface-700/50 hover:bg-surface-700 border border-subtle text-muted-400 hover:text-foreground disabled:opacity-35 disabled:cursor-not-allowed transition-all"
-                          >
-                            <ChevronLeft size={12} />
-                          </button>
-                          
-                          <span className="text-[9px] uppercase font-bold text-muted-500 select-none">
-                            Mover
-                          </span>
-
-                          <button
-                            disabled={!next}
-                            onClick={() => updateCandidateStage(cand.id, next)}
-                            className="p-1 rounded-lg bg-surface-700/50 hover:bg-surface-700 border border-subtle text-muted-400 hover:text-foreground disabled:opacity-35 disabled:cursor-not-allowed transition-all"
-                          >
-                            <ChevronRight size={12} />
-                          </button>
-                        </div>
-                      </motion.div>
-                    )
-                  })}
-                </AnimatePresence>
-                {colCandidates.length === 0 && (
-                  <div className="h-full flex items-center justify-center border-2 border-dashed border-subtle/50 rounded-2xl p-6 text-center">
-                    <span className="text-[10px] font-bold text-muted-500 uppercase tracking-wider">Arrastra aquí</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      </DragDropContext>
 
       {/* Add Candidate Modal */}
       <AnimatePresence>
