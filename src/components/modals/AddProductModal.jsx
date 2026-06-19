@@ -74,11 +74,13 @@ export default function AddProductModal({ open }) {
 
       if (uploadError) throw uploadError
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: signedData, error: signedError } = await supabase.storage
         .from('attachments')
-        .getPublicUrl(filePath)
+        .createSignedUrl(filePath, 60 * 60 * 24 * 365 * 10) // Válido por 10 años (URL segura/ofuscada)
 
-      setValue('attachment_url', publicUrl)
+      if (signedError) throw signedError
+
+      setValue('attachment_url', signedData.signedUrl)
       setValue('attachment_name', file.name)
       toast.success('Archivo adjuntado correctamente')
     } catch (error) {
