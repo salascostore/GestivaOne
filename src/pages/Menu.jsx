@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UserPlus, Users, Edit2, Trash2, Check, ShoppingBag, History, CalendarDays } from 'lucide-react'
@@ -288,7 +289,7 @@ export default function Menu() {
         {/* Title and Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-lg md:text-xl font-bold text-brand-600 dark:text-white">Menú Operativo</h1>
+            <h1 className="text-lg md:text-xl font-bold text-foreground">Menú Operativo</h1>
             <p className="hidden sm:block text-xs md:text-sm text-muted-400 mt-0.5">Selecciona o añade un cliente para iniciar</p>
           </div>
           <div className="flex gap-2 shrink-0">
@@ -390,9 +391,9 @@ export default function Menu() {
       </div>
 
       {/* Express Client Modal */}
-      <AnimatePresence>
-        {showExpressModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {showExpressModal && typeof document !== 'undefined' ? createPortal(
+        <AnimatePresence>
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -511,8 +512,9 @@ export default function Menu() {
               </div>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      ) : null}
     </motion.div>
   )
 }

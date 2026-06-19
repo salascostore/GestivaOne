@@ -294,7 +294,7 @@ export default function Products() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <div>
-              <h1 className="text-lg md:text-xl font-bold text-brand-600 dark:text-white">Productos</h1>
+              <h1 className="text-lg md:text-xl font-bold text-foreground">Productos</h1>
               <p className="hidden sm:block text-xs md:text-sm text-muted-400 mt-0.5">{products.length} productos en catálogo</p>
             </div>
             {selectedClient && (

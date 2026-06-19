@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Users, Plus, ShieldCheck, Truck, Calculator,
@@ -137,6 +138,7 @@ export default function Employees() {
   const [newEmpARL, setNewEmpARL] = useState('clase_1')
   const [newEmpBank, setNewEmpBank] = useState('')
   const [newEmpAccount, setNewEmpAccount] = useState('')
+  const [newEmpReportsTo, setNewEmpReportsTo] = useState('')
 
   useEffect(() => {
     fetchHRData()
@@ -249,7 +251,8 @@ export default function Employees() {
       department: newEmpDept,
       arl_class: newEmpARL,
       bank_name: newEmpBank,
-      bank_account: newEmpAccount
+      bank_account: newEmpAccount,
+      reports_to: newEmpReportsTo || null
     })
 
     if (success) {
@@ -262,6 +265,7 @@ export default function Employees() {
       setNewEmpPos('')
       setNewEmpBank('')
       setNewEmpAccount('')
+      setNewEmpReportsTo('')
     }
   }
 
@@ -558,8 +562,8 @@ export default function Employees() {
       </AnimatePresence>
 
       {/* Invitations/Worker generation modal */}
-      <AnimatePresence>
-        {inviteModalOpen && (
+      {inviteModalOpen && typeof document !== 'undefined' ? createPortal(
+        <AnimatePresence>
           <Modal
             open={inviteModalOpen}
             onClose={() => setInviteModalOpen(false)}
@@ -616,12 +620,13 @@ export default function Employees() {
               </div>
             </div>
           </Modal>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      ) : null}
 
       {/* Manual Add Employee Modal */}
-      <AnimatePresence>
-        {addEmployeeModalOpen && (
+      {addEmployeeModalOpen && typeof document !== 'undefined' ? createPortal(
+        <AnimatePresence>
           <Modal
             open={addEmployeeModalOpen}
             onClose={() => setAddEmployeeModalOpen(false)}
@@ -709,6 +714,19 @@ export default function Employees() {
                   </select>
                 </div>
                 <div>
+                  <label className="text-xs font-bold text-muted-500 mb-1.5 block">Jerarquía (¿A quién reporta?)</label>
+                  <select
+                    value={newEmpReportsTo}
+                    onChange={e => setNewEmpReportsTo(e.target.value)}
+                    className="w-full bg-surface-900 border border-subtle rounded-xl px-4 py-2.5 text-xs text-foreground focus:outline-none focus:border-brand-500"
+                  >
+                    <option value="">Nadie / Director</option>
+                    {employees.map(emp => (
+                      <option key={emp.id} value={emp.id}>{emp.full_name} ({emp.position})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
                   <label className="text-xs font-bold text-muted-500 mb-1.5 block">Riesgo ARL</label>
                   <select
                     value={newEmpARL}
@@ -752,8 +770,9 @@ export default function Employees() {
               </div>
             </form>
           </Modal>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      ) : null}
     </motion.div>
   )
 }

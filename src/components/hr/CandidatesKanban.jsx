@@ -64,6 +64,23 @@ export default function CandidatesKanban({ candidates, addCandidate, updateCandi
     return null
   }
 
+  // HTML5 Drag & Drop handlers
+  const handleDragStart = (e, candId) => {
+    e.dataTransfer.setData('candidateId', candId)
+  }
+
+  const handleDrop = (e, colId) => {
+    e.preventDefault()
+    const candId = e.dataTransfer.getData('candidateId')
+    if (candId) {
+      updateCandidateStage(candId, colId)
+    }
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+  }
+
   return (
     <div className="space-y-4">
       {/* Header and Add button */}
@@ -85,7 +102,12 @@ export default function CandidatesKanban({ candidates, addCandidate, updateCandi
         {COLUMNS.map((col) => {
           const colCandidates = candidates.filter(c => c.stage === col.id)
           return (
-            <div key={col.id} className="bg-surface-800/40 border border-subtle/70 rounded-3xl p-4 min-w-[220px] flex flex-col h-[500px]">
+            <div 
+              key={col.id} 
+              className="bg-surface-800/40 border border-subtle/70 rounded-3xl p-4 min-w-[220px] flex flex-col h-[500px]"
+              onDrop={(e) => handleDrop(e, col.id)}
+              onDragOver={handleDragOver}
+            >
               
               {/* Column Title */}
               <div className={`p-2.5 rounded-2xl border ${col.color} mb-4 flex items-center justify-between text-xs font-black uppercase tracking-widest`}>
@@ -109,7 +131,9 @@ export default function CandidatesKanban({ candidates, addCandidate, updateCandi
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         whileHover={{ y: -2 }}
-                        className="bg-surface-800 border border-subtle hover:border-brand-500/20 rounded-2xl p-3 space-y-3 shadow-sm"
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, cand.id)}
+                        className="bg-surface-800 border border-subtle hover:border-brand-500/20 rounded-2xl p-3 space-y-3 shadow-sm cursor-grab active:cursor-grabbing"
                       >
                         <div className="flex items-start justify-between gap-1.5">
                           <div className="min-w-0">
@@ -166,7 +190,7 @@ export default function CandidatesKanban({ candidates, addCandidate, updateCandi
                 </AnimatePresence>
                 {colCandidates.length === 0 && (
                   <div className="h-full flex items-center justify-center border-2 border-dashed border-subtle/50 rounded-2xl p-6 text-center">
-                    <span className="text-[10px] font-bold text-muted-500 uppercase tracking-wider">Vacío</span>
+                    <span className="text-[10px] font-bold text-muted-500 uppercase tracking-wider">Arrastra aquí</span>
                   </div>
                 )}
               </div>

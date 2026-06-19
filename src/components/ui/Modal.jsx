@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 const overlayVariants = {
   hidden:  { opacity: 0 },
@@ -28,7 +29,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', hid
     xl: 'max-w-4xl',
   }
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {open && (
         <motion.div
@@ -38,7 +39,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', hid
           animate="visible"
           exit="hidden"
           onClick={onClose}
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+          className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center sm:p-4"
           style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
         >
           {/* Mobile: full-width bottom sheet | Desktop: centered card */}
@@ -81,4 +82,6 @@ export default function Modal({ open, onClose, title, children, size = 'md', hid
       )}
     </AnimatePresence>
   )
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : null
 }
