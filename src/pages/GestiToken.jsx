@@ -205,20 +205,19 @@ export default function GestiToken() {
         <div className="flex flex-wrap items-center gap-3">
           <div>
             <h1 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
-              <Shield className="text-brand-500" size={20} />
               GestiToken
             </h1>
             <p className="hidden sm:block text-xs md:text-sm text-muted-400 mt-0.5">Control de seguridad y doble factor para consultas desde WhatsApp (GestiBot)</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 self-end sm:self-center">
-          <Badge variant={enabled ? 'success' : 'danger'} className="flex items-center gap-1">
+        <div className="flex items-center gap-2 self-end sm:self-center mt-1">
+          <div className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${enabled ? 'text-success-500' : 'text-danger-500'}`}>
             {enabled ? (
-              <>GestiBot Protegido <Lock size={12} /></>
+              <>GestiBot Protegido <ShieldCheck size={14} /></>
             ) : (
-              <>Seguridad Inactiva <Unlock size={12} /></>
+              <>Seguridad Inactiva <ShieldAlert size={14} /></>
             )}
-          </Badge>
+          </div>
         </div>
       </motion.div>
 
