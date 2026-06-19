@@ -85,30 +85,82 @@ export default function GestiToken() {
 
   // Toggle dynamic key requirements
   const handleToggleSecurity = async () => {
+    const previousEnabled = enabled
+    const newEnabled = !enabled
+    
+    // 1. Optimistic Update (Instant feedback)
+    useAuthStore.setState((s) => ({
+      user: {
+        ...s.user,
+        settings: {
+          ...(s.user?.settings || {}),
+          gestibot_otp_enabled: newEnabled
+        }
+      }
+    }))
+    
+    toast.success(newEnabled 
+      ? 'Seguridad GestiBot activada.' 
+      : 'Seguridad GestiBot desactivada.'
+    )
+
+    // 2. Background Sync
     try {
       const currentSettings = user?.settings || {}
       const updatedSettings = {
         ...currentSettings,
-        gestibot_otp_enabled: !enabled
+        gestibot_otp_enabled: newEnabled
       }
       
-      const res = await updateProfile({ settings: updatedSettings })
-      if (res?.success === false) {
-        toast.error(res.error || 'Error al actualizar configuración')
-      } else {
-        toast.success(!enabled 
-          ? 'Seguridad GestiBot activada. Se exigirá el GestiToken.' 
-          : 'Seguridad GestiBot desactivada.'
-        )
-      }
+      // We don't await this so the UI doesn't freeze
+      updateProfile({ settings: updatedSettings }).then((res) => {
+        if (res?.success === false) {
+          // Revert on failure
+          useAuthStore.setState((s) => ({
+            user: {
+              ...s.user,
+              settings: {
+                ...(s.user?.settings || {}),
+                gestibot_otp_enabled: previousEnabled
+              }
+            }
+          }))
+          toast.error(res.error || 'Error al guardar. Se han revertido los cambios.')
+        }
+      })
     } catch (e) {
-      toast.error('Ocurrió un error al guardar los cambios')
+      // Revert on throw
+      useAuthStore.setState((s) => ({
+        user: {
+          ...s.user,
+          settings: {
+            ...(s.user?.settings || {}),
+            gestibot_otp_enabled: previousEnabled
+          }
+        }
+      }))
+      toast.error('Error de red. Se revirtió el cambio.')
     }
   }
 
   // Change active session duration limits
   const handleDurationChange = async (e) => {
     const newDuration = Number(e.target.value)
+    const previousDuration = duration
+
+    // 1. Optimistic Update
+    useAuthStore.setState((s) => ({
+      user: {
+        ...s.user,
+        settings: {
+          ...(s.user?.settings || {}),
+          gestibot_otp_duration: newDuration
+        }
+      }
+    }))
+    toast.success('Duración actualizada')
+
+    // 2. Background Sync
     try {
       const currentSettings = user?.settings || {}
       const updatedSettings = {
@@ -116,14 +168,19 @@ export default function GestiToken() {
         gestibot_otp_duration: newDuration
       }
 
-      const res = await updateProfile({ settings: updatedSettings })
-      if (res?.success === false) {
-        toast.error(res.error || 'Error al actualizar configuración')
-      } else {
-        toast.success('Duración de sesión actualizada correctamente.')
-      }
+      updateProfile({ settings: updatedSettings }).then((res) => {
+        if (res?.success === false) {
+          useAuthStore.setState((s) => ({
+            user: { ...s.user, settings: { ...(s.user?.settings || {}), gestibot_otp_duration: previousDuration } }
+          }))
+          toast.error(res.error || 'Error al actualizar. Cambios revertidos.')
+        }
+      })
     } catch (e) {
-      toast.error('Ocurrió un error al guardar los cambios')
+      useAuthStore.setState((s) => ({
+        user: { ...s.user, settings: { ...(s.user?.settings || {}), gestibot_otp_duration: previousDuration } }
+      }))
+      toast.error('Ocurrió un error al guardar.')
     }
   }
 
