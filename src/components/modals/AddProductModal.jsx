@@ -10,6 +10,7 @@ import { useProductStore, CATEGORIES } from '@/store/useProductStore'
 import { useUIStore } from '@/store/useUIStore'
 import { useCurrencyStore } from '@/store/useCurrencyStore'
 import { useAuthStore } from '@/store/useAuthStore'
+import { supabase } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
 
@@ -55,6 +56,39 @@ export default function AddProductModal({ open }) {
   // Derived state for unlimited
   const [isUnlimited, setIsUnlimited] = useState(false)
   const [hasDiscount, setHasDiscount] = useState(false)
+  const [uploading, setUploading] = useState(false)
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setUploading(true)
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+      const filePath = `${userSettings?.id || 'public'}/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('attachments')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('attachments')
+        .getPublicUrl(filePath)
+
+      setValue('attachment_url', publicUrl)
+      setValue('attachment_name', file.name)
+      toast.success('Archivo adjuntado correctamente')
+    } catch (error) {
+      console.error('Error uploading file:', error)
+      toast.error('Error al subir archivo. Verifica que el bucket "attachments" exista y sea público.')
+    } finally {
+      setUploading(false)
+      e.target.value = '' // Reset input
+    }
+  }
 
   useEffect(() => {
     // Duplicating: pre-fill form but treat as new product (no id)
@@ -299,20 +333,34 @@ export default function AddProductModal({ open }) {
         <div className="pt-2 border-t border-subtle">
           <p className="text-xs font-semibold text-muted-300 mb-2">Archivo Adjunto (Opcional)</p>
           <div className="flex gap-2 mb-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              icon={<FileUp size={14} />}
-              className="w-full opacity-50 cursor-not-allowed"
-              title="Próximamente: Subir archivo directamente"
-              onClick={(e) => {
-                e.preventDefault()
-                toast('La subida de archivos estará disponible próximamente. Por favor usa un enlace por ahora.', { icon: 'ℹ️' })
-              }}
-            >
-              Subir Archivo (Próximamente)
-            </Button>
+            <div className="relative w-full">
+              <input 
+                type="file" 
+                id="file-upload" 
+                className="hidden" 
+                onChange={handleFileUpload} 
+                disabled={uploading}
+              />
+              <label 
+                htmlFor="file-upload"
+                className={clsx(
+                  "flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-bold rounded-xl border transition-all cursor-pointer",
+                  uploading ? "opacity-50 cursor-not-allowed border-subtle bg-surface-700 text-muted-400" : "border-brand-500/30 text-brand-400 hover:bg-brand-500/10 hover:border-brand-500"
+                )}
+              >
+                {uploading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-brand-500/20 border-t-brand-500 rounded-full animate-spin" />
+                    Subiendo archivo...
+                  </>
+                ) : (
+                  <>
+                    <FileUp size={16} />
+                    Subir Archivo
+                  </>
+                )}
+              </label>
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
