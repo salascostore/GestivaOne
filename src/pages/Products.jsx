@@ -71,7 +71,7 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
         'relative flex flex-col rounded-2xl border overflow-hidden transition-all duration-300 group',
         isOutOfStock
           ? 'border-danger-500/20 opacity-75'
-          : 'border-subtle hover:border-brand-500/40 hover:shadow-lg'
+          : 'border-subtle hover:border-brand-500/40'
       )}
     >
       {/* Accent gradient top stripe */}
@@ -208,8 +208,8 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
               isOutOfStock
                 ? 'bg-surface-700/50 text-muted-500 cursor-not-allowed border border-subtle'
                 : added
-                  ? 'bg-success-500 text-white shadow-md'
-                  : 'bg-brand-600 hover:bg-brand-500 text-white shadow-sm hover:shadow-md'
+                  ? 'bg-success-500 text-white'
+                  : 'bg-brand-600 hover:bg-brand-500 text-white'
             )}
           >
             {isOutOfStock ? (

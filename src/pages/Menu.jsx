@@ -59,8 +59,8 @@ function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistor
       className={clsx(
         'relative flex flex-col gap-0 rounded-2xl border cursor-pointer transition-all duration-300 group overflow-hidden',
         selected
-          ? 'border-brand-500 shadow-glow-sm ring-1 ring-brand-500/30'
-          : 'border-subtle hover:border-brand-500/40 hover:shadow-md'
+          ? 'border-brand-500 ring-1 ring-brand-500/30'
+          : 'border-subtle hover:border-brand-500/40'
       )}
       transition={smoothTransition}
     >
