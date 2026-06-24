@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Mail, Send, AlertCircle, CheckCircle2, User, Sparkles,
   MessageSquare, Info, Star, Percent, ShoppingBag, Search, ShoppingCart,
-  Eye, Check, Copy, RefreshCw, Layers, Plus, Trash2,
+  Eye, Check, Copy, RefreshCw, Layers, Plus, Trash2, Edit2,
   ArrowUp, ArrowDown, Type, AlignLeft, AlignCenter, AlignRight,
   FileText, Link2, Image as ImageIcon
 } from 'lucide-react'
