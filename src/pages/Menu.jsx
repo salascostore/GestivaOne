@@ -117,8 +117,7 @@ function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistor
 
         {/* Pending (conditional) */}
         {pendingAmount > 0 && (
-          <div className="col-span-2 flex items-center gap-1.5 bg-danger-50 dark:bg-danger-500/10 border border-danger-200 dark:border-danger-500/20 rounded-lg px-2.5 py-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-danger-500 dark:bg-danger-400 shrink-0 animate-pulse" />
+          <div className="col-span-2">
             <span className="text-[11px] font-extrabold text-danger-600 dark:text-danger-400">{format$(pendingAmount)} pendiente</span>
           </div>
         )}
