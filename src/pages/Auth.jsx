@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Mail, Lock, Eye, EyeOff, CheckCircle2, ArrowLeft, Check, Camera, Home, ChevronLeft } from 'lucide-react'
+import { Zap, Mail, Lock, Eye, EyeOff, CheckCircle2, ArrowLeft, Check, Camera, Home, ChevronLeft, Star } from 'lucide-react'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useEmployeeStore } from '@/store/useEmployeeStore'
 import { supabase } from '@/lib/supabase'
@@ -14,6 +14,33 @@ import clsx from 'clsx'
 
 // ── Register steps ────────────────────────────────────────────
 const STEPS = ['plan', 'datos', 'pago', 'listo']
+
+// ── Onboarding slides ──────────────────────────────────────────
+const ONBOARDING_SLIDES = [
+  {
+    type: 'instagram',
+    title: 'Comunidad GestivaOne',
+    desc: 'Únete a nuestro Instagram para recibir tips diarios de crecimiento empresarial, finanzas y actualizaciones exclusivas de la plataforma.',
+  },
+  {
+    type: 'tip',
+    title: 'Facturación DIAN instantánea',
+    desc: 'Emite facturas y notas de crédito en segundos cumpliendo al 100% con la normativa DIAN de forma automatizada.',
+    badge: 'Facturación en Vivo'
+  },
+  {
+    type: 'tip',
+    title: 'Inventario inteligente',
+    desc: 'Monitorea existencias en tiempo real, recibe alertas de stock crítico y reordena mercancías con total facilidad.',
+    badge: 'Inventario Pro'
+  },
+  {
+    type: 'tip',
+    title: 'Reportes y KPI en Vivo',
+    desc: 'Visualiza gráficos dinámicos de ventas, ingresos y flujos de caja del negocio al instante desde cualquier lugar.',
+    badge: 'Analíticas Avanzadas'
+  }
+]
 
 function StepIndicator({ step }) {
   const labels = ['Plan', 'Datos', 'Pago', 'Listo']
@@ -926,6 +953,14 @@ export default function Auth() {
   const navigate = useNavigate()
   const [tab, setTab] = useState('login')
   const [regStep, setRegStep] = useState('plan')
+  const [activeSlide, setActiveSlide] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveSlide((prev) => (prev === ONBOARDING_SLIDES.length - 1 ? 0 : prev + 1))
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
 
   const handleClearWorkerSocialData = () => {
@@ -956,52 +991,218 @@ export default function Auth() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-surface-900 flex">
-      <div className="hidden lg:flex flex-col justify-between w-96 shrink-0 bg-gradient-to-b from-[#1c1236] to-[#0a0a0f] border-r border-white/5 p-10 select-none">
-        <div className="flex items-center gap-4 pb-6 border-b border-purple-500/20">
-          <Zap size={32} className="text-purple-400" />
+    <div className="h-screen bg-surface-900 flex overflow-hidden">
+      <div className="hidden lg:flex flex-col justify-between w-[400px] shrink-0 h-full bg-[#07070a] border-r border-white/5 p-8 select-none relative overflow-hidden">
+        {/* Glow ambient inside sidebar */}
+        <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-brand-600/10 to-transparent pointer-events-none" />
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-brand-500/10 rounded-full blur-[80px] pointer-events-none" />
+
+        <div className="flex items-center gap-3 pb-6 border-b border-white/5 relative z-10">
+          <div className="w-8 h-8 rounded-xl bg-brand-600/10 border border-brand-500/30 flex items-center justify-center">
+            <Zap size={16} className="text-brand-400" />
+          </div>
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <p className="font-bold text-white text-2xl leading-none">Gestiva</p>
-              <Check size={16} className="text-purple-400" />
+            <div className="flex items-center gap-1.5">
+              <p className="font-extrabold text-white text-lg tracking-tight leading-none">Gestiva</p>
+              <span className="text-[10px] font-black uppercase tracking-wider bg-brand-500/20 text-brand-400 px-1.5 py-0.5 rounded border border-brand-500/20 leading-none">One</span>
             </div>
-            <p className="text-purple-400 text-xs font-semibold tracking-widest uppercase">One</p>
           </div>
         </div>
 
-        <div className="space-y-8">
-          <motion.h1
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-4xl font-extrabold text-white leading-tight"
-          >
-            La plataforma comercial <br />
-            <span className="text-purple-400">que tu empresa merece</span>
-          </motion.h1>
-          <ul className="space-y-4">
-            {['Facturación en tiempo real', 'Gestión de clientes e inventario', 'Dashboard con analíticas', 'Control de empleados por roles', 'Tasas de cambio automáticas'].map((f, i) => (
-              <motion.li
-                key={f}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 + (i * 0.1) }}
-                className="flex items-center gap-3.5 text-sm text-gray-300 font-medium"
-              >
-                <div className="w-6 h-6 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0 border border-purple-500/20">
-                  <Zap size={12} className="text-purple-400" />
-                </div>
-                {f}
-              </motion.li>
-            ))}
-          </ul>
+        <div className="space-y-6 relative z-10 my-auto">
+          <div className="space-y-2">
+            <span className="text-[9px] font-black uppercase tracking-widest text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded-full border border-brand-500/10">
+              Gestión Comercial Inteligente
+            </span>
+            <motion.h1
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-2xl font-black text-white leading-tight tracking-tight"
+            >
+              La plataforma comercial <br />
+              <span className="bg-gradient-to-r from-brand-400 to-purple-400 bg-clip-text text-transparent">que tu empresa merece</span>
+            </motion.h1>
+          </div>
+
+          {/* Onboarding Carousel (White Card style similar to image 2) */}
+          <div className="bg-white text-neutral-900 rounded-2xl p-5 shadow-2xl flex flex-col justify-between border border-neutral-100 min-h-[410px] w-full relative overflow-hidden select-none">
+            {/* Slide Graphic Section (Top half) */}
+            <div className="flex-1 flex flex-col justify-between">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeSlide}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-1 flex flex-col justify-between"
+                >
+                  {/* Render simulated graphic based on slide type */}
+                  {ONBOARDING_SLIDES[activeSlide].type === 'instagram' ? (
+                    /* Instagram Profile Simulator */
+                    <div className="w-full bg-neutral-50 rounded-2xl border border-neutral-200/60 p-4 space-y-3 relative overflow-hidden flex-1 flex flex-col justify-between min-h-[160px]">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 shrink-0">
+                          <div className="w-full h-full rounded-full bg-white p-[2px]">
+                            <div className="w-full h-full rounded-full bg-brand-600 flex items-center justify-center text-white">
+                              <Zap size={16} />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1">
+                            <span className="font-extrabold text-[11px] text-neutral-900 leading-tight">gestivaone</span>
+                            <div className="w-3.5 h-3.5 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+                              <Check size={8} className="text-white stroke-[4]" />
+                            </div>
+                          </div>
+                          <p className="text-[9px] text-muted-500">Gestión Comercial</p>
+                        </div>
+
+                        <a 
+                          href="https://instagram.com" 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="px-3 py-1 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-[9px] font-bold transition-all shadow-sm shrink-0"
+                        >
+                          Seguir
+                        </a>
+                      </div>
+
+                      <p className="text-[9.5px] text-neutral-600 leading-relaxed font-semibold">
+                        ⚡ Plataforma de facturación y gestión comercial. <br />
+                        💡 Crecimiento, automatización y tips diarios.
+                      </p>
+
+                      <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-neutral-200/50">
+                        <div className="aspect-square bg-gradient-to-br from-brand-500/10 to-brand-500/30 rounded-xl flex flex-col items-center justify-center p-1 border border-brand-500/10 hover:scale-[1.03] transition-transform">
+                          <Zap size={13} className="text-brand-600 mb-0.5" />
+                          <span className="text-[6.5px] font-black uppercase text-brand-700 text-center leading-none">Emite</span>
+                        </div>
+                        <div className="aspect-square bg-gradient-to-br from-success-500/10 to-success-500/30 rounded-xl flex flex-col items-center justify-center p-1 border border-success-500/10 hover:scale-[1.03] transition-transform">
+                          <CheckCircle2 size={13} className="text-success-600 mb-0.5" />
+                          <span className="text-[6.5px] font-black uppercase text-success-700 text-center leading-none">DIAN</span>
+                        </div>
+                        <div className="aspect-square bg-gradient-to-br from-warning-500/10 to-warning-500/30 rounded-xl flex flex-col items-center justify-center p-1 border border-warning-500/10 hover:scale-[1.03] transition-transform">
+                          <Star size={13} className="text-warning-600 mb-0.5" />
+                          <span className="text-[6.5px] font-black uppercase text-warning-700 text-center leading-none">Controla</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Tips Graphics */
+                    <div className="w-full bg-neutral-50 rounded-2xl border border-neutral-200/60 p-4 relative overflow-hidden flex-1 flex flex-col justify-center items-center min-h-[160px]">
+                      {/* Ambient grid */}
+                      <div className="absolute inset-0 bg-[radial-gradient(rgba(0,0,0,0.03)_1px,transparent_1px)] [background-size:14px_14px]" />
+                      
+                      {activeSlide === 1 && (
+                        <motion.div 
+                          animate={{ y: [0, -6, 0] }}
+                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                          className="p-3.5 bg-white border border-neutral-200 rounded-2xl shadow-xl flex items-center gap-3 relative z-10 w-[85%] max-w-[260px]"
+                        >
+                          <div className="w-8.5 h-8.5 rounded-xl bg-success-100 flex items-center justify-center shrink-0">
+                            <CheckCircle2 size={18} className="text-success-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-black text-neutral-800 truncate">Factura Electrónica</p>
+                            <p className="text-[8px] text-success-600 font-bold">✓ Enviada exitosamente a DIAN</p>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {activeSlide === 2 && (
+                        <div className="flex gap-2 relative z-10 w-[85%] justify-center">
+                          <motion.div 
+                            animate={{ y: [0, -4, 0] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+                            className="flex-1 p-2.5 bg-white border border-neutral-200 rounded-xl shadow-lg flex flex-col gap-1 max-w-[110px]"
+                          >
+                            <span className="text-[7px] font-black uppercase text-neutral-400">Stock OK</span>
+                            <span className="text-[11px] font-extrabold text-neutral-800 leading-none">1,240 uds</span>
+                          </motion.div>
+                          <motion.div 
+                            animate={{ y: [0, -4, 0] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            className="flex-1 p-2.5 bg-white border border-danger-200 rounded-xl shadow-lg flex flex-col gap-1 max-w-[110px]"
+                          >
+                            <span className="text-[7px] font-black uppercase text-danger-500">Bajo Stock</span>
+                            <span className="text-[11px] font-extrabold text-danger-600 leading-none">12 uds</span>
+                          </motion.div>
+                        </div>
+                      )}
+
+                      {activeSlide === 3 && (
+                        <motion.div 
+                          animate={{ scale: [1, 1.02, 1] }}
+                          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                          className="p-3 bg-white border border-neutral-200 rounded-xl shadow-xl w-[85%] max-w-[240px] space-y-2 relative z-10"
+                        >
+                          <div className="flex justify-between items-center">
+                            <span className="text-[8.5px] font-extrabold text-neutral-800">Ventas Mensuales</span>
+                            <span className="text-[9px] font-black text-success-600">+34%</span>
+                          </div>
+                          <div className="h-8 flex items-end gap-1.5 pt-1">
+                            {[25, 50, 35, 65, 85, 60, 95].map((val, i) => (
+                              <div key={i} className="flex-1 bg-brand-500/25 hover:bg-brand-500 rounded-t transition-colors" style={{ height: `${val}%` }} />
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Slide text contents */}
+                  <div className="space-y-1 pt-3.5 text-left">
+                    {ONBOARDING_SLIDES[activeSlide].badge && (
+                      <span className="text-[8px] bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded-full font-black uppercase tracking-wider inline-block">
+                        {ONBOARDING_SLIDES[activeSlide].badge}
+                      </span>
+                    )}
+                    <h3 className="text-xs font-black text-neutral-900 leading-tight">
+                      {ONBOARDING_SLIDES[activeSlide].title}
+                    </h3>
+                    <p className="text-[9.5px] text-neutral-500 leading-normal font-semibold">
+                      {ONBOARDING_SLIDES[activeSlide].desc}
+                    </p>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Footer controls (pagination only) */}
+            <div className="flex items-center justify-center pt-3 border-t border-neutral-100 mt-3.5 select-none w-full">
+              {/* Pagination Dots */}
+              <div className="flex items-center gap-1.5 justify-center">
+                {ONBOARDING_SLIDES.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setActiveSlide(i)}
+                    className={clsx(
+                      "w-2 h-2 rounded-full transition-all duration-300",
+                      activeSlide === i ? "bg-[#4338CA] w-4" : "bg-neutral-200"
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
-        <p className="text-[11px] text-gray-400">© 2026 GestivaOne. Todos los derechos reservados.</p>
+        <div className="flex items-center justify-between border-t border-white/5 pt-4 text-[10px] text-muted-500 relative z-10">
+          <span>© 2026 GestivaOne.</span>
+          <span className="font-semibold text-brand-400">Diseño Industrial Premium</span>
+        </div>
       </div>
 
       {/* Right: form panel */}
-      <div className="flex-1 flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 overflow-y-auto relative min-h-screen">
+      <div className={clsx(
+        "flex-1 flex flex-col items-center p-3 sm:p-6 overflow-y-auto relative h-full",
+        (tab === 'register' && regStep === 'plan') ? "justify-start sm:py-12 py-6" : "justify-center"
+      )}>
         {/* Ambient Background Elements (wrapped to prevent overflow/scrollbars) */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
           <div className="absolute inset-0 bg-[radial-gradient(rgba(124,58,237,0.03)_1.5px,transparent_1.5px)] [background-size:32px_32px]" />
@@ -1012,7 +1213,7 @@ export default function Auth() {
 
         <div className={clsx(
           "w-full relative z-10 transition-all duration-500",
-          (tab === 'register' && regStep === 'plan') ? "max-w-5xl" : "max-w-md"
+          (tab === 'register' && regStep === 'plan') ? "max-w-[1400px]" : "max-w-md"
         )}>
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-2 justify-center mb-3.5 sm:mb-6">

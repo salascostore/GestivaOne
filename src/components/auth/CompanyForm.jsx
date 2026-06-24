@@ -162,19 +162,17 @@ export default function CompanyForm({ onSubmit: onNext, defaultValues, plan, soc
         />
       </div>
 
-      {/* Checkboxes */}
-      <div className="space-y-1.5 pt-0.5">
+      <div className="space-y-1.5 pt-0.5 select-none">
         <label className="flex items-center gap-2.5 cursor-pointer group">
-          <input type="checkbox" {...register('terms')} className="peer hidden" />
-          <div className={clsx(
-            'w-3.5 h-3.5 rounded border-2 flex items-center justify-center shrink-0 transition-all duration-200',
-            'border-surface-400 group-hover:border-brand-500',
-            'peer-checked:border-brand-500 peer-checked:bg-brand-600/20',
-            errors.terms && 'border-danger-400'
-          )}>
-            <Check size={8} className="text-brand-400 opacity-0 peer-checked:opacity-100 transition-opacity" />
-          </div>
-          <span className="text-[11px] text-muted-600 dark:text-muted-400 group-hover:text-neutral-900 dark:group-hover:text-white leading-relaxed transition-colors">
+          <input 
+            type="checkbox" 
+            {...register('terms')} 
+            className={clsx(
+              "!rounded-full border border-subtle bg-surface-900 cursor-pointer transition-all duration-200",
+              errors.terms && "!border-danger-500 !bg-danger-500/10"
+            )} 
+          />
+          <span className="text-[11px] text-muted-600 dark:text-muted-400 group-hover:text-neutral-900 dark:group-hover:text-white leading-relaxed transition-colors font-semibold">
             Acepto los términos y condiciones de uso
           </span>
         </label>
