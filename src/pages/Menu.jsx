@@ -156,7 +156,7 @@ function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistor
           </motion.button>
           <motion.button
             onClick={(e) => { e.stopPropagation(); onDelete() }}
-            className="h-8 w-8 rounded-lg flex items-center justify-center bg-transparent text-muted-400 hover:bg-danger-600 hover:text-white dark:hover:bg-danger-500 transition-all duration-200 cursor-pointer"
+            className="h-8 w-8 rounded-lg flex items-center justify-center bg-transparent text-muted-400 hover:bg-danger-100 hover:text-danger-700 dark:hover:bg-danger-500/20 dark:hover:text-danger-400 transition-all duration-200 cursor-pointer"
             title="Eliminar cliente"
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
