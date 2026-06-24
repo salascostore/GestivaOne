@@ -57,28 +57,28 @@ function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistor
       whileHover={{ y: -3 }}
       onClick={onSelect}
       className={clsx(
-        'relative flex flex-col gap-0 rounded-2xl border cursor-pointer transition-all duration-300 group overflow-hidden',
+        'relative flex flex-col gap-0 rounded-2xl border cursor-pointer transition-all duration-300 group overflow-hidden bg-white dark:bg-surface-800',
         selected
           ? 'border-brand-500 ring-1 ring-brand-500/30'
-          : 'border-subtle hover:border-brand-500/40'
+          : 'border-neutral-200 dark:border-surface-700 hover:border-brand-500/40 shadow-sm'
       )}
       transition={smoothTransition}
     >
       {/* Top Section: Avatar + Name + Status */}
       <div className={clsx(
         'flex items-center gap-3.5 px-4 pt-4 pb-3 transition-colors duration-300',
-        selected ? 'bg-brand-600/8' : 'bg-surface-800 group-hover:bg-surface-800/90'
+        selected ? 'bg-brand-500/10 dark:bg-brand-600/10' : 'bg-transparent'
       )}>
         {/* Avatar with gradient ring */}
         <div className={clsx(
-          'relative w-11 h-11 rounded-xl flex items-center justify-center text-base font-extrabold shrink-0 transition-all duration-300 ring-2 ring-offset-2 ring-offset-surface-800',
+          'relative w-11 h-11 rounded-xl flex items-center justify-center text-base font-extrabold shrink-0 transition-all duration-300 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-surface-800',
           selected
             ? 'bg-gradient-to-br from-brand-500 to-brand-700 text-white ring-brand-500/50'
-            : 'bg-surface-600 text-foreground ring-transparent group-hover:ring-brand-500/30 group-hover:bg-brand-600/20 group-hover:text-brand-300'
+            : 'bg-neutral-100 dark:bg-surface-600 text-neutral-600 dark:text-foreground ring-transparent group-hover:ring-brand-500/30 group-hover:bg-brand-600/20 group-hover:text-brand-300'
         )}>
           {initial}
           {selected && (
-            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-brand-500 border-2 border-surface-800 flex items-center justify-center">
+            <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-brand-500 border-2 border-surface-800 dark:border-surface-700 flex items-center justify-center">
               <Check size={8} className="text-white stroke-[3]" />
             </span>
           )}
@@ -97,7 +97,7 @@ function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistor
       </div>
 
       {/* Middle Section: Info Grid */}
-      <div className="px-4 py-3 grid grid-cols-2 gap-x-3 gap-y-2.5 border-t border-subtle/60 bg-surface-900/40">
+      <div className="px-4 py-3 grid grid-cols-2 gap-x-3 gap-y-2.5 border-t border-neutral-100 dark:border-surface-700/60 bg-transparent">
         {/* Last Invoice Date */}
         <div className="flex flex-col gap-0.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-500">Última Factura</span>
@@ -118,9 +118,9 @@ function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistor
 
         {/* Pending (conditional) */}
         {pendingAmount > 0 && (
-          <div className="col-span-2 flex items-center gap-1.5 bg-danger-500/8 border border-danger-500/15 rounded-lg px-2.5 py-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-danger-400 shrink-0 animate-pulse" />
-            <span className="text-[11px] font-bold text-danger-400">{format$(pendingAmount)} pendiente</span>
+          <div className="col-span-2 flex items-center gap-1.5 bg-danger-50 dark:bg-danger-500/10 border border-danger-200 dark:border-danger-500/20 rounded-lg px-2.5 py-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-danger-500 dark:bg-danger-400 shrink-0 animate-pulse" />
+            <span className="text-[11px] font-extrabold text-danger-600 dark:text-danger-400">{format$(pendingAmount)} pendiente</span>
           </div>
         )}
 
@@ -135,7 +135,7 @@ function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistor
       </div>
 
       {/* Bottom Section: Action Buttons */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-t border-subtle/60 bg-surface-900/20">
+      <div className="flex items-center justify-between px-4 py-2.5 border-t border-neutral-100 dark:border-surface-700/60 bg-transparent">
         <div className="flex items-center gap-1.5">
           <motion.button
             onClick={(e) => { e.stopPropagation(); onOpenHistory() }}
@@ -157,7 +157,7 @@ function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistor
           </motion.button>
           <motion.button
             onClick={(e) => { e.stopPropagation(); onDelete() }}
-            className="h-8 w-8 rounded-lg flex items-center justify-center bg-danger-500/8 hover:bg-danger-500/25 text-danger-400/70 hover:text-danger-400 transition-all duration-200 cursor-pointer"
+            className="h-8 w-8 rounded-lg flex items-center justify-center bg-danger-50 dark:bg-danger-500/10 text-danger-600 dark:text-danger-400 hover:bg-danger-600 hover:text-white dark:hover:bg-danger-500 dark:hover:text-white transition-all duration-200 cursor-pointer"
             title="Eliminar cliente"
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}

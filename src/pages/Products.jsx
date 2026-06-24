@@ -29,15 +29,41 @@ const UNIT_COLORS = {
 
 const UNIT_LABELS = { ILIMITADO: 'Ilimitado' }
 
+const getFallbackImage = (category) => {
+  const normalized = (category || '').toLowerCase()
+  if (normalized.includes('aliment')) {
+    return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop&q=80'
+  }
+  if (normalized.includes('bebid')) {
+    return 'https://images.unsplash.com/photo-1497534446932-c925b458314e?w=400&auto=format&fit=crop&q=80'
+  }
+  if (normalized.includes('limpiez')) {
+    return 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&auto=format&fit=crop&q=80'
+  }
+  if (normalized.includes('electr')) {
+    return 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&auto=format&fit=crop&q=80'
+  }
+  if (normalized.includes('ropa') || normalized.includes('vestir')) {
+    return 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&auto=format&fit=crop&q=80'
+  }
+  if (normalized.includes('servici')) {
+    return 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&auto=format&fit=crop&q=80'
+  }
+  if (normalized.includes('decor')) {
+    return 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=400&auto=format&fit=crop&q=80'
+  }
+  return null
+}
+
 function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ }) {
   const [qty, setQty] = useState('')
   const [added, setAdded] = useState(false)
   const hasUnlimitedStock = product.unit === 'ILIMITADO' || product.stock >= 999990000
   const isOutOfStock = !hasUnlimitedStock && product.stock !== undefined && product.stock !== null && product.stock <= 0
   const discountInfo = getProductDiscount(product)
+  const imageUrl = product.image_url || getFallbackImage(product.category)
 
   const unitColor = UNIT_COLORS[product.unit] ?? UNIT_COLORS.UND
-
 
   const handleAdd = () => {
     const finalQty = qty === '' ? 1 : Number(qty)
@@ -47,7 +73,6 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
     setQty('')
   }
 
-  // Stock percentage for bar
   const stockPct = hasUnlimitedStock ? 100 : Math.min(100, ((product.stock ?? 0) / 100) * 100)
   const stockColor = hasUnlimitedStock
     ? 'bg-success-500'
@@ -61,38 +86,52 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ y: -4 }}
       className={clsx(
-        'relative flex flex-col rounded-2xl border overflow-hidden transition-all duration-300 group',
+        'relative flex flex-col rounded-2xl border overflow-hidden transition-all duration-300 group bg-white dark:bg-surface-800 shadow-sm',
         isOutOfStock
           ? 'border-danger-500/20 opacity-75'
-          : 'border-subtle hover:border-brand-500/40'
+          : 'border-neutral-200 dark:border-surface-700 hover:border-brand-500/40'
       )}
     >
-
+      {/* ── Zone 0: Image Cover ── */}
+      {imageUrl && (
+        <div className="relative w-full h-36 overflow-hidden bg-neutral-100 dark:bg-surface-700">
+          <img
+            src={imageUrl}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          {discountInfo && (
+            <span className="absolute top-2.5 left-2.5 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-brand-500 text-white shadow-sm leading-none">
+              PROMO
+            </span>
+          )}
+        </div>
+      )}
 
       {/* ── Zone 1: Header ── */}
-      <div className="relative px-3.5 pt-3 pb-2">
-        {/* Action buttons - fade in on hover */}
-        <div className="absolute top-2.5 right-2.5 flex gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 z-10">
+      <div className="relative px-3.5 pt-3 pb-2 bg-transparent">
+        {/* Action buttons */}
+        <div className="absolute top-2.5 right-2.5 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 z-10">
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => onDuplicate(product)}
-            className="p-1.5 rounded-lg text-muted-500 hover:text-brand-400 hover:bg-brand-500/10 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onDuplicate(product) }}
+            className="p-1.5 rounded-lg bg-white/90 dark:bg-surface-700/90 text-neutral-500 dark:text-muted-400 hover:text-brand-500 dark:hover:text-brand-400 shadow-sm border border-neutral-100 dark:border-surface-600 transition-colors"
             title="Duplicar"
           >
             <Copy size={12} />
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => onEdit(product)}
-            className="p-1.5 rounded-lg text-muted-500 hover:text-foreground hover:bg-surface-600 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onEdit(product) }}
+            className="p-1.5 rounded-lg bg-white/90 dark:bg-surface-700/90 text-neutral-500 dark:text-muted-400 hover:text-foreground dark:hover:text-white shadow-sm border border-neutral-100 dark:border-surface-600 transition-colors"
             title="Editar"
           >
             <Edit2 size={12} />
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => onDelete(product)}
-            className="p-1.5 rounded-lg text-muted-500 hover:text-danger-400 hover:bg-danger-500/10 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onDelete(product) }}
+            className="p-1.5 rounded-lg bg-white/90 dark:bg-surface-700/90 text-neutral-500 dark:text-muted-400 hover:text-danger-500 dark:hover:text-danger-400 shadow-sm border border-neutral-100 dark:border-surface-600 transition-colors"
             title="Borrar"
           >
             <Trash2 size={12} />
@@ -120,7 +159,7 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
 
         {/* Category + Unit row */}
         <div className="flex items-center gap-1.5 mt-1.5">
-          <span className="text-[10px] font-semibold text-muted-500 bg-surface-700/60 px-2 py-0.5 rounded-md truncate">
+          <span className="text-[10px] font-semibold text-muted-500 bg-neutral-100 dark:bg-surface-700/60 px-2 py-0.5 rounded-md truncate border border-neutral-200/50 dark:border-transparent">
             {product.category}
           </span>
           {product.unit !== 'ILIMITADO' && (
@@ -132,11 +171,11 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
       </div>
 
       {/* ── Zone 2: Price Hero ── */}
-      <div className="px-3.5 py-3 bg-surface-900/30">
+      <div className="px-3.5 py-3 bg-transparent border-t border-neutral-100 dark:border-surface-700/60">
         {discountInfo ? (
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-lg sm:text-xl font-black text-brand-400 leading-none">{format$(discountInfo.finalPrice)}</span>
+              <span className="text-lg sm:text-xl font-black text-brand-500 dark:text-brand-400 leading-none">{format$(discountInfo.finalPrice)}</span>
               <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-brand-500/20 text-brand-300 border border-brand-500/25 leading-none">
                 {discountInfo.type === 'percentage' ? `-${discountInfo.value}%` : `-${format$(discountInfo.value)}`}
               </span>
@@ -154,10 +193,10 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
       </div>
 
       {/* ── Zone 3: Stock + Cart ── */}
-      <div className="px-3.5 pb-3 pt-0 mt-auto flex flex-col gap-2.5">
+      <div className="px-3.5 pb-3 pt-0 mt-auto flex flex-col gap-2.5 bg-transparent">
         {/* Stock bar */}
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-1 bg-surface-700 rounded-full overflow-hidden">
+          <div className="flex-1 h-1 bg-neutral-100 dark:bg-surface-700 rounded-full overflow-hidden">
             <motion.div
               className={clsx('h-full rounded-full', stockColor)}
               initial={{ width: 0 }}
@@ -167,7 +206,7 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
           </div>
           <span className={clsx(
             'text-[10px] font-semibold shrink-0',
-            hasUnlimitedStock ? 'text-success-400' : isOutOfStock ? 'text-danger-400' : 'text-muted-400'
+            hasUnlimitedStock ? 'text-success-500 dark:text-success-400' : isOutOfStock ? 'text-danger-500 dark:text-danger-400' : 'text-muted-500'
           )}>
             {hasUnlimitedStock ? 'Ilimitado' : isOutOfStock ? 'Agotado' : `${product.stock}`}
           </span>
@@ -185,7 +224,7 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
               if (val === '') { setQty('') } else { setQty(Math.max(1, Number(val))) }
             }}
             disabled={isOutOfStock}
-            className="w-14 bg-surface-800 border border-subtle rounded-lg px-2 py-1.5 text-xs text-foreground text-center focus:outline-none focus:ring-1 focus:ring-brand-500/60 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="w-14 bg-white dark:bg-surface-700 border border-neutral-200 dark:border-surface-600 rounded-lg px-2 py-1.5 text-xs text-foreground text-center focus:outline-none focus:ring-1 focus:ring-brand-500/60 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           />
           <motion.button
             whileTap={isOutOfStock ? {} : { scale: 0.93 }}
@@ -195,7 +234,7 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
             className={clsx(
               'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all duration-200',
               isOutOfStock
-                ? 'bg-surface-700/50 text-muted-500 cursor-not-allowed border border-subtle'
+                ? 'bg-neutral-100 dark:bg-surface-700/50 text-neutral-400 dark:text-muted-500 cursor-not-allowed border border-neutral-200 dark:border-surface-700'
                 : added
                   ? 'bg-success-500 text-white'
                   : 'bg-brand-600 hover:bg-brand-500 text-white'
@@ -222,7 +261,7 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
             >
               <button
                 onClick={() => onEdit(product)}
-                className="w-full border border-warning-500/25 bg-warning-500/8 hover:bg-warning-500/15 text-warning-400 py-1.5 rounded-xl text-[11px] font-bold transition-colors flex items-center justify-center gap-1.5"
+                className="w-full border border-warning-500/25 bg-warning-500/8 hover:bg-warning-500/15 text-warning-500 dark:text-warning-400 py-1.5 rounded-xl text-[11px] font-bold transition-colors flex items-center justify-center gap-1.5"
               >
                 <Package size={12} />
                 ¿Añadir Stock?

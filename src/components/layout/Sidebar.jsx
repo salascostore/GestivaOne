@@ -2,13 +2,14 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Receipt, Package,
-  Settings, ChevronLeft, X, Users, Lock, Bell, Printer, Calculator, Wallet, FolderClosed, Contact, Mail
+  Settings, ChevronLeft, X, Users, Lock, Bell, Printer, Calculator, Wallet, FolderClosed, Contact, Mail,
+  User, CreditCard, LogOut, HelpCircle, MessageSquare, Zap
 } from 'lucide-react'
 import { useUIStore } from '@/store/useUIStore'
 import { useAuthStore, ROLES } from '@/store/useAuthStore'
 import { useNotificationStore } from '@/store/useNotificationStore'
 import { supabase } from '@/lib/supabase'
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import clsx from 'clsx'
 
 const AVATAR_SIZE = 44
@@ -22,6 +23,27 @@ export default function Sidebar({ isMobile }) {
   const location = useLocation()
   
   const unreadCount = useNotificationStore((s) => s.getUnreadCount())
+  
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const profileRef = useRef(null)
+  const logout = useAuthStore((s) => s.logout)
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfileMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  const handleLogout = async () => {
+    setShowProfileMenu(false)
+    await logout()
+  }
   const fetchNotifications = useNotificationStore((s) => s.fetchNotifications)
 
   const role = user?.role || 'despachador'
@@ -148,6 +170,9 @@ export default function Sidebar({ isMobile }) {
         {/* Icon — FIXED, never moves regardless of label state */}
         <div className="relative z-10 shrink-0 w-[18px] h-[18px] flex items-center justify-center">
           <Icon size={18} />
+          {label === 'Notificaciones' && unreadCount > 0 && (
+            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-brand-500 rounded-full border border-surface-800" />
+          )}
         </div>
 
         {/* Label — animates width without pushing the icon */}
@@ -166,24 +191,11 @@ export default function Sidebar({ isMobile }) {
               </motion.span>
             )}
           </AnimatePresence>
-          {!collapsed && label === 'Notificaciones' && unreadCount > 0 && (
-            <motion.div
-              initial={{ scale: 0 }} animate={{ scale: 1 }}
-              className="ml-auto bg-danger-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
-            >
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </motion.div>
-          )}
         </div>
 
         {/* Lock / Notification badges on collapsed */}
         {!allowed && !collapsed && <Lock size={12} className="text-muted-400 relative z-10 ml-2" />}
         {!allowed && collapsed && <Lock size={10} className="absolute -bottom-0.5 -right-0.5 text-muted-400" />}
-        
-        {/* Notification badge on collapsed */}
-        {collapsed && label === 'Notificaciones' && unreadCount > 0 && (
-          <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger-500 rounded-full border border-surface-800 animate-pulse" />
-        )}
       </NavLink>
     )
   }
@@ -255,17 +267,14 @@ export default function Sidebar({ isMobile }) {
                                 transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                               />
                             )}
-                            <Icon size={18} className="shrink-0 relative z-10" />
-                            <span className="relative z-10 flex-1 flex items-center justify-between">
-                              <span>{label}</span>
+                            <div className="relative shrink-0 w-[18px] h-[18px] flex items-center justify-center z-10">
+                              <Icon size={18} />
                               {label === 'Notificaciones' && unreadCount > 0 && (
-                                <motion.div
-                                  initial={{ scale: 0 }} animate={{ scale: 1 }}
-                                  className="bg-danger-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                                >
-                                  {unreadCount > 99 ? '99+' : unreadCount}
-                                </motion.div>
+                                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-brand-500 rounded-full border border-surface-800" />
                               )}
+                            </div>
+                            <span className="relative z-10 flex-1">
+                              {label}
                             </span>
                             {!allowed && <Lock size={12} className="text-muted-400 relative z-10" />}
                           </NavLink>
@@ -275,7 +284,7 @@ export default function Sidebar({ isMobile }) {
                   </div>
                 ))}
 
-                {/* Settings at bottom */}
+                {/* Notifications at bottom */}
                 <div className="mt-auto pt-2 border-t border-subtle shrink-0 flex flex-col gap-1">
                   <NavLink
                     to={permissions['dashboard'] ? '/notifications' : '#'}
@@ -298,52 +307,24 @@ export default function Sidebar({ isMobile }) {
                         transition={{ type: 'spring', stiffness: 400, damping: 35 }}
                       />
                     )}
-                    <Bell size={18} className="shrink-0 relative z-10" />
-                    <span className="relative z-10 flex-1 flex items-center justify-between">
-                      <span>Notificaciones</span>
+                    <div className="relative shrink-0 w-[18px] h-[18px] flex items-center justify-center z-10">
+                      <Bell size={18} />
                       {unreadCount > 0 && (
-                        <motion.div
-                          initial={{ scale: 0 }} animate={{ scale: 1 }}
-                          className="bg-danger-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                        >
-                          {unreadCount > 99 ? '99+' : unreadCount}
-                        </motion.div>
+                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-brand-500 rounded-full border border-surface-800" />
                       )}
-                    </span>
+                    </div>
+                    <span className="relative z-10 flex-1">Notificaciones</span>
                     {!permissions['dashboard'] && <Lock size={12} className="text-muted-400 relative z-10" />}
-                  </NavLink>
-
-                  <NavLink
-                    to={permissions['settings'] ? '/settings' : '#'}
-                    onClick={permissions['settings'] ? handleNavClick : (e) => e.preventDefault()}
-                    target="_self"
-                    className={clsx(
-                      'relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-300',
-                      !permissions['settings'] && 'opacity-50 cursor-not-allowed',
-                      location.pathname.startsWith('/settings') && permissions['settings']
-                        ? 'text-brand-300'
-                        : permissions['settings']
-                        ? 'text-muted-400 hover:text-white hover:bg-surface-600'
-                        : 'text-muted-400'
-                    )}
-                  >
-                    {location.pathname.startsWith('/settings') && permissions['settings'] && (
-                      <motion.div
-                        layoutId="activeIndicatorMobile"
-                        className="absolute inset-0 rounded-xl bg-brand-600/20 border border-brand-500/30"
-                        transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                      />
-                    )}
-                    <Settings size={18} className="shrink-0 relative z-10" />
-                    <span className="relative z-10 flex-1">Configuración</span>
-                    {!permissions['settings'] && <Lock size={12} className="text-muted-400 relative z-10" />}
                   </NavLink>
                 </div>
               </nav>
 
               {/* User Profile */}
-              <NavLink to="/account" onClick={handleNavClick} className="block p-4 border-t border-subtle bg-surface-900/40 hover:bg-surface-800 transition-colors">
-                <div className="flex items-center gap-3">
+              <div ref={profileRef} className="relative block p-4 border-t border-subtle bg-surface-900/40 shrink-0">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="w-full flex items-center gap-3 text-left focus:outline-none hover:bg-surface-800/40 p-2 rounded-xl transition-colors"
+                >
                   {renderAvatar()}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-white truncate leading-tight">{user?.name || 'Invitado'}</p>
@@ -351,8 +332,81 @@ export default function Sidebar({ isMobile }) {
                       {ROLES[user?.role]?.label || 'Usuario'}
                     </p>
                   </div>
-                </div>
-              </NavLink>
+                </button>
+
+                {/* Profile Dropdown Menu in Mobile */}
+                <AnimatePresence>
+                  {showProfileMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                      className="absolute bottom-16 left-4 right-4 z-50 bg-surface-800 border border-subtle shadow-2xl rounded-2xl p-1.5 flex flex-col gap-0.5 text-neutral-200"
+                    >
+                      <NavLink
+                        to="/account"
+                        onClick={() => { setShowProfileMenu(false); closeMobile(); }}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-muted-400 hover:text-white hover:bg-surface-700 transition-colors"
+                      >
+                        <User size={15} className="text-muted-400" />
+                        <span>Profile</span>
+                      </NavLink>
+
+                      <NavLink
+                        to="/crm"
+                        onClick={() => { setShowProfileMenu(false); closeMobile(); }}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-muted-400 hover:text-white hover:bg-surface-700 transition-colors"
+                      >
+                        <MessageSquare size={15} className="text-muted-400" />
+                        <span>Community</span>
+                      </NavLink>
+
+                      <NavLink
+                        to="/account"
+                        onClick={() => { setShowProfileMenu(false); closeMobile(); }}
+                        className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-muted-400 hover:text-white hover:bg-surface-700 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <CreditCard size={15} className="text-muted-400" />
+                          <span>Subscription</span>
+                        </div>
+                        <div className="flex items-center gap-0.5 bg-brand-600/20 border border-brand-500/30 text-brand-300 font-bold px-1.5 py-0.5 rounded text-[9px] tracking-wide shrink-0">
+                          <Zap size={8} className="fill-current text-brand-400" />
+                          {user?.plan === 'empresarial' ? '360' : 'PRO'}
+                        </div>
+                      </NavLink>
+
+                      <NavLink
+                        to="/settings"
+                        onClick={() => { setShowProfileMenu(false); closeMobile(); }}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-muted-400 hover:text-white hover:bg-surface-700 transition-colors"
+                      >
+                        <Settings size={15} className="text-muted-400" />
+                        <span>Settings</span>
+                      </NavLink>
+
+                      <div className="border-t border-subtle/50 my-1.5 mx-1" />
+
+                      <a
+                        href="mailto:soporte@gestivaone.com?subject=Soporte%20GestivaOne"
+                        onClick={() => { setShowProfileMenu(false); closeMobile(); }}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-muted-400 hover:text-white hover:bg-surface-700 transition-colors"
+                      >
+                        <HelpCircle size={15} className="text-muted-400" />
+                        <span>Help center</span>
+                      </a>
+
+                      <button
+                        onClick={() => { handleLogout(); closeMobile(); }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-danger-400 hover:bg-danger-950/20 transition-colors text-left"
+                      >
+                        <LogOut size={15} className="text-danger-500" />
+                        <span>Sign out</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </motion.aside>
           </>
         )}
@@ -365,7 +419,7 @@ export default function Sidebar({ isMobile }) {
     <motion.aside
       animate={{ width: collapsed ? 68 : 220 }}
       transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-      className="sidebar-premium-dark relative h-screen bg-surface-800 border-r border-subtle flex flex-col overflow-hidden shrink-0 z-10"
+      className="sidebar-premium-dark relative h-screen bg-surface-800 border-r border-subtle flex flex-col shrink-0 z-30"
     >
       {/* Brand header — always same height, icon stays, text slides */}
       <div className="flex items-center px-4 h-20 border-b border-subtle shrink-0 overflow-hidden">
@@ -434,18 +488,17 @@ export default function Sidebar({ isMobile }) {
         ))}
       </nav>
 
-      {/* Notifications & Settings */}
+      {/* Notifications */}
       <div className="px-2 py-1.5 border-t border-subtle shrink-0 flex flex-col gap-1">
         <NavItem to="/notifications" icon={Bell} label="Notificaciones" perm="dashboard" />
-        <NavItem to="/settings" icon={Settings} label="Configuración" perm="settings" />
       </div>
 
       {/* User Profile — avatar always same size */}
-      <NavLink
-        to="/account"
-        className="block px-2 py-3 border-t border-subtle hover:bg-surface-700 transition-colors"
-      >
-        <div className="flex items-center gap-3 px-1">
+      <div ref={profileRef} className="relative block px-2 py-3 border-t border-subtle shrink-0">
+        <button
+          onClick={() => setShowProfileMenu(!showProfileMenu)}
+          className="w-full flex items-center gap-3 px-1 hover:bg-surface-700 p-2 rounded-xl transition-colors text-left focus:outline-none"
+        >
           {/* Avatar — never changes size */}
           {renderAvatar()}
 
@@ -467,8 +520,81 @@ export default function Sidebar({ isMobile }) {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-      </NavLink>
+        </button>
+
+        {/* Profile Dropdown Menu */}
+        <AnimatePresence>
+          {showProfileMenu && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, x: -10 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.95, x: -10 }}
+              className="absolute z-50 bg-surface-800 border border-subtle shadow-2xl rounded-2xl p-1.5 flex flex-col gap-0.5 text-neutral-200 min-w-[210px] bottom-2 left-full ml-3"
+            >
+              <NavLink
+                to="/account"
+                onClick={() => setShowProfileMenu(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-muted-400 hover:text-white hover:bg-surface-700 transition-colors"
+              >
+                <User size={15} className="text-muted-400" />
+                <span>Profile</span>
+              </NavLink>
+
+              <NavLink
+                to="/crm"
+                onClick={() => setShowProfileMenu(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-muted-400 hover:text-white hover:bg-surface-700 transition-colors"
+              >
+                <MessageSquare size={15} className="text-muted-400" />
+                <span>Community</span>
+              </NavLink>
+
+              <NavLink
+                to="/account"
+                onClick={() => setShowProfileMenu(false)}
+                className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-muted-400 hover:text-white hover:bg-surface-700 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <CreditCard size={15} className="text-muted-400" />
+                  <span>Subscription</span>
+                </div>
+                <div className="flex items-center gap-0.5 bg-brand-600/20 border border-brand-500/30 text-brand-300 font-bold px-1.5 py-0.5 rounded text-[9px] tracking-wide shrink-0">
+                  <Zap size={8} className="fill-current text-brand-400" />
+                  {user?.plan === 'empresarial' ? '360' : 'PRO'}
+                </div>
+              </NavLink>
+
+              <NavLink
+                to="/settings"
+                onClick={() => setShowProfileMenu(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-muted-400 hover:text-white hover:bg-surface-700 transition-colors"
+              >
+                <Settings size={15} className="text-muted-400" />
+                <span>Settings</span>
+              </NavLink>
+
+              <div className="border-t border-subtle/50 my-1.5 mx-1" />
+
+              <a
+                href="mailto:soporte@gestivaone.com?subject=Soporte%20GestivaOne"
+                onClick={() => setShowProfileMenu(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-muted-400 hover:text-white hover:bg-surface-700 transition-colors"
+              >
+                <HelpCircle size={15} className="text-muted-400" />
+                <span>Help center</span>
+              </a>
+
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-danger-400 hover:bg-danger-950/20 transition-colors text-left"
+              >
+                <LogOut size={15} className="text-danger-500" />
+                <span>Sign out</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Collapse toggle */}
       <div className="p-2 border-t border-subtle shrink-0">
