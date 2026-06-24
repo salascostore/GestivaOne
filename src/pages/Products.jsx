@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Package, Plus, Trash2, Edit2, Copy, Link2, FileText, DollarSign, ShoppingCart, LayoutGrid, Layers } from 'lucide-react'
+import { Package, Plus, Trash2, Edit2, Copy, Link2, FileText, DollarSign, ShoppingCart, LayoutGrid, Layers, Percent } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import SearchBar from '@/components/ui/SearchBar'
 import SortFilterBar from '@/components/ui/SortFilterBar'
@@ -115,8 +115,8 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
           <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white dark:from-surface-800 to-transparent pointer-events-none" />
           
           {discountInfo && (
-            <span className="absolute top-2.5 left-2.5 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-brand-500 text-white shadow-sm leading-none">
-              PROMO
+            <span className="absolute top-2.5 left-2.5 p-1.5 rounded-lg bg-brand-500 text-white shadow-md flex items-center justify-center" title="Descuento activo">
+              <Percent size={10} className="stroke-[3]" />
             </span>
           )}
         </div>
@@ -191,12 +191,12 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-lg sm:text-xl font-black text-brand-500 dark:text-brand-400 leading-none">{format$(discountInfo.finalPrice)}</span>
               <span className="text-xs text-muted-400 line-through leading-none">{format$(product.price)}</span>
-              <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-brand-500/10 text-brand-500 dark:bg-brand-500/20 dark:text-brand-300 border border-brand-500/20 leading-none">
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-500 dark:bg-brand-500/20 dark:text-brand-300 border border-brand-500/20 leading-none">
                 {discountInfo.type === 'percentage' ? `-${discountInfo.value}%` : `-${format$(discountInfo.value)}`}
               </span>
             </div>
             {product.discount_ends_at && (
-              <span className="text-[10px] text-muted-500 font-semibold leading-none">
+              <span className="text-[11px] text-muted-500 dark:text-muted-400 font-medium leading-normal mt-2 pt-0.5 block">
                 Promoción válida hasta {new Date(product.discount_ends_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })}
               </span>
             )}
