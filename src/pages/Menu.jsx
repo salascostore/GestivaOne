@@ -54,13 +54,12 @@ function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistor
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
-      whileHover={{ y: -3 }}
       onClick={onSelect}
       className={clsx(
-        'relative flex flex-col gap-0 rounded-2xl border cursor-pointer transition-all duration-300 group overflow-hidden bg-white dark:bg-surface-800',
+        'relative flex flex-col gap-0 rounded-2xl border-2 cursor-pointer transition-all duration-200 group overflow-hidden bg-white dark:bg-surface-800',
         selected
           ? 'border-brand-500 ring-1 ring-brand-500/30'
-          : 'border-neutral-200 dark:border-surface-700 hover:border-brand-500/40 shadow-sm'
+          : 'border-neutral-200 dark:border-surface-700 hover:border-brand-500'
       )}
       transition={smoothTransition}
     >
