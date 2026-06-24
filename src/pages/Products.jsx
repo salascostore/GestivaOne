@@ -98,7 +98,7 @@ function ProductCard({ product, onEdit, onDuplicate, onDelete, onAdd, format$ })
           <img
             src={imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-cover"
           />
           {/* Gradient difuminado de la card hacia la imagen */}
           <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white dark:from-surface-800 to-transparent pointer-events-none" />
