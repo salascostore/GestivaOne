@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS public.crm_activities (
 ALTER TABLE public.crm_activities ENABLE ROW LEVEL SECURITY;
 
 -- Políticas de Seguridad RLS
+DROP POLICY IF EXISTS "Allow read for company employees" ON public.crm_activities;
 CREATE POLICY "Allow read for company employees" ON public.crm_activities
   FOR SELECT
   USING (
@@ -24,6 +25,7 @@ CREATE POLICY "Allow read for company employees" ON public.crm_activities
     )
   );
 
+DROP POLICY IF EXISTS "Allow insert for company employees" ON public.crm_activities;
 CREATE POLICY "Allow insert for company employees" ON public.crm_activities
   FOR INSERT
   WITH CHECK (
