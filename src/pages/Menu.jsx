@@ -103,7 +103,7 @@ function ClientCard({ client, selected, onSelect, onEdit, onDelete, onOpenHistor
           'relative w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-surface-800',
           selected
             ? 'bg-gradient-to-br from-brand-500 to-brand-700 text-white ring-brand-500/50'
-            : 'bg-neutral-100 dark:bg-surface-600 text-neutral-600 dark:text-foreground ring-transparent group-hover:ring-brand-500/30 group-hover:bg-brand-600/20 group-hover:text-brand-300'
+            : 'bg-neutral-100 dark:bg-surface-600 text-neutral-600 dark:text-foreground ring-transparent group-hover:bg-brand-600/20 group-hover:text-brand-300'
         )}>
           {getClientIcon(client.document_type)}
           {selected && (
