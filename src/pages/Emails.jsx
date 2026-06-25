@@ -5,8 +5,10 @@ import {
   MessageSquare, Info, Star, Percent, ShoppingBag, Search, ShoppingCart,
   Eye, Check, Copy, RefreshCw, Layers, Plus, Trash2, Edit2,
   ArrowUp, ArrowDown, Type, AlignLeft, AlignCenter, AlignRight,
-  FileText, Link2, Image as ImageIcon
+  FileText, Link2, Image as ImageIcon, GripVertical, Paperclip, Smile,
+  Cloud, Lock, Pen, Maximize2, X, Minimize2, ChevronDown, Trash
 } from 'lucide-react'
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import { useClientStore } from '@/store/useClientStore'
 import { useInvoiceStore } from '@/store/useInvoiceStore'
 import { useAuthStore } from '@/store/useAuthStore'
@@ -304,6 +306,14 @@ export default function Emails() {
     setSelectedBlockId(id)
   }
 
+  const onDragEnd = (result) => {
+    if (!result.destination) return
+    const updated = Array.from(blocks)
+    const [moved] = updated.splice(result.source.index, 1)
+    updated.splice(result.destination.index, 0, moved)
+    setBlocks(updated)
+  }
+
   const updateBlock = (id, fields) => {
     setBlocks(blocks.map(b => b.id === id ? { ...b, ...fields } : b))
   }
@@ -361,7 +371,6 @@ export default function Emails() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <Mail size={20} className="text-brand-400" />
             Campañas & Constructor de Correos
           </h1>
           <p className="text-xs text-muted-400 mt-0.5">
@@ -377,7 +386,7 @@ export default function Emails() {
           className={clsx(
             'flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all border',
             activeTab === 'campaign'
-              ? 'bg-brand-600/20 text-brand-300 border-brand-500/30'
+              ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400 border-brand-200 dark:border-brand-500/30'
               : 'border-transparent text-muted-400 hover:text-foreground hover:bg-surface-700/60'
           )}
         >
@@ -389,7 +398,7 @@ export default function Emails() {
           className={clsx(
             'flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all border',
             activeTab === 'affinities'
-              ? 'bg-brand-600/20 text-brand-300 border-brand-500/30'
+              ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400 border-brand-200 dark:border-brand-500/30'
               : 'border-transparent text-muted-400 hover:text-foreground hover:bg-surface-700/60'
           )}
         >
@@ -405,95 +414,18 @@ export default function Emails() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 items-start"
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 items-start"
           >
-            {/* COLUMN 1: Elements Panel */}
-            <div className="space-y-4 lg:col-span-1">
-              <div className="bg-surface-800/60 border border-subtle rounded-2xl p-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground mb-3 flex items-center gap-1.5">
-                  <Star size={14} className="text-brand-400" />
-                  Cargar Ajustes
-                </h3>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    onClick={() => loadTemplateBlocks('promo')}
-                    className="p-2 rounded-xl border border-subtle bg-surface-900 text-center hover:bg-surface-700/40 text-[10px] font-bold text-muted-400 hover:text-foreground transition-all"
-                  >
-                    Oferta
-                  </button>
-                  <button
-                    onClick={() => loadTemplateBlocks('vip')}
-                    className="p-2 rounded-xl border border-subtle bg-surface-900 text-center hover:bg-surface-700/40 text-[10px] font-bold text-muted-400 hover:text-foreground transition-all"
-                  >
-                    VIP
-                  </button>
-                  <button
-                    onClick={() => loadTemplateBlocks('reactivation')}
-                    className="p-2 rounded-xl border border-subtle bg-surface-900 text-center hover:bg-surface-700/40 text-[10px] font-bold text-muted-400 hover:text-foreground transition-all"
-                  >
-                    Regreso
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-surface-800/60 border border-subtle rounded-2xl p-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground mb-3 flex items-center gap-1.5">
-                  <Plus size={14} className="text-brand-400" />
-                  Añadir Bloques
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => addBlock('title')}
-                    className="flex items-center gap-2 p-3 rounded-xl border border-subtle bg-surface-900 hover:bg-surface-700/40 text-xs font-bold text-muted-400 hover:text-foreground transition-all"
-                  >
-                    <Type size={14} className="text-purple-400 shrink-0" />
-                    <span>Título</span>
-                  </button>
-                  <button
-                    onClick={() => addBlock('text')}
-                    className="flex items-center gap-2 p-3 rounded-xl border border-subtle bg-surface-900 hover:bg-surface-700/40 text-xs font-bold text-muted-400 hover:text-foreground transition-all"
-                  >
-                    <FileText size={14} className="text-blue-400 shrink-0" />
-                    <span>Texto</span>
-                  </button>
-                  <button
-                    onClick={() => addBlock('image')}
-                    className="flex items-center gap-2 p-3 rounded-xl border border-subtle bg-surface-900 hover:bg-surface-700/40 text-xs font-bold text-muted-400 hover:text-foreground transition-all"
-                  >
-                    <ImageIcon size={14} className="text-green-400 shrink-0" />
-                    <span>Imagen</span>
-                  </button>
-                  <button
-                    onClick={() => addBlock('invoice_table')}
-                    className="flex items-center gap-2 p-3 rounded-xl border border-subtle bg-surface-900 hover:bg-surface-700/40 text-xs font-bold text-muted-400 hover:text-foreground transition-all"
-                  >
-                    <Percent size={14} className="text-amber-400 shrink-0" />
-                    <span>Tabla Resumen</span>
-                  </button>
-                  <button
-                    onClick={() => addBlock('link')}
-                    className="flex items-center gap-2 p-3 rounded-xl border border-subtle bg-surface-900 hover:bg-surface-700/40 text-xs font-bold text-muted-400 hover:text-foreground transition-all"
-                  >
-                    <Link2 size={14} className="text-cyan-400 shrink-0" />
-                    <span>Enlace</span>
-                  </button>
-                  <button
-                    onClick={() => addBlock('button')}
-                    className="flex items-center gap-2 p-3 rounded-xl border border-subtle bg-surface-900 hover:bg-surface-700/40 text-xs font-bold text-muted-400 hover:text-foreground transition-all"
-                  >
-                    <ShoppingCart size={14} className="text-red-400 shrink-0" />
-                    <span>Botón</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Targeting settings */}
-              <div className="bg-surface-800/60 border border-subtle rounded-2xl p-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground mb-3 flex items-center gap-1.5">
+            {/* COLUMN 1: Builder & Structure (Left, span 5) */}
+            <div className="space-y-4 lg:col-span-5 flex flex-col h-full">
+              
+              {/* Settings & Recipients */}
+              <div className="bg-surface-800/60 border border-subtle rounded-2xl p-4 flex flex-col gap-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
                   <Layers size={14} className="text-brand-400" />
-                  Destinatarios
+                  Destinatarios y Segmentación
                 </h3>
-                <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-muted-400 mb-1">Segmento CRM</label>
                     <select
@@ -510,7 +442,7 @@ export default function Emails() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase font-bold text-muted-400 mb-1">Afinidad por Producto</label>
+                    <label className="block text-[10px] uppercase font-bold text-muted-400 mb-1">Afinidad de Producto</label>
                     <select
                       value={customClientFilter}
                       onChange={(e) => setCustomClientFilter(e.target.value)}
@@ -522,70 +454,118 @@ export default function Emails() {
                       ))}
                     </select>
                   </div>
-                  <div className="p-3 bg-surface-900/60 border border-subtle/50 rounded-xl flex items-center justify-between text-xs mt-2">
-                    <span className="text-muted-400">Total filtrados:</span>
-                    <span className="font-bold text-brand-400">{targetClients.length} clientes</span>
-                  </div>
+                </div>
+                <div className="p-2.5 bg-brand-500/10 border border-brand-500/20 rounded-xl flex items-center justify-between text-xs mt-1">
+                  <span className="text-brand-600 dark:text-brand-400 font-medium">Destinatarios encontrados:</span>
+                  <span className="font-bold text-brand-700 dark:text-brand-300 bg-brand-500/20 px-2 py-0.5 rounded-full">{targetClients.length}</span>
                 </div>
               </div>
-            </div>
 
-            {/* COLUMN 2: Editor Panel */}
-            <div className="space-y-4 lg:col-span-1">
+              {/* Modules / Cards */}
               <div className="bg-surface-800/60 border border-subtle rounded-2xl p-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground mb-4 flex items-center gap-1.5">
-                  <Edit2 size={14} className="text-brand-400" />
-                  Editar Bloques Activos
-                </h3>
-
-                {/* Blocks flow */}
-                <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1 no-scrollbar mb-4 border-b border-subtle pb-4">
-                  {blocks.map((block, idx) => (
-                    <div
-                      key={block.id}
-                      onClick={() => setSelectedBlockId(block.id)}
-                      className={clsx(
-                        'flex items-center justify-between p-2.5 rounded-xl border text-xs font-medium cursor-pointer transition-all',
-                        selectedBlockId === block.id
-                          ? 'bg-brand-600/10 border-brand-500/40 text-brand-300'
-                          : 'bg-surface-900/50 border-subtle text-muted-400 hover:text-foreground hover:bg-surface-900/90'
-                      )}
-                    >
-                      <span className="capitalize">{block.type}</span>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); moveBlock(idx, -1); }}
-                          disabled={idx === 0}
-                          className="p-1 rounded hover:bg-surface-700 disabled:opacity-30"
-                        >
-                          <ArrowUp size={12} />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); moveBlock(idx, 1); }}
-                          disabled={idx === blocks.length - 1}
-                          className="p-1 rounded hover:bg-surface-700 disabled:opacity-30"
-                        >
-                          <ArrowDown size={12} />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }}
-                          className="p-1 rounded hover:bg-danger-950/30 text-danger-400"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                    <Plus size={14} className="text-brand-400" />
+                    Módulos (Clic para añadir)
+                  </h3>
+                  <div className="flex gap-1">
+                    <button onClick={() => loadTemplateBlocks('promo')} className="px-2 py-1 bg-surface-900 hover:bg-surface-700 border border-subtle rounded text-[10px] font-bold text-muted-400 transition-colors">Oferta</button>
+                    <button onClick={() => loadTemplateBlocks('vip')} className="px-2 py-1 bg-surface-900 hover:bg-surface-700 border border-subtle rounded text-[10px] font-bold text-muted-400 transition-colors">VIP</button>
+                  </div>
                 </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button onClick={() => addBlock('title')} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-subtle bg-surface-900 hover:bg-surface-700 hover:border-brand-500/50 transition-all group">
+                    <Type size={16} className="text-purple-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-[10px] font-bold text-muted-400 group-hover:text-foreground uppercase tracking-wider">Título</span>
+                  </button>
+                  <button onClick={() => addBlock('text')} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-subtle bg-surface-900 hover:bg-surface-700 hover:border-brand-500/50 transition-all group">
+                    <FileText size={16} className="text-blue-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-[10px] font-bold text-muted-400 group-hover:text-foreground uppercase tracking-wider">Texto</span>
+                  </button>
+                  <button onClick={() => addBlock('image')} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-subtle bg-surface-900 hover:bg-surface-700 hover:border-brand-500/50 transition-all group">
+                    <ImageIcon size={16} className="text-green-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-[10px] font-bold text-muted-400 group-hover:text-foreground uppercase tracking-wider">Imagen</span>
+                  </button>
+                  <button onClick={() => addBlock('invoice_table')} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-subtle bg-surface-900 hover:bg-surface-700 hover:border-brand-500/50 transition-all group">
+                    <Percent size={16} className="text-amber-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-[10px] font-bold text-muted-400 group-hover:text-foreground uppercase tracking-wider">Tabla</span>
+                  </button>
+                  <button onClick={() => addBlock('link')} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-subtle bg-surface-900 hover:bg-surface-700 hover:border-brand-500/50 transition-all group">
+                    <Link2 size={16} className="text-cyan-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-[10px] font-bold text-muted-400 group-hover:text-foreground uppercase tracking-wider">Enlace</span>
+                  </button>
+                  <button onClick={() => addBlock('button')} className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border border-subtle bg-surface-900 hover:bg-surface-700 hover:border-brand-500/50 transition-all group">
+                    <ShoppingCart size={16} className="text-red-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-[10px] font-bold text-muted-400 group-hover:text-foreground uppercase tracking-wider">Botón</span>
+                  </button>
+                </div>
+              </div>
 
-                {/* Selected block values editing form */}
-                {selectedBlock ? (
+              {/* Structure Builder (Drag & Drop) */}
+              <div className="bg-surface-800/60 border border-subtle rounded-2xl p-4 flex-1 flex flex-col min-h-[250px]">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground mb-3 flex items-center gap-1.5">
+                  <Layers size={14} className="text-brand-400" />
+                  Estructura (Drag & Drop)
+                </h3>
+                <DragDropContext onDragEnd={onDragEnd}>
+                  <Droppable droppableId="blocks-list">
+                    {(provided) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="space-y-2 flex-1 overflow-y-auto pr-1 no-scrollbar min-h-[150px]"
+                      >
+                        {blocks.map((block, index) => (
+                          <Draggable key={block.id} draggableId={block.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                onClick={() => setSelectedBlockId(block.id)}
+                                className={clsx(
+                                  'flex items-center justify-between p-2.5 rounded-xl border text-xs font-medium cursor-pointer transition-colors',
+                                  snapshot.isDragging ? 'shadow-xl scale-[1.02] z-50 bg-surface-700 border-brand-500/50' : '',
+                                  !snapshot.isDragging && selectedBlockId === block.id
+                                    ? 'bg-brand-600/10 border-brand-500/40 text-brand-300 shadow-sm'
+                                    : !snapshot.isDragging && 'bg-surface-900/50 border-subtle text-muted-400 hover:text-foreground hover:bg-surface-900/90'
+                                )}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div {...provided.dragHandleProps} className="text-muted-500 hover:text-foreground cursor-grab active:cursor-grabbing p-1">
+                                    <GripVertical size={14} />
+                                  </div>
+                                  <span className="capitalize">{block.type}</span>
+                                </div>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }}
+                                  className="p-1.5 rounded-lg hover:bg-danger-950/30 text-muted-500 hover:text-danger-400 transition-colors"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              </div>
+
+              {/* Content Editor Panel */}
+              {selectedBlock && (
+                <div className="bg-surface-800/60 border border-brand-500/30 rounded-2xl p-4 shadow-lg shadow-brand-900/10 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-brand-500"></div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] uppercase font-bold text-muted-400">Edición de Contenido</span>
+                    <span className="text-[10px] bg-brand-500/20 text-brand-300 font-bold px-2 py-0.5 rounded uppercase flex items-center gap-1">
+                      <Edit2 size={10} />
+                      {selectedBlock.type}
+                    </span>
+                  </div>
+
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] uppercase font-bold text-muted-400">Propiedades del Bloque</span>
-                      <span className="text-[10px] bg-brand-500/20 text-brand-300 font-bold px-2 py-0.5 rounded uppercase">{selectedBlock.type}</span>
-                    </div>
-
                     {/* Dynamic Fields */}
                     {selectedBlock.type === 'title' && (
                       <>
@@ -595,43 +575,45 @@ export default function Emails() {
                             type="text"
                             value={selectedBlock.value}
                             onChange={(e) => updateBlock(selectedBlock.id, { value: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none"
+                            className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none focus:border-brand-500"
                           />
                         </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-muted-400 mb-1">Color de Texto</label>
-                          <div className="flex gap-2 items-center">
-                            <input
-                              type="color"
-                              value={selectedBlock.color}
-                              onChange={(e) => updateBlock(selectedBlock.id, { color: e.target.value })}
-                              className="w-8 h-8 rounded border-0 bg-transparent shrink-0 cursor-pointer"
-                            />
-                            <input
-                              type="text"
-                              value={selectedBlock.color}
-                              onChange={(e) => updateBlock(selectedBlock.id, { color: e.target.value })}
-                              className="w-full px-3 py-1.5 rounded-xl bg-surface-900 border border-subtle text-xs font-mono"
-                            />
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-bold text-muted-400 mb-1">Color</label>
+                            <div className="flex gap-2 items-center">
+                              <input
+                                type="color"
+                                value={selectedBlock.color}
+                                onChange={(e) => updateBlock(selectedBlock.id, { color: e.target.value })}
+                                className="w-8 h-8 rounded border-0 bg-transparent shrink-0 cursor-pointer"
+                              />
+                              <input
+                                type="text"
+                                value={selectedBlock.color}
+                                onChange={(e) => updateBlock(selectedBlock.id, { color: e.target.value })}
+                                className="w-full px-2 py-1.5 rounded-lg bg-surface-900 border border-subtle text-xs font-mono"
+                              />
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-muted-400 mb-1">Alineación</label>
-                          <div className="flex gap-1.5 bg-surface-900 p-1 rounded-xl border border-subtle">
-                            {['left', 'center', 'right'].map(align => (
-                              <button
-                                key={align}
-                                onClick={() => updateBlock(selectedBlock.id, { align })}
-                                className={clsx(
-                                  'flex-1 flex justify-center py-1.5 rounded-lg text-xs capitalize',
-                                  selectedBlock.align === align ? 'bg-surface-700 text-white font-bold' : 'text-muted-400 hover:text-foreground'
-                                )}
-                              >
-                                {align === 'left' && <AlignLeft size={13} />}
-                                {align === 'center' && <AlignCenter size={13} />}
-                                {align === 'right' && <AlignRight size={13} />}
-                              </button>
-                            ))}
+                          <div>
+                            <label className="block text-[10px] font-bold text-muted-400 mb-1">Alineación</label>
+                            <div className="flex gap-1.5 bg-surface-900 p-1 rounded-xl border border-subtle">
+                              {['left', 'center', 'right'].map(align => (
+                                <button
+                                  key={align}
+                                  onClick={() => updateBlock(selectedBlock.id, { align })}
+                                  className={clsx(
+                                    'flex-1 flex justify-center py-1.5 rounded-lg text-xs capitalize',
+                                    selectedBlock.align === align ? 'bg-surface-700 text-white font-bold' : 'text-muted-400 hover:text-foreground'
+                                  )}
+                                >
+                                  {align === 'left' && <AlignLeft size={13} />}
+                                  {align === 'center' && <AlignCenter size={13} />}
+                                  {align === 'right' && <AlignRight size={13} />}
+                                </button>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </>
@@ -642,10 +624,10 @@ export default function Emails() {
                         <div>
                           <label className="block text-[10px] font-bold text-muted-400 mb-1">Contenido (Soporta **negrita**)</label>
                           <textarea
-                            rows={5}
+                            rows={4}
                             value={selectedBlock.value}
                             onChange={(e) => updateBlock(selectedBlock.id, { value: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none"
+                            className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none focus:border-brand-500"
                           />
                         </div>
                         <div>
@@ -676,26 +658,28 @@ export default function Emails() {
                             type="text"
                             value={selectedBlock.url}
                             onChange={(e) => updateBlock(selectedBlock.id, { url: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none"
+                            className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none focus:border-brand-500"
                           />
                         </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-muted-400 mb-1">Texto Alternativo (Alt)</label>
-                          <input
-                            type="text"
-                            value={selectedBlock.altText || ''}
-                            onChange={(e) => updateBlock(selectedBlock.id, { altText: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-muted-400 mb-1">Altura (px)</label>
-                          <input
-                            type="number"
-                            value={selectedBlock.height || '160'}
-                            onChange={(e) => updateBlock(selectedBlock.id, { height: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none"
-                          />
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-bold text-muted-400 mb-1">Texto Alternativo</label>
+                            <input
+                              type="text"
+                              value={selectedBlock.altText || ''}
+                              onChange={(e) => updateBlock(selectedBlock.id, { altText: e.target.value })}
+                              className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none focus:border-brand-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-muted-400 mb-1">Altura (px)</label>
+                            <input
+                              type="number"
+                              value={selectedBlock.height || '160'}
+                              onChange={(e) => updateBlock(selectedBlock.id, { height: e.target.value })}
+                              className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none focus:border-brand-500"
+                            />
+                          </div>
                         </div>
                       </>
                     )}
@@ -708,23 +692,25 @@ export default function Emails() {
 
                     {selectedBlock.type === 'link' && (
                       <>
-                        <div>
-                          <label className="block text-[10px] font-bold text-muted-400 mb-1">Texto del Enlace</label>
-                          <input
-                            type="text"
-                            value={selectedBlock.label}
-                            onChange={(e) => updateBlock(selectedBlock.id, { label: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-muted-400 mb-1">URL / Destino</label>
-                          <input
-                            type="text"
-                            value={selectedBlock.url}
-                            onChange={(e) => updateBlock(selectedBlock.id, { url: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none"
-                          />
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-bold text-muted-400 mb-1">Texto del Enlace</label>
+                            <input
+                              type="text"
+                              value={selectedBlock.label}
+                              onChange={(e) => updateBlock(selectedBlock.id, { label: e.target.value })}
+                              className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none focus:border-brand-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-muted-400 mb-1">URL / Destino</label>
+                            <input
+                              type="text"
+                              value={selectedBlock.url}
+                              onChange={(e) => updateBlock(selectedBlock.id, { url: e.target.value })}
+                              className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none focus:border-brand-500"
+                            />
+                          </div>
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-muted-400 mb-1">Color del Vínculo</label>
@@ -748,127 +734,147 @@ export default function Emails() {
 
                     {selectedBlock.type === 'button' && (
                       <>
-                        <div>
-                          <label className="block text-[10px] font-bold text-muted-400 mb-1">Texto del Botón</label>
-                          <input
-                            type="text"
-                            value={selectedBlock.value}
-                            onChange={(e) => updateBlock(selectedBlock.id, { value: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-muted-400 mb-1">URL / Destino</label>
-                          <input
-                            type="text"
-                            value={selectedBlock.url}
-                            onChange={(e) => updateBlock(selectedBlock.id, { url: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-muted-400 mb-1">Fondo del Botón</label>
-                          <div className="flex gap-2 items-center">
-                            <input
-                              type="color"
-                              value={selectedBlock.color}
-                              onChange={(e) => updateBlock(selectedBlock.id, { color: e.target.value })}
-                              className="w-8 h-8 rounded border-0 bg-transparent shrink-0 cursor-pointer"
-                            />
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-bold text-muted-400 mb-1">Texto del Botón</label>
                             <input
                               type="text"
-                              value={selectedBlock.color}
-                              onChange={(e) => updateBlock(selectedBlock.id, { color: e.target.value })}
-                              className="w-full px-3 py-1.5 rounded-xl bg-surface-900 border border-subtle text-xs font-mono"
+                              value={selectedBlock.value}
+                              onChange={(e) => updateBlock(selectedBlock.id, { value: e.target.value })}
+                              className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none focus:border-brand-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-muted-400 mb-1">URL / Destino</label>
+                            <input
+                              type="text"
+                              value={selectedBlock.url}
+                              onChange={(e) => updateBlock(selectedBlock.id, { url: e.target.value })}
+                              className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none focus:border-brand-500"
                             />
                           </div>
                         </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-muted-400 mb-1">Texto del Botón</label>
-                          <div className="flex gap-2 items-center">
-                            <input
-                              type="color"
-                              value={selectedBlock.textColor || '#ffffff'}
-                              onChange={(e) => updateBlock(selectedBlock.id, { textColor: e.target.value })}
-                              className="w-8 h-8 rounded border-0 bg-transparent shrink-0 cursor-pointer"
-                            />
-                            <input
-                              type="text"
-                              value={selectedBlock.textColor || '#ffffff'}
-                              onChange={(e) => updateBlock(selectedBlock.id, { textColor: e.target.value })}
-                              className="w-full px-3 py-1.5 rounded-xl bg-surface-900 border border-subtle text-xs font-mono"
-                            />
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-bold text-muted-400 mb-1">Fondo del Botón</label>
+                            <div className="flex gap-2 items-center">
+                              <input
+                                type="color"
+                                value={selectedBlock.color}
+                                onChange={(e) => updateBlock(selectedBlock.id, { color: e.target.value })}
+                                className="w-8 h-8 rounded border-0 bg-transparent shrink-0 cursor-pointer"
+                              />
+                              <input
+                                type="text"
+                                value={selectedBlock.color}
+                                onChange={(e) => updateBlock(selectedBlock.id, { color: e.target.value })}
+                                className="w-full px-2 py-1.5 rounded-lg bg-surface-900 border border-subtle text-xs font-mono"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-muted-400 mb-1">Texto del Botón</label>
+                            <div className="flex gap-2 items-center">
+                              <input
+                                type="color"
+                                value={selectedBlock.textColor || '#ffffff'}
+                                onChange={(e) => updateBlock(selectedBlock.id, { textColor: e.target.value })}
+                                className="w-8 h-8 rounded border-0 bg-transparent shrink-0 cursor-pointer"
+                              />
+                              <input
+                                type="text"
+                                value={selectedBlock.textColor || '#ffffff'}
+                                onChange={(e) => updateBlock(selectedBlock.id, { textColor: e.target.value })}
+                                className="w-full px-2 py-1.5 rounded-lg bg-surface-900 border border-subtle text-xs font-mono"
+                              />
+                            </div>
                           </div>
                         </div>
                       </>
                     )}
-
-                    {/* Placeholder hint */}
-                    <div className="p-3 bg-surface-900/40 border border-subtle rounded-xl text-[10.5px] text-muted-400 leading-normal space-y-1">
-                      <p className="font-bold text-brand-400">Variables Disponibles:</p>
-                      <p><code className="font-mono text-white">&#123;&#123;cliente&#125;&#125;</code>: Nombre del cliente</p>
-                      <p><code className="font-mono text-white">&#123;&#123;empresa&#125;&#125;</code>: {user?.companyName || 'Tu Empresa'}</p>
-                      <p><code className="font-mono text-white">&#123;&#123;producto&#125;&#125;</code>: Producto más comprado</p>
-                    </div>
                   </div>
-                ) : (
-                  <p className="text-xs text-muted-500 text-center py-6">Selecciona un bloque para editar sus propiedades</p>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
-            {/* COLUMN 3: Live Preview & Send */}
-            <div className="space-y-4 lg:col-span-1">
-              <div className="bg-surface-800/60 border border-subtle rounded-2xl p-4 flex flex-col gap-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                  <Eye size={14} className="text-brand-400" />
-                  Previsualización en Vivo
-                </h3>
+            {/* COLUMN 2: Live Preview (Right, span 7) - GMAIL STYLE */}
+            <div className="space-y-4 lg:col-span-7 flex flex-col h-[calc(100vh-160px)]">
+              <div className="bg-[#f2f6fc] dark:bg-surface-900 rounded-t-xl rounded-b-none lg:rounded-b-xl shadow-xl shadow-brand-900/10 flex-1 flex flex-col overflow-hidden border border-subtle/40 mx-[-16px] lg:mx-0">
+                
+                {/* Gmail Header */}
+                <div className="bg-[#f2f6fc] dark:bg-surface-800 px-4 py-2 flex items-center justify-between border-b border-[#e1e5ea] dark:border-subtle shrink-0">
+                  <span className="text-[#041e49] dark:text-gray-200 text-sm font-medium">Nuevo Mensaje</span>
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <button className="p-1 hover:bg-gray-200 dark:hover:bg-surface-700 rounded"><Minimize2 size={14} /></button>
+                    <button className="p-1 hover:bg-gray-200 dark:hover:bg-surface-700 rounded"><Maximize2 size={14} /></button>
+                    <button className="p-1 hover:bg-gray-200 dark:hover:bg-surface-700 rounded"><X size={16} /></button>
+                  </div>
+                </div>
 
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-muted-400 mb-1">Asunto de Campaña</label>
+                {/* To Field */}
+                <div className="bg-white dark:bg-surface-900 px-4 py-2 border-b border-[#f1f3f4] dark:border-subtle/50 flex items-center shrink-0">
+                  <span className="text-gray-500 dark:text-gray-400 text-sm w-12 shrink-0">Para</span>
+                  <div className="flex-1 flex flex-wrap gap-1">
+                    {targetClients.length > 0 ? (
+                      <span className="px-2.5 py-0.5 rounded-full border border-[#d3e3fd] bg-[#e8f0fe] dark:bg-brand-500/10 dark:border-brand-500/30 text-[#041e49] dark:text-brand-300 text-xs font-medium flex items-center gap-1">
+                        <User size={12} /> {targetClients.length} Destinatarios seleccionados
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-sm">Selecciona destinatarios...</span>
+                    )}
+                  </div>
+                  <span className="text-gray-500 dark:text-gray-400 text-sm cursor-pointer hover:underline">Cc Bcc</span>
+                </div>
+
+                {/* Subject Field */}
+                <div className="bg-white dark:bg-surface-900 px-4 border-b border-[#f1f3f4] dark:border-subtle/50 shrink-0">
                   <input
                     type="text"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-surface-900 border border-subtle text-xs text-foreground focus:outline-none focus:border-brand-500 font-semibold"
-                    placeholder="Escribe el asunto del correo"
+                    placeholder="Asunto"
+                    className="w-full py-3 bg-transparent text-sm text-[#202124] dark:text-gray-200 focus:outline-none placeholder:text-gray-500"
                   />
                 </div>
 
-                {/* Email container simulator */}
-                <div className="border border-dashed border-subtle rounded-xl p-3 bg-surface-900/40 max-h-[420px] overflow-y-auto no-scrollbar">
-                  <div className="text-[10px] text-muted-500 font-bold uppercase mb-2">
-                    Asunto: {personalizeMessage(subject, targetClients[0]?.name, targetClients[0]?.favoriteProduct)}
-                  </div>
-                  
-                  {/* Inner simulation */}
-                  <div className="bg-white text-gray-800 rounded-xl p-4 overflow-hidden">
+                {/* Email Body (Live Preview) */}
+                <div className="flex-1 bg-white dark:bg-surface-900 p-4 lg:p-8 overflow-y-auto no-scrollbar relative">
+                  {/* The actual HTML preview */}
+                  <div className="w-full max-w-[600px] mx-auto min-h-full pb-10">
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: compileBlocksToHTML(blocks, targetClients[0]?.name, targetClients[0]?.favoriteProduct)
+                        __html: compileBlocksToHTML(blocks, targetClients[0]?.name || 'Cliente', targetClients[0]?.favoriteProduct || 'Producto')
                       }}
                     />
                   </div>
                 </div>
 
-                <button
-                  onClick={handleSendCampaign}
-                  disabled={sending || targetClients.length === 0}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 disabled:opacity-40 text-xs font-bold text-white shadow-glow transition-all"
-                >
-                  {sending ? (
-                    <>
-                      <RefreshCw className="animate-spin shrink-0" size={14} />
-                      <span>Enviando campaña...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send size={14} className="shrink-0" />
-                      <span>Enviar a {targetClients.length} Clientes</span>
-                    </>
-                  )}
-                </button>
+                {/* Gmail Footer */}
+                <div className="bg-white dark:bg-surface-900 px-4 py-3 border-t border-[#f1f3f4] dark:border-subtle/50 flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={handleSendCampaign}
+                      disabled={sending || targetClients.length === 0}
+                      className="flex items-center gap-1.5 px-6 py-2 bg-[#0b57d0] hover:bg-[#0b57d0]/90 text-white rounded-full text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {sending ? 'Enviando...' : 'Enviar'}
+                      <ChevronDown size={14} className="ml-1 opacity-70" />
+                    </button>
+                    <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                      <button className="hover:text-gray-800 dark:hover:text-gray-200 transition-colors"><Type size={18} /></button>
+                      <button className="hover:text-gray-800 dark:hover:text-gray-200 transition-colors"><Paperclip size={18} /></button>
+                      <button className="hover:text-gray-800 dark:hover:text-gray-200 transition-colors"><Link2 size={18} /></button>
+                      <button className="hover:text-gray-800 dark:hover:text-gray-200 transition-colors"><Smile size={18} /></button>
+                      <button className="hover:text-gray-800 dark:hover:text-gray-200 transition-colors"><Cloud size={18} /></button>
+                      <button className="hover:text-gray-800 dark:hover:text-gray-200 transition-colors"><ImageIcon size={18} /></button>
+                      <button className="hover:text-gray-800 dark:hover:text-gray-200 transition-colors"><Lock size={18} /></button>
+                      <button className="hover:text-gray-800 dark:hover:text-gray-200 transition-colors"><Pen size={18} /></button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                    <button className="hover:text-gray-800 dark:hover:text-gray-200 transition-colors"><Trash size={18} /></button>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
