@@ -419,7 +419,7 @@ export default function Products() {
             )}
           </div>
           <div className="flex gap-2 shrink-0">
-            <Button variant="secondary" size="sm" pill icon={<DollarSign size={14} />} onClick={() => setShowFree((v) => !v)} className="px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm shrink-0">
+            <Button variant="secondary" size="sm" pill icon={<DollarSign size={14} />} onClick={() => setShowFree((v) => !v)} className="px-2.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm shrink-0 !bg-white !text-neutral-800 !border-neutral-200 hover:!bg-neutral-50 hover:!text-neutral-900 dark:!bg-surface-700 dark:!text-foreground dark:!border-subtle dark:hover:!bg-surface-600">
               <span className="hidden sm:inline">Valor Libre</span>
               <span className="inline sm:hidden">Libre</span>
             </Button>
