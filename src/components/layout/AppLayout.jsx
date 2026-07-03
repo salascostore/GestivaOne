@@ -17,7 +17,6 @@ import { usePocketStore } from '@/store/usePocketStore'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 
 export default function AppLayout() {
-  console.log('🏗️ AppLayout Rendering...')
   const activeModal = useUIStore((s) => s.activeModal)
   const user        = useAuthStore((s) => s.user)
   

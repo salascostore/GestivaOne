@@ -158,9 +158,7 @@ export default function App() {
     }
   }, [])
 
-  useEffect(() => {
-    console.log('🛡️ Gestiva Auth State:', { isAuthenticated, user: user?.email, path: location.pathname })
-  }, [isAuthenticated, user, location.pathname])
+
 
   const pageTitles = {
     '/': 'Dashboard',
